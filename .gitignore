@@ -1,0 +1,41 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+apps/web/dist/
+*.tsbuildinfo
+
+# Runtime F1 data
+data/raw/*
+data/processed/*
+data/cache/*
+
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/cache/.gitkeep
+
+# ML artifacts
+mlruns/
+artifacts/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Logs/temp
+*.log
+*.tmp
