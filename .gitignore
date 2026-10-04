@@ -39,3 +39,6 @@ artifacts/
 # Logs/temp
 *.log
 *.tmp
+
+# Local reference repositories
+references/
