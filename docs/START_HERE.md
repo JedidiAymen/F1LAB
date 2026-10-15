@@ -29,3 +29,6 @@ and a request interval below its public limit.
    `GLOSSARY_FOR_LEARNING.md`: implementation tutorial and chronology.
 
 The full locked product scope remains `SOL61_MASTER_EXECUTION.md`.
+The partial session foundation is described in `ARCHITECTURE.md`; its limited
+real race-control sample is reproducible with
+`.venv/bin/python -m f1_racelab.session.openf1_sample`.

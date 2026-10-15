@@ -45,10 +45,11 @@ to the planned race workstation.
 10. **Paired event bootstrap.** Candidate minus FP3 MAE is computed per GP;
     entire GPs are resampled with replacement. This preserves within-weekend
     dependence and gives a descriptive interval for the observed calendar.
-11. **RaceState and one clock.** The future reducer will apply ordered
-    `SessionEvent`s to one canonical state. 2D, 3D, timing and telemetry will
-    read that state at the same session time. Drawing frames do not invent
-    extra time. This contract is planned, not implemented in this checkpoint.
+11. **RaceState and one clock.** The new Python reducer applies ordered
+    `SessionEvent`s to one canonical state and supports deterministic seeking.
+    A real 2025 Monza race-control message sample exercises the contract. 2D,
+    3D, timing and telemetry must eventually read that same session time;
+    they are not connected yet. Drawing frames do not invent extra race time.
 12. **Distance alignment.** Two lap telemetry streams should be interpolated
     to matching track distances before speed or braking comparisons. Equal
     timestamps can represent different physical places. This is a planned P3

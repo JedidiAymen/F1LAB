@@ -36,3 +36,17 @@ versus 3.3141 for FP3 ranking. Its paired event uncertainty interval crosses
 zero, so the benchmark does not establish a reliable gain. Read
 [the evaluation report](docs/ML_EVALUATION.md) and
 [experiment register](docs/EXPERIMENT_REGISTER.md) before interpreting results.
+
+## Session timeline foundation
+
+The Python package now has versioned event/state contracts and deterministic
+seek logic. A limited real-data sample of 2025 Monza race-control messages can
+be built from the local OpenF1 cache:
+
+```bash
+.venv/bin/python -m f1_racelab.session.openf1_sample
+```
+
+It writes an ignored JSON artifact under `data/processed/replay_samples/`.
+The sample contains messages only; positions, lap timing and the interactive
+Race Control view are not implemented yet.

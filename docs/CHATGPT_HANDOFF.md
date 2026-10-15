@@ -1,9 +1,10 @@
 # F1LAB handoff for the next ChatGPT session
 
-**Status at 2026-10-15 UTC:** qualifying source recovery, baseline and form
-ablation completed as a research benchmark. Branch `feat/foundation`; starting
-HEAD `bb840d44a2cf6c2f325f6ef2a575ff074f0d1b05`. Check `git log -1` and
-`git status` for the latest checkpoint and push state.
+**Status at 2026-10-15 UTC:** qualifying research benchmark complete, first
+canonical session contract/reducer in progress. Branch `feat/foundation`;
+research checkpoint `b6835e7` was pushed to `origin/feat/foundation`. Check
+`git log -1`, `git status` and `git ls-remote origin feat/foundation` for any
+later checkpoint.
 
 ## What exists and what does not
 
@@ -19,8 +20,12 @@ HEAD `bb840d44a2cf6c2f325f6ef2a575ff074f0d1b05`. Check `git log -1` and
   dataset, real 2024 model selection and 2025 held-out evaluation, five-model
   form ablation, one-event provider overlap audit, one manual historical-form
   trace, and executed notebook chart. See `EXPERIMENT_REGISTER.md`.
-- **Not done:** calibrated probabilities, prediction serving, canonical
-  `RaceState`/`SessionEvent` reducer, historical replay, 2D
+- **Now implemented in part:** Python Pydantic `SessionEvent`/`RaceState`, pure
+  ordered reducer and deterministic seek. A real OpenF1 2025 Monza sample
+  normalizes 53 post-start race-control messages. It has no positions or lap
+  timing; it is not a complete replay.
+- **Not done:** calibrated probabilities, prediction serving, full historical
+  replay, 2D
   or 3D visualization, telemetry comparison, strategy, what-if, live and radio.
   The React frontend still renders the Vite starter screen.
 
@@ -46,7 +51,9 @@ the original dataset and build a separate source-labelled one. See
 `models/qualifying_backtest.py` and `models/qualifying_ablation.py` fit and
 evaluate five candidate rankings. `IMPLEMENTATION_ATLAS.md` describes inputs,
 outputs, formulas, tests and caveats per function. `ARCHITECTURE.md` diagrams
-the actual data flow and the still-unimplemented unified replay architecture.
+the actual data flow and partial unified replay architecture. The new
+`session/contracts.py`, `session/reducer.py` and `session/openf1_sample.py`
+provide the first canonical event/state path.
 
 ## Reproduction and evidence
 
@@ -57,10 +64,12 @@ uv sync --dev
 .venv/bin/python -m f1_racelab.data.mixed_qualifying
 .venv/bin/python -m f1_racelab.models.qualifying_backtest --dataset data/processed/qualifying_mixed_2022_2023_2024_2025.parquet --feature-set common
 .venv/bin/python -m f1_racelab.models.qualifying_ablation --dataset data/processed/qualifying_mixed_2022_2023_2024_2025.parquet --feature-set common
+.venv/bin/python -m f1_racelab.session.openf1_sample
 ```
 
-The latest test count and lint status are in `TEST_EVIDENCE.md`; fixture tests
-are separate from the real provider data and model experiment. Generated
+The latest full test run passed **19/19** and Ruff passed; exact commands are
+in `TEST_EVIDENCE.md`. Fixture tests are separate from the real provider data
+and model experiment. Generated
 datasets and metrics are under ignored `data/processed/`; inspect
 `qualifying_mixed_manifest.json`, ingestion CSV, `qualifying_backtest/` and
 `qualifying_ablation/`. The mixed file has 71 conventional weekends and 1,418
@@ -84,11 +93,12 @@ improvement is claimed. The UI remains the Vite starter; no replay demo exists.
 
 ## Next five actions
 
-1. Run final scoped tests and lint, review staged files for secrets and data,
-   then commit and push the documented research checkpoint.
-2. Implement typed `SessionEvent`/`RaceState` and a real historical sample as
-   the first step toward synchronized 2D replay.
-3. Expand cross-provider overlap and as-of timestamp audits before promoting
+1. Run the full checks for the new session foundation, then commit and push
+   this second documented checkpoint.
+2. Extend the real race sample with measured positions, laps and pit events;
+   add source capability flags and replay checkpoints.
+3. Build a shared frontend clock and 2D workspace from that replay pack.
+4. Expand cross-provider overlap and as-of timestamp audits before promoting
    a qualifying model toward production use.
 
 For tutoring, read `AGENT_WORKLOG.md`, `IMPLEMENTATION_ATLAS.md`,

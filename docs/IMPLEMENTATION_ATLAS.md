@@ -77,9 +77,17 @@ symbol does. It does not claim the later replay or strategy modules exist.
   result normalization. These synthetic fixtures test code invariants only;
   real performance comes from the separate historical run.
 
-## Planned contracts
+## Session foundation (partial P0)
 
-`SessionEvent`, `RaceState`, `RaceSource`, `CircuitGeometry` and the shared
-session clock are specified in `SOL61_MASTER_EXECUTION.md` but have not yet
-been implemented. No replay/live/simulation result is claimed from the
-qualifying tables.
+| Symbol | Input → algorithm → output | Proof and limit |
+|---|---|---|
+| `session.contracts.SessionId` | Season, round, kind and provider key → immutable validated identifier | 2025 Monza race uses OpenF1 key 9912; cross-provider ID mapping remains future work |
+| `session.contracts.SessionEvent` | Typed payload, source, three UTC timestamps, session seconds, sequence, quality → immutable versioned event | Synthetic validation rejects wrong payload and naive observation time |
+| `session.contracts.RaceState` | Session ID and reduced events → one clock, driver dictionary, global flag, race-control messages and event IDs | No UI or live provider is connected yet |
+| `session.reducer.reduce_event` | Current state + next ordered event → copied next state; duplicate ID returns same state | Tests cover order, time and session rejection; late packets need a source reorder buffer |
+| `session.reducer.seek_state` | Events + cutoff seconds → sort and reduce from start → deterministic state | Test compares forward reduction with arbitrary seek; checkpoints are future work |
+| `session.openf1_sample.build_sample` | Cached OpenF1 2025 Monza race-control records → 53 post-start message events and local ignored JSON | Real source SHA in `DATA_CONTRACTS.md`; message timeline only, no positions/laps |
+
+`RaceSource`, `CircuitGeometry`, replay packs and the shared frontend clock are
+specified in `SOL61_MASTER_EXECUTION.md` but not implemented. No full
+replay/live/simulation result is claimed from these contracts.

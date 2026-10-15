@@ -36,3 +36,14 @@ drivers in one event share weather, track evolution and conditions. A paired
 bootstrap resamples candidate-minus-FP3 event errors with a fixed seed. Its
 interval describes variability among these historical events; it is not a
 calibrated probability that a model will win a future race.
+
+## D-004 — one typed timeline and conservative provider mapping, 2026-10-15
+
+The first replay foundation lives in the installable root Python package,
+`src/f1_racelab/session`, because the `packages/schemas` and
+`services/session-engine` folders currently have no independent build wiring.
+Pydantic validates versioned events and state; a pure reducer applies ordered
+events. OpenF1 race-control records are preserved as message events, not
+translated into global flag state: sector/driver flags and pit-exit messages
+cannot safely imply a session-wide flag. The 2025 Monza sample proves that
+real messages can be normalized and replayed, but not car movement or timing.

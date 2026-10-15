@@ -62,3 +62,34 @@
   contains preserved user changes plus this checkpoint work.
 - **Next:** run final checks; commit/push a safe checkpoint; start canonical
   session contracts and a real replay fixture.
+
+## 2026-10-15 UTC — P0 canonical session foundation
+
+- **Prior checkpoint:** `b6835e7`, pushed to `origin/feat/foundation` using the
+  repository's existing Aymen Jedidi Git identity, with no assistant coauthor.
+- **Changed:** `src/f1_racelab/session/contracts.py` defines immutable
+  versioned Pydantic session IDs, event payloads, events and race state;
+  `reducer.py` applies strict event order and deterministic seek;
+  `openf1_sample.py` maps real OpenF1 race-control messages into the contract;
+  `tests/test_session_reducer.py` covers the reducer and validation. Related
+  architecture, data, decision, atlas, evidence, roadmap and handoff documents
+  were updated in this same checkpoint.
+- **Algorithm/units:** event session time is seconds from the scheduled UTC
+  session start. Source, observed and ingest timestamps must be timezone-aware.
+  Events use a strictly increasing sequence and unique ID; duplicate IDs are
+  idempotent. `seek_state` sorts by `(session_time_seconds, sequence)` and
+  reduces through the requested cutoff. Provider race-control messages remain
+  messages; local sector flags do not imply a global race flag.
+- **Real source:** [OpenF1 race-control API](https://openf1.org/docs/), session
+  key 9912, 2025 Italian GP. Source response SHA-256
+  `b138137eadc17c3d10d1b1bfe7f5fe8beddf033753b0a5adad79904a5693fa25`.
+  The local ignored sample has 53 messages after scheduled start; final event
+  at 4,896 seconds. No position, lap, weather or strategy data was inferred.
+- **Evidence:** `.venv/bin/python -m f1_racelab.session.openf1_sample` exited
+  0; `.venv/bin/pytest -q` passed 19/19, Ruff and `git diff --check` passed.
+  The three new reducer tests are synthetic; the sample build uses real cached
+  provider data. No frontend demo is claimed.
+- **Risks and next:** this is a message-only sample, not a replay pack; there
+  is no reorder buffer for late live packets, checkpoint index or frontend
+  binding. Next add measured position/lap/pit events, then a versioned pack and
+  shared frontend clock. Check `git log -1` for the final checkpoint SHA.

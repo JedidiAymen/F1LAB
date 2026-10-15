@@ -23,7 +23,23 @@ The existing React/Vite app is still the starter screen; it is not integrated
 with predictions or replay yet. Python API and session-engine directories are
 scaffolds.
 
-## Locked temporal architecture to implement
+## Canonical session foundation (P0, partial)
+
+`src/f1_racelab/session/contracts.py` now defines versioned Pydantic
+`SessionId`, `SessionEvent`, `DriverState` and `RaceState` objects. Events carry
+source, UTC timestamps, session-relative seconds, sequence, lap, quality and a
+typed payload. `reducer.py` applies events in strict order and reconstructs
+state at a requested session time with `seek_state`. Duplicate event IDs are
+idempotent; backward time, repeated sequence with a new ID and foreign
+sessions are rejected. A late live packet must be ordered before reduction.
+
+`openf1_sample.py` normalizes 53 real 2025 Monza race-control messages from
+OpenF1 session 9912 after scheduled race start into this contract. It validates
+them through the reducer and writes an ignored local JSON sample. It provides
+only `race_control_messages`: car positions, lap timing and weather are absent,
+and provider messages do not automatically mutate a global flag.
+
+## Locked temporal architecture to extend
 
 ```mermaid
 flowchart LR
@@ -38,8 +54,8 @@ flowchart LR
 
 `RaceState` must be the single source of visible session truth. A future
 animation frame may update drawing, but it cannot create a separate race clock.
-Measured, interpolated and simulated values must remain distinguishable. No
-`SessionEvent`/`RaceState` implementation is claimed here yet.
+Measured, interpolated and simulated values must remain distinguishable. The
+current Python reducer is not wired to the frontend or a replay pack yet.
 
 ## Storage and module ownership
 

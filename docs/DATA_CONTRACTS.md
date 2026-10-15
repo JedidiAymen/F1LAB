@@ -52,3 +52,17 @@ caches exact responses. The OpenF1 repository's
 has attribution/noncommercial/share-alike terms. Raw responses remain local;
 commercial redistribution requires a separate rights review. Real-time
 availability is a separate subscription issue.
+
+## Canonical race timeline (partial implementation)
+
+`src/f1_racelab/session/contracts.py` holds schema version 1 for one
+`SessionId`, ordered `SessionEvent`s and `RaceState`. Each event includes a
+stable source-specific ID, event type, source, source/observed/ingest UTC
+timestamps, session-relative seconds, sequence, optional lap, quality
+(`measured`, `estimated`, `simulated`) and a typed payload. The reducer rejects
+cross-session or nonmonotonic events and never infers official timing from a
+race-control message. The real local Monza sample contains 53 OpenF1 messages
+after scheduled start, with source response SHA-256
+`b138137eadc17c3d10d1b1bfe7f5fe8beddf033753b0a5adad79904a5693fa25`.
+Its only advertised capability is `race_control_messages`; it is not a full
+race replay. Raw and normalized data stay in ignored `data/`.
