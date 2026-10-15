@@ -3,7 +3,13 @@ import pandas as pd
 import pytest
 
 from f1_racelab.models.qualifying_backtest import (
-    FEATURES, prepare_dataset, scored_positions, evaluate, run_backtest,
+    COMMON_FEATURES,
+    FEATURES,
+    evaluate,
+    paired_event_bootstrap,
+    prepare_dataset,
+    run_backtest,
+    scored_positions,
 )
 
 
@@ -60,6 +66,44 @@ def test_season_split_and_models_execute():
     assert set(results["test_summary"].model) == {"fp3", "ridge", "lightgbm"}
     assert results["predictions"].query("split == 'test'").year.eq(2025).all()
     assert results["winner"] in {"fp3", "ridge", "lightgbm"}
+
+
+def test_common_provider_features_execute_without_richer_lap_columns():
+    data = fake_dataset().drop(columns=["q2_seconds", "q3_seconds"])
+    results = run_backtest(data, feature_cols=COMMON_FEATURES)
+    assert results["n_training_events"] == 12
+    assert set(results["test_summary"].model) == {"fp3", "ridge", "lightgbm"}
+    assert set(COMMON_FEATURES).issubset(FEATURES)
+
+
+def test_bootstrap_pairs_models_by_whole_event_and_is_seeded():
+    by_event = pd.DataFrame([
+        {"year": 2024, "round": rd, "model": model, "position_mae": value}
+        for rd, baseline, candidate in [(1, 2.0, 1.0), (2, 3.0, 2.0), (3, 4.0, 3.0)]
+        for model, value in [("fp3", baseline), ("ridge", candidate)]
+    ])
+    first = paired_event_bootstrap(by_event, draws=200, seed=7)
+    second = paired_event_bootstrap(by_event, draws=200, seed=7)
+    pd.testing.assert_frame_equal(first, second)
+    assert first.loc[0, "events"] == 3
+    assert first.loc[0, "mean_delta"] == -1.0
+    assert first.loc[0, "ci_low"] == first.loc[0, "ci_high"] == -1.0
+
+
+def test_bootstrap_interval_does_not_change_when_other_model_is_added():
+    events = pd.DataFrame([
+        {"year": 2025, "round": rd, "model": model, "position_mae": value}
+        for rd, baseline, candidate in [(1, 2.0, 1.0), (2, 3.0, 2.5), (3, 4.0, 2.0)]
+        for model, value in [("fp3", baseline), ("ridge", candidate)]
+    ])
+    alone = paired_event_bootstrap(events, draws=200, seed=7)
+    other = events.loc[events.model.eq("ridge")].assign(model="form_ridge")
+    together = paired_event_bootstrap(pd.concat([events, other]), draws=200, seed=7)
+    pd.testing.assert_series_equal(
+        alone.loc[alone.model.eq("ridge")].iloc[0],
+        together.loc[together.model.eq("ridge")].iloc[0],
+        check_names=False,
+    )
 
 
 def test_no_duplicate_driver_rows():

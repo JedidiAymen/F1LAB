@@ -5,7 +5,6 @@ import pandas as pd
 
 from f1_racelab.data.fastf1_source import load_session
 
-
 REPRESENTATIVE_THRESHOLD = 1.03
 
 
@@ -34,7 +33,7 @@ def representative_laps(
     clean = laps[laps["LapTime"].notna()].copy()
 
     if "Deleted" in clean.columns:
-        clean = clean[~clean["Deleted"].fillna(False)].copy()
+        clean = clean[~clean["Deleted"].eq(True)].copy()
 
     clean = clean[
         clean["PitInTime"].isna()
@@ -241,6 +240,19 @@ def build_weekend_dataset(
         on="driver",
         how="inner",
     )
+
+    # Team identity is known before qualifying. Read it from FP3 rather than
+    # inferring it from a later result or a season-wide constructor mapping.
+    if {"Driver", "Team"}.issubset(fp3.laps.columns):
+        team_lookup = (
+            fp3.laps[["Driver", "Team"]]
+            .dropna()
+            .drop_duplicates("Driver")
+            .set_index("Driver")["Team"]
+        )
+        dataset["team"] = dataset["driver"].map(team_lookup)
+    else:
+        dataset["team"] = pd.NA
 
     dataset.insert(0, "event", event)
     dataset.insert(0, "year", year)

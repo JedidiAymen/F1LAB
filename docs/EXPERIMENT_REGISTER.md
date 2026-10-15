@@ -1,0 +1,38 @@
+# Experiment register
+
+## Q-001 — original FastF1 Sprint 2 dataset
+
+- Dataset: `data/processed/qualifying_2022_2023_2024_2025.parquet`, ignored.
+- Initial observation on 2026-10-15: 360 driver rows, 17 conventional 2022
+  weekends and 2025 Monza. This is **not** a valid chronological backtest.
+- Previous ingestion report: `data/processed/qualifying_ingestion_2022_2023_2024_2025.csv`;
+  FastF1 500 calls/hour errors and 2023/2024 schedule failures. Current uncached
+  F1 timing endpoint returned 401. The two remaining cached 2022 weekends were
+  built during this run; original combined file was intentionally preserved.
+- Published performance: none.
+
+## Q-002 — mixed-provider common-feature benchmark
+
+- Status: completed research benchmark on 2026-10-15.
+- FastF1 3.8.3 supplies 2022. OpenF1 v1 `session_result` and `drivers` supply
+  2023–2025. Full source and field mapping: `DATA_CONTRACTS.md`.
+- Legal practice fields: eight `COMMON_FEATURES` in `qualifying_backtest.py`.
+- Target: Q1 percent gap; evaluation label: final qualifying position.
+- Fit 2022–2023; choose by 2024 event-mean MAE; hold out 2025. FP3, Ridge,
+  LightGBM, form Ridge and form LightGBM; fixed model settings and seed 42.
+- Coverage: 71 conventional weekends, 1,418 source rows; 35/18/18 eligible
+  train/validation/test events with 684/342/354 evaluated rows. Mixed dataset
+  SHA-256: `eef5a7277d2f62fdf263e94cadbc7a5f5c38cd6acdbea9dc00549d5caef37fd8`.
+- 2024 validation position MAE: FP3 2.8975; Ridge 2.8362; LightGBM 3.0247;
+  form Ridge 2.8989; form LightGBM 3.0411. Selection: Ridge.
+- 2025 held-out position MAE: FP3 3.3141; Ridge 3.2433; LightGBM 3.5897;
+  form Ridge 3.2314; form LightGBM 3.4115. Form Ridge's held-out lead was
+  observed after selection and does not change the chosen model.
+- Ridge-minus-FP3 2025 paired event MAE: -0.0708, 95% bootstrap interval
+  [-0.2934, +0.1587], 10,000 seeded resamples. No reliable gain established.
+- Artifacts: `data/processed/qualifying_backtest/`,
+  `data/processed/qualifying_ablation/`, including executed notebook and plot.
+- 2025 Monza overlap: 20 matched drivers, zero classification mismatches and
+  zero best-time differences on all available paired FP1/FP2/FP3/Q1 values.
+  One weekend cannot establish cross-season equivalence. The provider boundary
+  and Q1 pace versus final classification remain the main interpretation risks.

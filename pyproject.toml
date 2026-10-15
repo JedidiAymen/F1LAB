@@ -39,12 +39,18 @@ f1-racelab = "f1_racelab:main"
 requires = ["uv_build>=0.12.17,<0.13.0"]
 build-backend = "uv_build"
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 [dependency-groups]
 dev = [
     "ipykernel>=7.4.0",
+    "jupyter-client>=8.10.0",
     "jupyterlab>=4.6.4",
+    "jupytext>=1.19.6",
     "matplotlib>=3.11.2",
     "mypy>=2.4.0",
+    "pynvim>=0.6.0",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
     "pytest-cov>=7.1.0",

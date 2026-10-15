@@ -38,6 +38,13 @@ FEATURES = [
     "fp1_soft_gap_pct", "fp2_soft_gap_pct", "fp3_soft_gap_pct",
     "fp1_theoretical_gap_pct", "fp2_theoretical_gap_pct", "fp3_theoretical_gap_pct",
 ]
+# Available from both FastF1 lap extraction and OpenF1 session-result best laps.
+# Use this explicit intersection for mixed-provider chronological experiments.
+COMMON_FEATURES = [
+    "fp1_gap_pct", "fp2_gap_pct", "fp3_gap_pct",
+    "fp1_rank", "fp2_rank", "fp3_rank",
+    "fp1_to_fp3_improvement_pct", "fp2_to_fp3_improvement_pct",
+]
 CATEGORICAL = ["driver", "event"]
 TARGET = "q1_gap_pct"
 LABEL = "final_position"
@@ -83,10 +90,10 @@ def prepare_dataset(raw: pd.DataFrame) -> pd.DataFrame:
     return df.sort_values(GROUP + [LABEL], kind="stable").reset_index(drop=True)
 
 
-def model_pipelines() -> dict[str, Pipeline]:
+def model_pipelines(feature_cols: list[str] = FEATURES) -> dict[str, Pipeline]:
     def prep():
         return ColumnTransformer([
-            ("num", Pipeline([("fill", SimpleImputer(strategy="median", keep_empty_features=True)), ("scale", StandardScaler())]), FEATURES),
+            ("num", Pipeline([("fill", SimpleImputer(strategy="median", keep_empty_features=True)), ("scale", StandardScaler())]), feature_cols),
             ("cat", Pipeline([("fill", SimpleImputer(strategy="most_frequent")), ("encode", OneHotEncoder(handle_unknown="ignore"))]), CATEGORICAL),
         ])
     return {
@@ -137,8 +144,47 @@ def evaluate(predictions: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
-def run_backtest(dataset: pd.DataFrame, train_years=(2022, 2023), val_year=2024, test_year=2025):
+def paired_event_bootstrap(by_event: pd.DataFrame, *, baseline: str = "fp3",
+                           metric: str = "position_mae", draws: int = 10_000,
+                           seed: int = 42) -> pd.DataFrame:
+    """Estimate model-minus-baseline uncertainty by resampling whole events.
+
+    Negative position-MAE differences favor the candidate. The interval is
+    descriptive for these historical weekends, not a calibrated probability.
+    """
+    if draws < 100:
+        raise ValueError("Use at least 100 bootstrap draws")
+    pivot = by_event.pivot(index=["year", "round"], columns="model", values=metric)
+    if baseline not in pivot:
+        raise ValueError(f"Missing bootstrap baseline {baseline}")
+    records = []
+    for model in pivot.columns:
+        if model == baseline:
+            continue
+        paired = pivot[[baseline, model]].dropna()
+        delta = (paired[model] - paired[baseline]).to_numpy()
+        if len(delta) < 2:
+            continue
+        # Reuse the same resampled event indices for candidates with the same
+        # event set; adding a model must not change an existing model's interval.
+        rng = np.random.default_rng(seed)
+        indices = rng.integers(0, len(delta), size=(draws, len(delta)))
+        means = delta[indices].mean(axis=1)
+        records.append({"model": model, "baseline": baseline, "metric": metric,
+                        "events": len(delta), "mean_delta": float(delta.mean()),
+                        "ci_low": float(np.quantile(means, 0.025)),
+                        "ci_high": float(np.quantile(means, 0.975)),
+                        "draws": draws, "seed": seed})
+    return pd.DataFrame(records)
+
+
+def run_backtest(dataset: pd.DataFrame, train_years=(2022, 2023), val_year=2024,
+                 test_year=2025, feature_cols: list[str] = FEATURES):
     data = prepare_dataset(dataset)
+    source_counts = dataset.groupby(GROUP, as_index=False).agg(source_rows=("driver", "count"))
+    evaluated_counts = data.groupby(GROUP, as_index=False).agg(evaluated_rows=("driver", "count"))
+    sample_coverage = source_counts.merge(evaluated_counts, on=GROUP, how="left")
+    sample_coverage["evaluated_rows"] = sample_coverage["evaluated_rows"].fillna(0).astype(int)
     train = data.loc[data["year"].isin(train_years)].copy()
     validation = data.loc[data["year"] == val_year].copy()
     test = data.loc[data["year"] == test_year].copy()
@@ -146,9 +192,11 @@ def run_backtest(dataset: pd.DataFrame, train_years=(2022, 2023), val_year=2024,
         raise ValueError("Need populated train, validation and test years; inspect ingestion report")
     if train[GROUP].drop_duplicates().shape[0] < 8 or validation[GROUP].drop_duplicates().shape[0] < 5 or test[GROUP].drop_duplicates().shape[0] < 5:
         raise ValueError("Need at least 8 training weekends and 5 validation/test weekends; smoke datasets are not valid backtests")
-    xcols = FEATURES + CATEGORICAL
-    models = model_pipelines()
-    for name, model in models.items():
+    if not feature_cols or not set(feature_cols).issubset(FEATURES):
+        raise ValueError("feature_cols must be a non-empty subset of legal practice features")
+    xcols = feature_cols + CATEGORICAL
+    models = model_pipelines(feature_cols)
+    for model in models.values():
         model.fit(train[xcols], train[TARGET])
 
     def predictions(part: pd.DataFrame, suffix: str) -> pd.DataFrame:
@@ -177,25 +225,36 @@ def run_backtest(dataset: pd.DataFrame, train_years=(2022, 2023), val_year=2024,
     return {"winner": str(winner), "models": models, "validation_summary": val_summary,
             "test_summary": test_summary, "validation_events": val_by_event,
             "test_events": test_by_event, "predictions": pd.concat([val_predictions, test_predictions], ignore_index=True),
+            "validation_bootstrap": paired_event_bootstrap(val_by_event),
+            "test_bootstrap": paired_event_bootstrap(test_by_event),
+            "sample_coverage": sample_coverage,
             "n_training_events": int(train[GROUP].drop_duplicates().shape[0]),
             "n_validation_events": int(validation[GROUP].drop_duplicates().shape[0]),
-            "n_test_events": int(test[GROUP].drop_duplicates().shape[0])}
+            "n_test_events": int(test[GROUP].drop_duplicates().shape[0]),
+            "n_training_rows": len(train), "n_validation_rows": len(validation),
+            "n_test_rows": len(test)}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", type=Path, default=DATA_FILE)
     parser.add_argument("--out", type=Path, default=RESULT_DIR)
+    parser.add_argument("--feature-set", choices=("full", "common"), default="full")
     args = parser.parse_args()
     if not args.dataset.exists():
         parser.error(f"Missing {args.dataset}. Run python -m f1_racelab.data.qualifying_dataset first.")
-    out = run_backtest(pd.read_parquet(args.dataset))
+    features = COMMON_FEATURES if args.feature_set == "common" else FEATURES
+    out = run_backtest(pd.read_parquet(args.dataset), feature_cols=features)
     args.out.mkdir(parents=True, exist_ok=True)
-    for key in ["validation_summary", "test_summary", "validation_events", "test_events"]:
+    for key in ["validation_summary", "test_summary", "validation_events", "test_events",
+                "validation_bootstrap", "test_bootstrap", "sample_coverage"]:
         out[key].to_csv(args.out / f"{key}.csv", index=False)
     out["predictions"].to_parquet(args.out / "predictions.parquet", index=False)
     with (args.out / "experiment.json").open("w") as fp:
-        json.dump({k: out[k] for k in ["winner", "n_training_events", "n_validation_events", "n_test_events"]}, fp, indent=2)
+        json.dump({**{k: out[k] for k in ["winner", "n_training_events", "n_validation_events", "n_test_events",
+                                               "n_training_rows", "n_validation_rows", "n_test_rows"]},
+                   "feature_set": args.feature_set, "features": features,
+                   "dataset": str(args.dataset)}, fp, indent=2)
     print("\n=== VALIDATION (2024) ===")
     print(out["validation_summary"].sort_values("position_mae").to_string(index=False))
     print("\nWinner selected using 2024 ONLY:", out["winner"])

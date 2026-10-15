@@ -67,7 +67,7 @@ def build_dataset(
     for year in years:
         try:
             events = scheduled_conventional_events(year)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - log a whole-season provider failure
             report.append({"year": year, "round": None, "event": "schedule", "status": "ERROR", "rows": 0, "detail": str(exc)[:300]})
             print(f"[ERROR] {year} schedule: {exc}", flush=True)
             continue
@@ -97,7 +97,7 @@ def build_dataset(
                 frames.append(frame)
                 report.append({"year": year, "round": number, "event": name, "status": status, "rows": len(frame), "detail": ""})
                 print(f"[{status}] {year} R{number:02d} {name}: {len(frame)} driver rows", flush=True)
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - log a whole-weekend provider failure
                 report.append({"year": year, "round": number, "event": name, "status": "ERROR", "rows": 0, "detail": f"{type(exc).__name__}: {exc}"[:300]})
                 print(f"[ERROR] {year} R{number:02d} {name}: {type(exc).__name__}: {exc}", flush=True)
 

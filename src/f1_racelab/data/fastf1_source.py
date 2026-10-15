@@ -2,7 +2,6 @@ from pathlib import Path
 
 import fastf1
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 CACHE_DIR = PROJECT_ROOT / "data" / "cache" / "fastf1"
 
@@ -29,7 +28,7 @@ def load_session(
 
     session.load(
         telemetry=telemetry,
-        weather=True,
+        weather=False,
         messages=False,
     )
 
