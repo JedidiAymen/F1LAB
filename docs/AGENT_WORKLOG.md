@@ -308,8 +308,10 @@ PY
 - **Starting source SHA:** `418806099b7670d96cfe13c13c6484d5f8644a50` on
   `feat/foundation`, synchronized with `origin/feat/foundation`; the two
   unrelated untracked `ml/features/` helpers were preserved. The implementation
-  and complete note set are committed and pushed together; exact implementation
-  and publication SHAs are recorded in the follow-up handoff entry after push.
+  checkpoint is `111fb60777fa55327ddca36d0b95c04d06990e6f`, committed as
+  Aymen Jedidi, pushed normally to `origin/feat/foundation`, and verified with
+  `git ls-remote` at the same SHA. This documentation follow-up records the
+  exact publication state; no coauthor trailer was added.
 - **Changed paths and contracts:** `session/contracts.py` adds schema 2
   `WeatherObservation`, `TrackStatusObservation`, strict weather units/ranges,
   observation metadata, 120-second maximum display age, and scoped status

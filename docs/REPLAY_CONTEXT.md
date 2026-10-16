@@ -5,8 +5,9 @@
 **Starting source SHA:** `418806099b7670d96cfe13c13c6484d5f8644a50`
 
 **Branch:** `feat/foundation`
-**Implementation and remote SHAs:** recorded in the post-push entry in
-`CHATGPT_HANDOFF.md` and `AGENT_WORKLOG.md`.
+
+**Implementation commit:** `111fb60777fa55327ddca36d0b95c04d06990e6f`, pushed
+to `origin/feat/foundation` and verified with `git ls-remote`.
 
 This milestone carries historical OpenF1 weather observations and a limited
 set of explicitly scoped race-control messages through the same source event,

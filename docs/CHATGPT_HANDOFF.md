@@ -6,8 +6,9 @@ Monza 2025, Monaco 2023 and Brazil 2024. Schema 2 now carries source-time
 weather and conservative global track signals through the shared state. Six
 actual Chromium browser tests pass, and desktop/mobile screenshots were
 inspected. P1/P2 remain partial. Current implementation was developed from
-`418806099b7670d96cfe13c13c6484d5f8644a50`; exact implementation and push SHAs
-for this context milestone are recorded in the appended post-push entry.
+`418806099b7670d96cfe13c13c6484d5f8644a50`; commit
+`111fb60777fa55327ddca36d0b95c04d06990e6f` is pushed to
+`origin/feat/foundation` and verified at the same SHA with `git ls-remote`.
 Prior pushed checkpoints include `af2f64677d48d7f9573451de1419fbe3e0b98e08`
 (three-race replay UI), `2d270fc` (first UI) and `7940f2c` (candidate audit).
 Git uses the repository's Aymen Jedidi identity and no assistant coauthor
