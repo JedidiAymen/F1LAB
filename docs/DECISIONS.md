@@ -60,4 +60,17 @@ intermediate movement is estimated and limited to short, plausible brackets.
 Lap completion is derived from approximate start + duration and marked
 estimated. `session_result` is reserved for end-state QA to avoid showing final
 classification at earlier replay times. The ~1.8 MB compressed pack is local
-and ignored, respecting uncertain redistribution rights.
+  and ignored, respecting uncertain redistribution rights.
+
+## D-006 — local canonical state API and browser clock, 2026-10-16
+
+The first 2D workstation requests `ReplaySource.state_at(t)` through a
+read-only local FastAPI endpoint. The browser holds one playback time and
+requests state at most five times per second. Timing, selected-driver details,
+map points and visible race-control messages all use that same state response;
+the UI does not reimplement the Python reducer or fetch 198,300 location rows.
+The pack remains local and ignored. This trades smooth 60 Hz car motion for a
+small, auditable, source-faithful first milestone. Provider coordinates that
+repeat unchanged for 15 seconds are hidden as stale on the map; no retirement
+event is inferred. The 15-second threshold is a visual heuristic and needs
+validation on more sessions. Design and test evidence: `RACE_CONTROL_UI.md`.

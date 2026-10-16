@@ -1,8 +1,9 @@
 # F1LAB
 
 F1LAB is an in-progress Formula 1 race intelligence workstation. The current
-verified slice is a historical pre-qualifying benchmark. The web app is still
-the Vite starter, and replay, live timing and strategy are future work.
+verified slices are a historical pre-qualifying benchmark and a one-race
+offline Monza replay with a local 2D Race Control UI. Live timing, strategy,
+telemetry and broader race coverage remain future work.
 
 Start with [the project status](docs/START_HERE.md), [the execution roadmap](docs/ROADMAP.md)
 and [the latest handoff](docs/CHATGPT_HANDOFF.md). The full product scope is in
@@ -48,8 +49,8 @@ be built from the local OpenF1 cache:
 ```
 
 It writes an ignored JSON artifact under `data/processed/replay_samples/`.
-The sample contains messages only; positions, lap timing and the interactive
-Race Control view are not implemented yet.
+The older sample contains messages only; the richer pack below drives the
+first interactive Race Control view.
 
 A richer **local offline replay pack** is now available for the 2025 Italian
 GP race. It contains 20 drivers, 1,506 discrete events and 198,300 retained
@@ -60,6 +61,17 @@ approximate location points. Build and validate it with:
 .venv/bin/python -m f1_racelab.session.validate_replay
 ```
 
-The pack is ignored by Git and no browser player is wired yet. See
-[the replay evidence](docs/REPLAY_2025_MONZA.md) for source coverage, clock
-semantics and limitations.
+The pack is ignored by Git. Start the backend and frontend in separate
+terminals:
+
+```bash
+.venv/bin/uvicorn f1_racelab.api:app --host 127.0.0.1 --port 8000
+cd apps/web
+npm ci
+npm run dev -- --host 127.0.0.1
+```
+
+The UI provides one shared playback clock, timing, a provider-derived 2D map
+and race-control messages. See [the replay evidence](docs/REPLAY_2025_MONZA.md)
+and [the UI milestone](docs/RACE_CONTROL_UI.md) for coverage, clock semantics,
+tests and limitations.

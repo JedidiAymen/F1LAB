@@ -50,8 +50,10 @@ to the planned race workstation.
     A real 2025 Monza pack now adds positions, laps, pit and stints to the
     race-control message sample. `ReplaySource.state_at(t)` returns all
     available fields at one session time, using event checkpoints and indexed
-    location/interval samples. 2D, 3D, timing and telemetry are not connected
-    yet. Drawing frames must not invent extra race time.
+    location/interval samples. The first local UI now draws 2D, timing and
+    race control from that same API state at one playback time. 3D and
+    telemetry remain unconnected. Drawing frames must not invent extra race
+    time.
 12. **Distance alignment.** Two lap telemetry streams should be interpolated
     to matching track distances before speed or braking comparisons. Equal
     timestamps can represent different physical places. This is a planned P3
@@ -73,3 +75,9 @@ to the planned race workstation.
     can override the provider's official position or lap timing. The coordinate
     origin and unit are not known, so the first circuit outline is a trace,
     not a surveyed engineering map.
+16. **Playback clock versus state sample.** The UI transport advances a
+    single time in seconds and fetches a canonical Python `RaceState` up to
+    five times per second. All data panels show the latest returned state;
+    a visible update indicator covers request lag. The circuit line is a
+    fixed approximate provider trace. No independent timing or map clock
+    is used.

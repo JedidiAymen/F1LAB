@@ -1,7 +1,7 @@
 # Implementation atlas — qualifying checkpoint
 
 This atlas describes the current call chain and what each important source
-symbol does. It does not claim the later replay or strategy modules exist.
+symbol does. One local 2D replay exists; later live/strategy modules do not.
 
 ## End-to-end call chain
 
@@ -83,7 +83,7 @@ symbol does. It does not claim the later replay or strategy modules exist.
 |---|---|---|
 | `session.contracts.SessionId` | Season, round, kind and provider key → immutable validated identifier | 2025 Monza race uses OpenF1 key 9912; cross-provider ID mapping remains future work |
 | `session.contracts.SessionEvent` | Typed payload, source, three UTC timestamps, session seconds, sequence, quality → immutable versioned event | Synthetic validation rejects wrong payload and naive observation time |
-| `session.contracts.RaceState` | Session ID and reduced events → one clock, driver dictionary, global flag, race-control messages and event IDs | No UI or live provider is connected yet |
+| `session.contracts.RaceState` | Session ID and reduced events → one clock, driver dictionary, global flag, race-control messages and event IDs | Local UI now consumes this state; live provider remains future work |
 | `session.reducer.reduce_event` | Current state + next ordered event → copied next state; duplicate ID returns same state | Tests cover order, time and session rejection; late packets need a source reorder buffer |
 | `session.reducer.seek_state` | Events + cutoff seconds → sort and reduce from start → deterministic state | Test compares forward reduction with arbitrary seek; checkpoints are future work |
 | `session.openf1_sample.build_sample` | Cached OpenF1 2025 Monza race-control records → 53 post-start message events and local ignored JSON | Real source SHA in `DATA_CONTRACTS.md`; message timeline only, no positions/laps |
@@ -97,6 +97,19 @@ symbol does. It does not claim the later replay or strategy modules exist.
 
 `RaceSource` now exists as a mode-independent Python protocol, and one
 approximate geometry trace and one offline replay pack exist. The full
-`CircuitGeometry` contract, more golden sessions, live/simulation adapters and
-shared frontend clock remain. See `REPLAY_2025_MONZA.md` for field-level
-semantics, commands and limits.
+`CircuitGeometry` contract, more golden sessions and live/simulation adapters
+remain. See `REPLAY_2025_MONZA.md` for field-level semantics.
+
+## Local Race Control UI (partial P2)
+
+| Symbol | Input → algorithm → output | Proof and limit |
+|---|---|---|
+| `api.create_app` | Path or `F1LAB_REPLAY_PACK` → cached `ReplaySource`, HTTP manifest and `state?seconds=` | Synthetic TestClient fixture, real Monza HTTP 200; 503 missing pack and 422 invalid time |
+| `ReplaySource._location_at` | Indexed provider points → measured exact or short estimated bracket, with 15 s identical-coordinate cutoff | Synthetic frozen-point test; cutoff is heuristic, not a retirement claim |
+| `App` | One playback seconds value and speed (1/2/4×) → 5 Hz canonical state requests, shared timing/map/control rendering | TypeScript build and ESLint; browser interaction/visual review still needed |
+| `TrackMap` | Provider XY trace and current state coordinates → uniformly projected SVG circuit/car marks | Coordinates approximate and unitless; does not produce surveyed geometry or telemetry |
+
+All transport times are seconds since scheduled 2025 Monza race origin. SVG
+projection is dimensionless. Driver lap durations/gaps remain seconds from
+the backend contract. `RACE_CONTROL_UI.md` has precise reproduction, source,
+test evidence and caveats.

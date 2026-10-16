@@ -28,6 +28,7 @@ CHECKPOINT_EVENTS = 64
 MAX_LOCATION_BRACKET_SECONDS = 1.5
 MAX_LOCATION_COORD_UNITS_PER_SECOND = 2500.0
 MAX_INTERVAL_AGE_SECONDS = 10.0
+MAX_STATIONARY_SECONDS = 15.0
 
 
 class ReplaySource:
@@ -48,6 +49,13 @@ class ReplaySource:
         self.locations = pack["locations"]
         self.location_times = {driver: [float(row[0]) for row in rows]
                                for driver, rows in self.locations.items()}
+        self.stationary_starts = {}
+        for driver, rows in self.locations.items():
+            starts: list[float] = []
+            for index, row in enumerate(rows):
+                starts.append(starts[-1] if index and row[1:] == rows[index - 1][1:]
+                              else float(row[0]))
+            self.stationary_starts[driver] = starts
         self.intervals = pack["intervals"]
         self.interval_times = {driver: [float(row[0]) for row in rows]
                                for driver, rows in self.intervals.items()}
@@ -93,6 +101,8 @@ class ReplaySource:
             return None
         previous = rows[index - 1]
         before = float(previous[0])
+        if seconds - self.stationary_starts[driver_id][index - 1] >= MAX_STATIONARY_SECONDS:
+            return None
         observed_at = self.clock_origin + timedelta(seconds=before)
         if math.isclose(seconds, before, abs_tol=.001):
             return {"track_x": float(previous[1]), "track_y": float(previous[2]),

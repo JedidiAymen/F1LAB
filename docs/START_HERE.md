@@ -1,15 +1,16 @@
 # Start here: F1LAB status
 
 F1LAB is being built as one race intelligence workstation. The current working
-slice is historical pre-qualifying evaluation. The React app is still the Vite
-starter and does not yet demonstrate Race Control.
+slice includes historical pre-qualifying evaluation and a one-race offline
+Monza replay. The React app now has a first local Race Control screen.
 
 ## Run the verified local checks
 
 ```bash
 uv sync --dev
 .venv/bin/pytest -q
-.venv/bin/ruff check src tests
+.venv/bin/ruff check src tests scripts
+cd apps/web && npm run lint && npm run build
 ```
 
 Historical data lives under ignored `data/`; it is not in Git. The completed
@@ -35,5 +36,6 @@ real race-control sample is reproducible with
 For the richer offline Monza race pack, run
 `.venv/bin/python -m f1_racelab.session.openf1_replay` followed by
 `.venv/bin/python -m f1_racelab.session.validate_replay` and read
-`REPLAY_2025_MONZA.md`. The pack is local and ignored; no browser player is
-available yet.
+`REPLAY_2025_MONZA.md`. The pack is local and ignored. Run the first
+browser screen using the two terminal commands in `RACE_CONTROL_UI.md`;
+browser interaction and visual QA remain open.

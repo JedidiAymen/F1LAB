@@ -156,3 +156,38 @@
   locate pit entry/exit; no full telemetry or browser demo. Next serve the
   pack locally and build a shared-clock 2D UI, then audit two more sessions.
   Check `git log -1` and remote for this checkpoint's final SHA/push state.
+
+## 2026-10-16 UTC — P2 first local Race Control screen
+
+- **Source SHA and scope:** started from pushed `abe031c` on
+  `feat/foundation`; the same two unrelated untracked `ml/features/`
+  helper scripts were left untouched. Implemented a local API and one-race
+  2D/timing/control replay UI. This is partial P2, not a full product gate.
+- **Paths/functions:** `src/f1_racelab/api.py:create_app` serves manifest
+  and canonical `RaceState(t)`; `session/replay_source.py:_location_at`
+  hides frozen coordinates after 15 s; `apps/web/src/App.tsx:App/TrackMap`
+  owns one playback clock and maps backend state to timing, focus, control
+  list and provider XY; `App.css`, Vite proxy, title/favicon and ESLint
+  support the screen. `tests/test_replay_api.py` checks API and staleness.
+  This worklog, `RACE_CONTROL_UI.md`, atlas, decisions, roadmap, register,
+  glossary, test ledger, replay notes and handoff document the same step.
+- **Data and formula:** OpenF1 historical 2025 Monza session 9912, 20
+  drivers, 53 post-clock messages, 166 approximate geometry points. One
+  browser time in seconds requests backend state at most 5 Hz. Track XY is
+  uniformly projected to SVG pixels; unknown provider units stay labelled.
+  A repeated XY streak lasting at least 15 s hides the location. This is a
+  visual rule only; timing/position truth remains in `RaceState`.
+- **Evidence:** synthetic suite 27 passed, one upstream deprecation warning;
+  Ruff, nine-file session/API mypy, web ESLint and TypeScript/Vite build
+  passed. Real pack API manifest HTTP 200/35,246 bytes; t=1,200 s returned
+  20 states, 20 locations, max completed lap 11. Replay validator matched
+  131 seeks; p50/p95 0.975/2.066 ms. Exact commands/artifact SHA and
+  failure/fix details are in `TEST_EVIDENCE.md` and `RACE_CONTROL_UI.md`.
+- **Limits/next:** computer-use browsers were unavailable, so visual and
+  interactive browser QA remain. The UI currently displays backend state
+  at 5 Hz, not 60 Hz car motion. One race only; no full telemetry, live,
+  strategy or 3D. Next inspect and refine the actual rendered screen, then
+  add two audited sessions. Source/rights remain OpenF1 public historical
+  data and the repository/license details in `REPLAY_2025_MONZA.md`.
+  Find the final checkpoint SHA and push state with `git log -1` and
+  `git ls-remote origin refs/heads/feat/foundation`.

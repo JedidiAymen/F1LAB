@@ -53,5 +53,18 @@
   2.329 ms on this machine. These are implementation QA, not sporting model
   metrics or browser performance.
 - Limits: approximate coordinates, unknown coordinate unit, one-lap derived
-  circuit trace, estimated lap completion times, no full telemetry, no live
-  service, no UI player. See `REPLAY_2025_MONZA.md`.
+  circuit trace, estimated lap completion times, no full telemetry or live
+  service. A later one-race UI is described in `RACE_CONTROL_UI.md`.
+
+## R-002 — local Race Control API and UI
+
+- Starting SHA `abe031c`; one real Monza pack, with 20 driver states and
+  53 post-clock control messages. API manifest returned HTTP 200/35,246 bytes;
+  at t=1,200 s all 20 drivers had available provider-derived locations and
+  maximum completed lap was 11.
+- Synthetic contract tests cover missing/invalid seeks, estimated position
+  and a 15-second frozen-coordinate guard. The real replay validator again
+  matched 131/131 seeks, p50/p95 0.975/2.066 ms. These are backend checks.
+- Web TypeScript/Vite build and ESLint passed. Browser UI inspection was
+  unavailable; no visual FPS, real-user playback or interaction metric is
+  claimed. See `RACE_CONTROL_UI.md` for commands, files and limits.

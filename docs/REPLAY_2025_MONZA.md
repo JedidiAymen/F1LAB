@@ -83,9 +83,11 @@ browser frame-rate claim. The pack duration is 5,014.715 seconds.
 
 This pack covers **one** race. There is no measured speed/throttle/brake
 telemetry, weather, radio, source-aware retirement-time event, surveyed track
-width, full circuit provenance or frontend player yet. Location samples may
-repeat a stopped car's coordinates; a future renderer must distinguish frozen
-provider points from active motion. Pit stop records do not prove when a car
+width or full circuit provenance. A first local 2D UI is documented in
+`RACE_CONTROL_UI.md`. Location samples may repeat a stopped car's
+coordinates; the replay source now hides a point after 15 seconds of identical
+coordinates. This is a visual staleness heuristic, not a retirement event.
+Pit stop records do not prove when a car
 entered or exited pit lane. A lap's completion time is derived from an
 approximate start timestamp. No model probability, strategy or live service is
 claimed from this pack.

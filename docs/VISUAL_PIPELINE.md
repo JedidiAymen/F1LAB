@@ -1,7 +1,7 @@
-# Visual pipeline contract (planned)
+# Visual pipeline contract (partial implementation)
 
-No circuit renderer or synchronized Race Control UI is implemented. The Python
-`SessionEvent`/`RaceState` foundation now has a real one-race offline pack.
+A synchronized local Race Control screen now renders one real Monza pack from
+the Python `SessionEvent`/`RaceState` foundation.
 `REPLAY_2025_MONZA.md` details its 166-point approximate trace, indexed
 2 Hz retained source locations and interpolation quality rules.
 
@@ -16,6 +16,8 @@ The circuit geometry artifact will carry layout ID, coordinate system,
 centerline, lap distance, pit lane, corners, sectors, start line, source and
 version. Position samples must be projected onto matching geometry with error
 bounds and handling for the start/finish wrap, pit path and missing samples.
-The first 2D demo should use a real offline replay pack. A 3D view will consume
-the same geometry and state after 2D correctness is established. See
+The first 2D demo uses a real offline replay pack and labels its source XY
+trace approximate. Its browser state updates at most 5 Hz; interaction and
+visual review remain unverified. A 3D view will consume the same geometry
+and state after 2D correctness is established. See
 `SOL61_MASTER_EXECUTION.md` for P1–P3 and P8 acceptance gates.
