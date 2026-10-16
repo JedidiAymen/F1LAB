@@ -5,9 +5,11 @@ historical Prediction Lab is now integrated; three real historical race packs
 build, reconcile and play through one local API/UI:
 Monza 2025, Monaco 2023 and Brazil 2024. Stored packs/events are schema 2;
 current `RaceState` output is schema 3 with source-time weather, conservative
-global track signals and as-of tyre stint history. Ten actual Chromium
+global track signals and as-of tyre stint history. Eleven actual Chromium
 browser scenarios pass, and desktop/mobile screenshots were inspected. P1/P2
-remain partial. A real Monza 2025 two-lap telemetry comparison is available
+remain partial. Versioned approximate driving-line geometry, a selected-driver
+12-second trail/direction and fingerprinted local browser observations now
+exist; physical circuit geometry remains incomplete. A real Monza 2025 two-lap telemetry comparison is available
 through the local API and its chart cursor follows the canonical replay state
 time. P3/P4 remain partial; a three-phase historical qualifying lab is now
 integrated, while exact feature publication timestamps, calibration and wider
@@ -382,3 +384,80 @@ For tutoring, read `QUALIFYING_PHASES.md`, `PREDICTION_LAB.md`,
 `TEST_EVIDENCE.md`, `DATA_CONTRACTS.md`, `DECISIONS.md` and
 `GLOSSARY_FOR_LEARNING.md` after this page. The locked scope remains
 `SOL61_MASTER_EXECUTION.md`; a passing ML benchmark will not finish it.
+
+
+## Latest P2 worktree — geometry, focused trail and observations
+
+Starting source/last published checkpoint: `1a5b7b4fa64ae3ceab0ab7cb6957c2331a5ce7b6` on
+`feat/foundation`. New work remains uncommitted and publication is pending.
+P1/P2 remain partial; strategy, what-if, live/radio and 3D remain not started.
+
+Done in source: typed approximate `CircuitGeometry` selection from one complete
+measured driving line with source/lap hashes, normalization, diagnostics and
+explicit missing physical dimensions; three real cached packs rebuilt; extracted
+memoized SVG map; selected 12-second source trail and estimated displacement
+heading in the canonical state response via optional `focus_driver`. Key files:
+`session/geometry.py`, `session/location_history.py`, `session/openf1_replay.py`,
+`api.py`, `components/TrackMap.tsx`, `lib/circuit-geometry.ts` and
+`apps/web/benchmarks/`. Full file/algorithm map is in `IMPLEMENTATION_ATLAS.md`.
+
+Real trace audit `data/processed/replay_packs/geometry_audit.json` selects
+Monza driver 30 lap 7 (168 source points), Monaco driver 16 lap 54 (191), and
+Brazil driver 31 lap 52 (166). Coordinates/arc lengths are unknown provider
+units. The source-lap origin is estimated; pit lane, physical dimensions,
+surveyed geometry and official timing line are not implemented. The trail
+ends at the existing canonical position and splits dropouts/jumps; its arrow
+shows recent displacement, not measured chassis orientation.
+
+Current checks: 13 new geometry tests plus 5 existing focused tests and 8
+frontend unit tests pass; frontend build/lint pass. All 11 browser scenarios
+pass in 33 seconds. Offline CLI rebuild, replay/context validators and 360 real
+trail probes pass. Final full Python/static verification passed (92 Python tests). Baseline browser
+report `data/processed/browser_benchmarks/replay-performance-2026-10-16T16-32-00-868Z.json`
+records no page exceptions or sampled panel clock disagreements over four
+seconds/session. RAF p95 33.3/16.8/33.3 ms and request p95 9.02/6.75/16.04 ms
+are Monza/Monaco/Brazil local development observations. Baseline predates final
+map/trail source; no painted FPS or causal improvement claim follows.
+
+Reproduction: existing local API/web launch instructions still apply. Choose
+one of three supported races, select a driver, play/pause and seek; the map
+shows a quality-marked trailing path and movement arrow when connected current
+movement exists. Opt into observations with `cd apps/web && npm run benchmark:replay`.
+See `REPLAY_GEOMETRY_AND_PERFORMANCE.md` for commands, provenance, evidence and
+remaining gaps. Next: publish the verified checkpoint; then expand telemetry coverage and evaluate
+licensed physical circuit geometry sources before declaring the P2 gate done.
+
+Final idle browser artifact:
+`data/processed/browser_benchmarks/replay-performance-2026-10-16T16-46-32-467Z.json`,
+SHA-256 `2c16efc9ec43e43ed6dcd1b461afa7c1bee527ee09928cd2db89eac218764477`.
+Monza/Monaco/Brazil callbacks/s: 59.08/59.54/60.00; interval p95:
+16.7/16.8/16.7 ms; local state-request p95: 11.49/8.89/7.05 ms.
+All eight panel clocks agreed, no long-task entries; twelve seek observations
+range 47.30–171.34 ms. An intermediate 16:45 report overlapped validator
+workload; the 16:46 run was idle. These are bounded local development
+observations; differing source/features/packs preclude causal speedup claims.
+
+Offline checks: `.venv/bin/python -m f1_racelab.session.openf1_replay --all --offline`;
+`.venv/bin/python -m f1_racelab.session.validate_replay --all`;
+`.venv/bin/python -m f1_racelab.session.validate_context --all`. Monza/Monaco/
+Brazil replay checks pass 4,120/6,149/4,893 cases plus 200 shuffled seeks each;
+seek p50/p95 ms are 1.356/3.360, 1.444/3.617 and 1.319/2.962.
+Context validation and 360 real source-trail QA probes pass. Browser
+`npm run test:e2e`: 11 scenarios passed in 33 seconds.
+
+Temporal detail: measured trail vertices are at or before requested time `t`.
+The canonical estimated endpoint may use a later source sample as the existing
+historical interpolation bracket; this is retrospective reconstruction, not
+proof that data had been published live by `t`. Without `focus_driver`, the API
+returns strict canonical `RaceState` schema 3. Focused `location_context` is a
+view extension of that same state response; it does not change the canonical
+state schema or create another position/clock authority.
+
+Final integrated checks (all exit 0): `uv run pytest -q` — 92 passed in
+6.87 s, one upstream Starlette/httpx deprecation warning;
+`uv run ruff check src/f1_racelab tests` — clean;
+`uv run mypy src/f1_racelab/session src/f1_racelab/api.py src/f1_racelab/data/openf1_qualifying.py --ignore-missing-imports`
+— 16 source files, no issues. In `apps/web`, `npm run test:unit` — 8 passed;
+`npm run build` and `npm run lint` passed. Build JS is 434.63 KB
+(142.33 KB gzip), CSS 78.65 KB (15.55 KB gzip). Milestone source commit and
+normal push are pending; the root agent will record publication proof.

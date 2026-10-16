@@ -241,3 +241,31 @@ qualifying position is projected separately as `qualifying_position` so an
 eligible-cohort leader is not presented as the official polesitter. Since
 phase cohorts differ, comparing phase MAEs does not by itself establish the
 value of later practice; that requires a shared-cohort experiment.
+
+
+## 2026-10-16 — audit one measured driving line and retain provider units
+
+Select a complete, continuous timed lap deterministically rather than hardcode
+VER lap 3. Retain source points, record rejection/closure diagnostics, hash
+source lap/sample payloads, and preserve unknown provider units. Normalize by
+bounds only for shared display geometry; label the origin as an estimated
+source-lap point. Missing physical length/width, pit lane, sectors and corners
+remain explicit. A visually closed trace does not prove surveyed accuracy.
+
+Selected-driver trail and displacement heading belong in the canonical state
+response at the requested time. Binary-search the existing source index and
+reuse its current car location so chart/map time cannot diverge. Render the
+static SVG trace through memoized projection; preserve measured/estimated
+quality and disconnect missing samples. Profile before changing render engines.
+
+Keep performance observations opt-in and fingerprinted. Record RAF scheduling,
+DOM clock agreement, delivery/seek timing and JS heap without claiming painted
+FPS, whole-process memory or causal improvement between differing sources/packs.
+
+Temporal detail: measured trail vertices are at or before requested time `t`.
+The canonical estimated endpoint may use a later source sample as the existing
+historical interpolation bracket; this is retrospective reconstruction, not
+proof that data had been published live by `t`. Without `focus_driver`, the API
+returns strict canonical `RaceState` schema 3. Focused `location_context` is a
+view extension of that same state response; it does not change the canonical
+state schema or create another position/clock authority.

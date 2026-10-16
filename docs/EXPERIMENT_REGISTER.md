@@ -306,3 +306,55 @@ times or prediction calibration.
 Final checks: 65 Python tests passed in 3.99 s (one existing warning); Ruff,
 scoped four-file mypy, frontend build/lint and all 10 Chromium scenarios
 passed (23.8 s for Chromium).
+
+
+## R-010 — circuit trace selection and bounded browser observations (verified; publication pending)
+
+Question: can measured-source display geometry and selected-driver context be
+made deterministic and auditable while observing synchronization and local
+browser costs? Starting source `1a5b7b4fa64ae3ceab0ab7cb6957c2331a5ce7b6`.
+
+Real cached OpenF1 races: Monza 2025, Monaco 2023 and Brazil 2024. The geometry
+selector accepts 911/976, 1322/1516 and 1017/1137 candidate laps respectively;
+selected source point counts are 168/191/166, with no inferred physical units.
+The geometry audit records all rejected reasons, selected lap/sample hashes
+and normalization/closure diagnostics. This tests trace completeness and
+reproducibility; no independent surveyed reference was evaluated.
+
+Opt-in browser protocol: one headless visible Chromium document, 1440×1000,
+1× playback, four seconds per session plus race-start, forward/back ten-second
+and session-end seeks. Baseline artifact:
+`data/processed/browser_benchmarks/replay-performance-2026-10-16T16-32-00-868Z.json`.
+No page exceptions or sampled clock mismatches; RAF p95 33.3/16.8/33.3 ms,
+request p95 9.02/6.75/16.04 ms (Monza/Monaco/Brazil). The baseline predates
+extracted map/trail source; final idle run is recorded below. No causal before/after speedup,
+painted-FPS or leak inference follows from this protocol. Reproduce with
+`cd apps/web && npm run benchmark:replay`; see the benchmark README and
+`REPLAY_GEOMETRY_AND_PERFORMANCE.md`. Final full Python/static checks passed; commit/push remain pending.
+
+Final idle browser artifact:
+`data/processed/browser_benchmarks/replay-performance-2026-10-16T16-46-32-467Z.json`,
+SHA-256 `2c16efc9ec43e43ed6dcd1b461afa7c1bee527ee09928cd2db89eac218764477`.
+Monza/Monaco/Brazil callbacks/s: 59.08/59.54/60.00; interval p95:
+16.7/16.8/16.7 ms; local state-request p95: 11.49/8.89/7.05 ms.
+All eight panel clocks agreed, no long-task entries; twelve seek observations
+range 47.30–171.34 ms. An intermediate 16:45 report overlapped validator
+workload; the 16:46 run was idle. These are bounded local development
+observations; differing source/features/packs preclude causal speedup claims.
+
+Offline checks: `.venv/bin/python -m f1_racelab.session.openf1_replay --all --offline`;
+`.venv/bin/python -m f1_racelab.session.validate_replay --all`;
+`.venv/bin/python -m f1_racelab.session.validate_context --all`. Monza/Monaco/
+Brazil replay checks pass 4,120/6,149/4,893 cases plus 200 shuffled seeks each;
+seek p50/p95 ms are 1.356/3.360, 1.444/3.617 and 1.319/2.962.
+Context validation and 360 real source-trail QA probes pass. Browser
+`npm run test:e2e`: 11 scenarios passed in 33 seconds.
+
+Final integrated checks (all exit 0): `uv run pytest -q` — 92 passed in
+6.87 s, one upstream Starlette/httpx deprecation warning;
+`uv run ruff check src/f1_racelab tests` — clean;
+`uv run mypy src/f1_racelab/session src/f1_racelab/api.py src/f1_racelab/data/openf1_qualifying.py --ignore-missing-imports`
+— 16 source files, no issues. In `apps/web`, `npm run test:unit` — 8 passed;
+`npm run build` and `npm run lint` passed. Build JS is 434.63 KB
+(142.33 KB gzip), CSS 78.65 KB (15.55 KB gzip). Milestone source commit and
+normal push are pending; the root agent will record publication proof.

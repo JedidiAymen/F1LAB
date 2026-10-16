@@ -443,6 +443,19 @@ main {
   color: #aebcc4;
   font-weight: 700;
 }
+.map-geometry-note {
+  position: absolute;
+  bottom: 16px;
+  right: 20px;
+  max-width: 58%;
+  color: #9eacb5;
+  font-size: 8px;
+  text-align: right;
+  letter-spacing: .06em;
+  pointer-events: none;
+}
+.map-geometry-note span { display: block; margin-top: 5px; color: #74858e; }
+.map-unavailable { position: absolute; inset: 46% 15% auto; z-index: 1; color: #d9b878; text-align: center; }
 .track-footer {
   border-top: 1px solid #2a343b;
   display: flex;
@@ -1004,7 +1017,9 @@ button:focus-visible {
   }
   .track-footer {
     font-size: 8px;
+    flex-wrap: wrap;
   }
+  .map-geometry-note { bottom: 50px; right: 16px; max-width: calc(100% - 32px); }
   .transport {
     position: fixed;
     left: 12px;

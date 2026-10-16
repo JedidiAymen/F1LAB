@@ -21,6 +21,7 @@ from f1_racelab.models.qualifying_phase_lab import (
 )
 from f1_racelab.session.catalog import DEFAULT_SESSION, SESSIONS
 from f1_racelab.session.contracts import WeatherPayload
+from f1_racelab.session.location_history import build_location_context
 from f1_racelab.session.replay_source import ReplaySource
 from f1_racelab.telemetry.artifacts import COMPARISON_ROOT
 from f1_racelab.telemetry.contracts import LapComparison
@@ -123,14 +124,30 @@ def create_app(
         }
 
     @app.get("/api/v1/replay/{slug}/state")
-    def state(slug: str, seconds: float = Query(ge=0)) -> dict:
+    def state(slug: str, seconds: float = Query(ge=0),
+              focus_driver: str | None = Query(default=None)) -> dict:
         replay = source(slug)
         if not math.isfinite(seconds) or seconds > replay.duration_seconds:
             raise HTTPException(status_code=422, detail="Seek time is outside the replay")
-        return replay.state_at(seconds).model_dump(
+        if focus_driver is not None and focus_driver not in {
+            driver["driver_id"] for driver in replay.pack["drivers"]
+        }:
+            raise HTTPException(status_code=404, detail="Unknown focused driver")
+        canonical = replay.state_at(seconds)
+        payload = canonical.model_dump(
             mode="json",
             exclude={"applied_event_ids", "applied_event_hashes", "event_log", "race_control_messages"},
         )
+        if focus_driver is not None:
+            driver = canonical.drivers[focus_driver]
+            payload["location_context"] = build_location_context(
+                replay.locations.get(focus_driver, []), driver_id=focus_driver,
+                session_time_seconds=canonical.session_time_seconds,
+                track_x=driver.track_x, track_y=driver.track_y,
+                location_quality=str(driver.location_quality) if driver.location_quality else None,
+                source_times=replay.location_times.get(focus_driver, []),
+            ).model_dump(mode="json")
+        return payload
 
     @app.get("/api/v1/replay/{slug}/telemetry/lap-comparison")
     def lap_comparison(slug: str) -> dict:

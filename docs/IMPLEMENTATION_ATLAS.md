@@ -227,3 +227,56 @@ not available offline, this extension uses OpenF1 across all three splits and
 has only 16 training weekends. The API labels practice-end cutoffs as
 scheduled; it does not claim exact provider availability. See
 `QUALIFYING_PHASES.md` for feature units, metrics, hashes and reproduction.
+
+
+## Driving-line geometry, selected location context and browser observations
+
+`src/f1_racelab/session/geometry.py`: `build_circuit_geometry` receives driver
+location arrays `[session_seconds,x,y]`, timed lap records, clock origin,
+session/layout IDs and optional pit stops. It rejects incomplete/discontinuous
+laps, chooses a deterministic low-closure-error lap and returns a frozen typed
+`CircuitGeometry`: source/normalized XY, bounds, normalization transform,
+provider-unit cumulative arc length, radians, provenance hashes and diagnostic
+counts. Normalization is `(xy−bounds_midpoint)/max(bounds_spans)`; arc length
+is the sum of Euclidean segment lengths. The closing segment is explicitly
+inferred. Tests cover chronology, finite values, rejection, row-order stability,
+closure and geometry invariants. A driving line is a display trace; physical
+track edges, pit lane, sectors, corners and official start line remain absent.
+
+`src/f1_racelab/session/location_history.py`: `build_location_context` slices
+the existing validated source time index by binary search for a trailing
+12-second window. It appends/replaces only the already-computed canonical
+current position, splits dropouts/jumps into separate segments, then estimates
+current movement direction from the last connected moving pair. `LocationContext`
+validates bounds, increasing timestamps and heading consistency. API state with
+optional `focus_driver` returns this alongside the same timestamp and drivers;
+no extra renderer clock or alternate position interpolation is introduced.
+Missing/stationary/disconnected current movement yields no direction.
+
+`apps/web/src/lib/circuit-geometry.ts`: `projectCircuit` validates provider XY
+and derives aspect-preserving centered SVG coordinates with Y inverted;
+`projectTrail` draws separate segments with estimated endpoints dashed;
+`headingScreenDegrees` negates radians when converting to screen degrees.
+`components/TrackMap.tsx` memoizes projection/static `CircuitTrace`, renders
+canonical car locations and selected context, and suppresses transition
+animation on seeks/pause. Geometry identity and source quality remain visible.
+Tests cover projection, invalid inputs and heading conversion; all 11 browser scenarios, including deterministic trail/heading, seek and
+driver selection assertions, pass.
+
+`apps/web/benchmarks/playwright.config.ts` and `replay-performance.spec.ts`:
+opt-in local API/Vite Chromium harness samples three real packs at 1× for four
+seconds each and records raw RAF callbacks, long tasks when supported, eight
+panel clocks, requests, decoded body bytes, four seeks/session and JS heap.
+Output retains source/manifest fingerprints and environment metadata under
+ignored `data/processed/browser_benchmarks/`. These observations measure local
+scheduling, delivery and DOM agreement; they do not measure painted FPS,
+full-process memory, survey accuracy or causal optimization benefit. See
+`REPLAY_GEOMETRY_AND_PERFORMANCE.md` and the benchmark README for commands.
+
+Temporal detail: measured trail vertices are at or before requested time `t`.
+The canonical estimated endpoint may use a later source sample as the existing
+historical interpolation bracket; this is retrospective reconstruction, not
+proof that data had been published live by `t`. Without `focus_driver`, the API
+returns strict canonical `RaceState` schema 3. Focused `location_context` is a
+view extension of that same state response; it does not change the canonical
+state schema or create another position/clock authority.

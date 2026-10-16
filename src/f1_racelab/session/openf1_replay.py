@@ -34,6 +34,7 @@ from f1_racelab.session.contracts import (
     TrackStatusPayload,
     WeatherPayload,
 )
+from f1_racelab.session.geometry import build_circuit_geometry
 from f1_racelab.session.openf1_context import track_status_payload, weather_payload
 
 SESSION_KEY = DEFAULT_SESSION.session_key
@@ -264,25 +265,6 @@ def _interval_samples(rows: list[dict], clock_origin: datetime = CLOCK_ORIGIN) -
             for driver, buckets in selected.items()}
 
 
-def _geometry(samples: list[list[float]], laps: list[dict],
-              clock_origin: datetime = CLOCK_ORIGIN) -> dict:
-    """Use one actual VER lap trace as approximate geometry, in provider units."""
-    candidate = next((row for row in laps if row.get("driver_number") == 1
-                      and row.get("lap_number") == 3 and row.get("date_start")
-                      and _positive(row.get("lap_duration"))), None)
-    if candidate is None:
-        raise ValueError("VER lap 3 is unavailable for approximate circuit trace")
-    start = _seconds(_time(candidate["date_start"]), clock_origin)
-    end = start + float(candidate["lap_duration"])
-    trace = [[x, y] for t, x, y in samples if start <= t <= end]
-    if len(trace) < 100:
-        raise ValueError(f"Circuit trace has only {len(trace)} points")
-    return {"source": "OpenF1 location, VER lap 3",
-            "quality": "estimated", "coordinate_system": "openf1_approx_cartesian_unknown_unit",
-            "lap_start_seconds": round(start, 3), "lap_end_seconds": round(end, 3),
-            "centerline_xy": trace}
-
-
 def _verify_pack_against_results(pack: dict, results: list[dict]) -> dict[str, int]:
     """Compare end state with provider results without leaking final labels into replay."""
     from f1_racelab.session.replay_source import ReplaySource
@@ -323,11 +305,40 @@ def _verify_pack_against_results(pack: dict, results: list[dict]) -> dict[str, i
             "checkpoint_count": len(source.checkpoint_indices)}
 
 
-def build_replay_pack(output: Path | None = None, *, spec: ReplaySpec = DEFAULT_SESSION) -> dict:
+def _prior_optional_absence(output: Path, spec: ReplaySpec) -> tuple[dict[str, str], str | None]:
+    """Reuse explicit historical 404 evidence only from a verified same-session manifest."""
+    manifest_path = output.with_suffix(".manifest.json")
+    if not manifest_path.is_file():
+        return {}, None
+    manifest_bytes = manifest_path.read_bytes()
+    manifest = json.loads(manifest_bytes)
+    expected_key = f"openf1:{spec.session_key}"
+    session = manifest.get("session")
+    if session is None:  # pre-geometry manifests bind identity through their checked pack hash
+        if not output.is_file() or hashlib.sha256(output.read_bytes()).hexdigest() != (
+            manifest.get("sha256")
+        ):
+            raise ValueError("Prior offline manifest cannot be bound to its replay pack")
+        with gzip.open(output, "rt", encoding="utf-8") as handle:
+            session = json.load(handle)["session"]
+    if (session.get("provider_key"), session.get("season"), session.get("round"),
+        session.get("kind")) != (expected_key, spec.season, spec.round, "race"):
+        raise ValueError("Prior offline manifest belongs to a different session")
+    absence = manifest.get("coverage", {}).get("unavailable_resources", {})
+    verified = {endpoint: reason for endpoint, reason in absence.items()
+                if endpoint in {"pit", "weather"} and isinstance(reason, str)
+                and reason.startswith("HTTP 404:")}
+    return verified, hashlib.sha256(manifest_bytes).hexdigest()
+
+
+def build_replay_pack(output: Path | None = None, *, spec: ReplaySpec = DEFAULT_SESSION,
+                      offline: bool = False) -> dict:
     """Fetch once with OpenF1Client cache; write a compact, verified local pack."""
     output = Path(output or spec.pack_path)
     unavailable: dict[str, str] = {}
-    with OpenF1Client() as client:
+    absence_provenance: dict[str, dict] = {}
+    prior_absence, prior_manifest_hash = _prior_optional_absence(output, spec) if offline else ({}, None)
+    with OpenF1Client(offline=offline) as client:
         metadata = client.get("sessions", session_key=spec.session_key)
         if len(metadata) != 1 or metadata[0].get("meeting_key") != spec.meeting_key or (
             _time(metadata[0]["date_start"]) != spec.clock_origin
@@ -341,11 +352,21 @@ def build_replay_pack(output: Path | None = None, *, spec: ReplaySpec = DEFAULT_
         for optional in ("pit", "weather"):
             try:
                 raw[optional] = _rows(client, optional, spec)
+            except FileNotFoundError:
+                if not offline or optional not in prior_absence:
+                    raise
+                raw[optional] = []
+                unavailable[optional] = prior_absence[optional]
+                absence_provenance[optional] = {
+                    "basis": "prior_same_session_manifest_http_404",
+                    "manifest_sha256": prior_manifest_hash,
+                }
             except httpx.HTTPStatusError as exc:
                 if exc.response.status_code != 404:
                     raise
                 raw[optional] = []
                 unavailable[optional] = "HTTP 404: provider resource unavailable"
+                absence_provenance[optional] = {"basis": "provider_http_404"}
         drivers = sorted(raw["drivers"], key=lambda row: int(row["driver_number"]))
         numbers = [int(row["driver_number"]) for row in drivers]
         if len(numbers) < 2 or len(numbers) != len(set(numbers)):
@@ -367,7 +388,10 @@ def build_replay_pack(output: Path | None = None, *, spec: ReplaySpec = DEFAULT_
     location_end = max([0.0, *(rows[-1][0] for rows in locations.values() if rows)])
     events, event_coverage = _timed_events(raw, session, datetime.now(UTC),
                                           spec.clock_origin, location_end)
-    geometry = _geometry(locations["1"], raw["laps"], spec.clock_origin)
+    geometry = build_circuit_geometry(
+        locations, raw["laps"], clock_origin=spec.clock_origin, session_key=spec.session_key,
+        layout_id=f"openf1:{spec.session_key}:layout", pit_stops=raw["pit"],
+    ).model_dump(mode="json")
     pack = {
         "schema_version": 2,
         "session": session.model_dump(mode="json"),
@@ -397,17 +421,19 @@ def build_replay_pack(output: Path | None = None, *, spec: ReplaySpec = DEFAULT_
         "coverage": {"raw_rows": {key: None if key in unavailable else len(rows)
                                 for key, rows in raw.items()},
                      "unavailable_resources": unavailable,
+                     "unavailable_resource_provenance": absence_provenance,
                      "events": event_coverage, "location": location_coverage},
     }
     qa = _verify_pack_against_results(pack, raw["session_result"])
     output.parent.mkdir(parents=True, exist_ok=True)
     with gzip.open(output, "wt", encoding="utf-8", compresslevel=6) as handle:
         json.dump(pack, handle, separators=(",", ":"))
-    manifest = {"path": str(output), "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
+    manifest = {"session": session.model_dump(mode="json"), "slug": spec.slug,
+                "path": str(output), "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
                 "bytes": output.stat().st_size, "event_count": len(events),
                 "driver_count": len(drivers), "sample_count": sum(map(len, locations.values())),
                 "coverage": pack["coverage"], "capabilities": pack["capabilities"],
-                "qa": qa,
+                "qa": qa, "geometry": geometry,
                 "source_sha256_by_resource": source_hashes}
     output.with_suffix(".manifest.json").write_text(json.dumps(manifest, indent=2))
     return manifest
@@ -415,13 +441,20 @@ def build_replay_pack(output: Path | None = None, *, spec: ReplaySpec = DEFAULT_
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--session", choices=SESSIONS, default=DEFAULT_SESSION.slug)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--session", choices=SESSIONS, default=DEFAULT_SESSION.slug)
+    group.add_argument("--all", action="store_true", help="Build every audited reference session")
     parser.add_argument("--out", type=Path)
+    parser.add_argument("--offline", action="store_true", help="Require local cached responses")
     args = parser.parse_args()
-    manifest = build_replay_pack(args.out, spec=SESSIONS[args.session])
-    print(json.dumps({key: manifest[key] for key in
-                      ("path", "sha256", "bytes", "event_count", "driver_count",
-                       "sample_count", "qa")}, indent=2))
+    if args.all and args.out:
+        parser.error("--out cannot be combined with --all")
+    specs = list(SESSIONS.values()) if args.all else [SESSIONS[args.session]]
+    for spec in specs:
+        manifest = build_replay_pack(args.out, spec=spec, offline=args.offline)
+        print(json.dumps({key: manifest[key] for key in
+                          ("path", "sha256", "bytes", "event_count", "driver_count",
+                           "sample_count", "qa")}, indent=2))
 
 
 if __name__ == "__main__":

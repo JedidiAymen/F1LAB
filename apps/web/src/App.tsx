@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
   CircleAlert,
   FlaskConical,
   FlagTriangleRight,
-  MapPin,
   Pause,
   Play,
   RotateCcw,
@@ -25,6 +24,8 @@ import { WeatherPanel } from '@/components/WeatherPanel'
 import { StintPanel } from '@/components/StintPanel'
 import { TelemetryPanel } from '@/components/TelemetryPanel'
 import { PredictionLab } from '@/components/PredictionLab'
+import { TrackMap } from '@/components/TrackMap'
+import type { CircuitGeometry, LocationContext } from '@/lib/circuit-geometry'
 import type { LapComparison } from '@/lib/telemetry-comparison'
 import {
   formatSessionTime as secondsLabel,
@@ -67,6 +68,7 @@ type RaceState = {
   track_status: TrackStatusObservation | null
   weather: WeatherObservation | null
   drivers: Record<string, DriverState>
+  location_context?: LocationContext | null
 }
 type ControlEvent = {
   event_id: string
@@ -89,7 +91,7 @@ type Manifest = {
   scheduled_laps: number
   capabilities: string[]
   drivers: Driver[]
-  geometry: { centerline_xy: number[][]; quality: string; source: string }
+  geometry: CircuitGeometry
   race_control: ControlEvent[]
   weather_changes: WeatherChange[]
   telemetry_comparisons: {
@@ -118,201 +120,6 @@ const gapLabel = (seconds?: number | null, text?: string | null) =>
   text ?? (seconds == null ? '—' : `+${seconds.toFixed(3)}`)
 const safeColor = (value: string) =>
   /^#[\da-fA-F]{6}$/.test(`#${value}`) ? `#${value}` : '#97a0a9'
-
-function TrackMap({
-  manifest,
-  state,
-  playing,
-  selectedId,
-  onSelect,
-}: {
-  manifest: Manifest
-  state: RaceState | null
-  playing: boolean
-  selectedId: string | null
-  onSelect: (id: string) => void
-}) {
-  const points = manifest.geometry.centerline_xy
-  const sampleSeconds = state?.session_time_seconds ?? null
-  const previousSeconds = useRef<number | null>(null)
-  const mapSvgRef = useRef<SVGSVGElement | null>(null)
-  useLayoutEffect(() => {
-    const previous = previousSeconds.current
-    const animate =
-      playing &&
-      previous !== null &&
-      sampleSeconds !== null &&
-      sampleSeconds > previous &&
-      sampleSeconds - previous <= 4
-    mapSvgRef.current?.querySelectorAll<SVGGElement>('.map-car').forEach((car) => {
-      if (animate) car.style.removeProperty('transition')
-      else car.style.transition = 'none'
-    })
-    previousSeconds.current = sampleSeconds
-  }, [playing, sampleSeconds])
-  const bounds = useMemo(() => {
-    const xs = points.map((p) => p[0])
-    const ys = points.map((p) => p[1])
-    return {
-      minX: Math.min(...xs),
-      maxX: Math.max(...xs),
-      minY: Math.min(...ys),
-      maxY: Math.max(...ys),
-    }
-  }, [points])
-  const spanX = Math.max(1, bounds.maxX - bounds.minX)
-  const spanY = Math.max(1, bounds.maxY - bounds.minY)
-  const scale = Math.min(820 / spanX, 450 / spanY)
-  const offsetX = (900 - spanX * scale) / 2
-  const offsetY = (530 - spanY * scale) / 2
-  const project = (x: number, y: number) => [
-    offsetX + (x - bounds.minX) * scale,
-    530 - offsetY - (y - bounds.minY) * scale,
-  ]
-  const path = points
-    .map((p, i) => `${i ? 'L' : 'M'}${project(p[0], p[1]).join(' ')}`)
-    .join(' ')
-  const visible = manifest.drivers.filter(
-    (d) =>
-      state?.drivers[d.driver_id]?.track_x != null &&
-      state.drivers[d.driver_id]?.track_y != null,
-  )
-  const selected = manifest.drivers.find((d) => d.driver_id === selectedId)
-  const selectedState = selectedId ? state?.drivers[selectedId] : null
-  return (
-    <section
-      className="track-panel panel"
-      aria-label="Circuit position map"
-      data-session-time={state?.session_time_seconds}
-    >
-      <div className="panel-heading">
-        <div>
-          <span className="eyebrow">TRACK POSITION</span>
-          <h2>{manifest.circuit_name}</h2>
-        </div>
-        <span className="panel-tag">
-          <MapPin size={12} /> 2D · APPROXIMATE
-        </span>
-      </div>
-      <div className="track-wrap">
-        <svg
-          ref={mapSvgRef}
-          className="track-svg"
-          viewBox="0 0 900 530"
-          role="img"
-          aria-label={`Provider-derived circuit trace with ${visible.length} cars located at the current replay time`}
-        >
-          <defs>
-            <pattern
-              id="map-grid"
-              width="36"
-              height="36"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M 36 0 L 0 0 0 36"
-                fill="none"
-                stroke="#263039"
-                strokeWidth=".6"
-              />
-            </pattern>
-          </defs>
-          <rect width="900" height="530" fill="url(#map-grid)" />
-          <path
-            d={path}
-            fill="none"
-            stroke="#313b43"
-            strokeWidth="17"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d={path}
-            fill="none"
-            stroke="#79858e"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          {visible.map((d) => {
-            const s = state!.drivers[d.driver_id]
-            const [x, y] = project(s.track_x!, s.track_y!)
-            const active = selectedId === d.driver_id
-            return (
-              <g
-                key={d.driver_id}
-                onClick={() => onSelect(d.driver_id)}
-                className="map-car"
-                style={{
-                  transform: `translate(${x}px, ${y}px)`,
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label={`Select ${d.name}`}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') onSelect(d.driver_id)
-                }}
-              >
-                {active && (
-                  <circle
-                    cx={0}
-                    cy={0}
-                    r="18"
-                    fill="none"
-                    stroke={safeColor(d.team_color)}
-                    strokeWidth="1"
-                    opacity=".7"
-                  />
-                )}
-                <circle
-                  cx={0}
-                  cy={0}
-                  r={active ? 10 : 6}
-                  fill={safeColor(d.team_color)}
-                  fillOpacity={s.location_quality === 'estimated' ? 0.7 : 1}
-                  stroke={
-                    s.location_quality === 'estimated' ? '#efc681' : '#10161a'
-                  }
-                  strokeWidth={s.location_quality === 'estimated' ? 1 : 2}
-                />
-                {active && (
-                  <text
-                    x={16}
-                    y={4}
-                    fill="#f2f5f7"
-                    fontSize="13"
-                    fontWeight="700"
-                  >
-                    {d.acronym}
-                  </text>
-                )}
-              </g>
-            )
-          })}
-        </svg>
-        <div className="map-index">
-          <span className="index-line" /> XY
-          <br />
-          <span className="map-index-small">PROVIDER XY · UNKNOWN UNIT</span>
-        </div>
-        <div className="map-count">
-          {visible.length} / {manifest.drivers.length} CARS LOCATED
-        </div>
-      </div>
-      <div className="track-footer">
-        <div>
-          <span className="dot measured" /> Provider point{' '}
-          <span className="dot estimated" /> Interpolated position
-        </div>
-        <div>
-          {selected
-            ? `${selected.acronym} · ${selectedState?.location_quality ?? 'NO LOCATION'}`
-            : 'SELECT A DRIVER'}
-        </div>
-      </div>
-    </section>
-  )
-}
 
 function ReplayWorkspace({
   slug,
@@ -417,7 +224,8 @@ function ReplayWorkspace({
     if (!manifest) return
     const controller = new AbortController()
     const id = ++requestId.current
-    fetch(`${base}/state?seconds=${requestTime.toFixed(3)}`, {
+    const focus = selectedId ? `&focus_driver=${encodeURIComponent(selectedId)}` : ''
+    fetch(`${base}/state?seconds=${requestTime.toFixed(3)}${focus}`, {
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -436,7 +244,7 @@ function ReplayWorkspace({
           setError(String(e))
       })
     return () => controller.abort()
-  }, [manifest, requestTime, base])
+  }, [manifest, requestTime, base, selectedId])
 
   const togglePlayback = () => {
     const now = performance.now()

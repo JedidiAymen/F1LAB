@@ -8,6 +8,7 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 from f1_racelab.api import create_app
+from f1_racelab.session.contracts import RaceState
 from f1_racelab.session.replay_source import ReplaySource
 from f1_racelab.telemetry.distance_alignment import build_lap_telemetry, compare_laps
 
@@ -113,6 +114,26 @@ def test_manifest_and_state_share_clock(tmp_path: Path) -> None:
     assert state.json()["drivers"]["1"]["track_x"] == 15
     assert state.json()["drivers"]["1"]["location_quality"] == "estimated"
     assert "applied_event_hashes" not in state.json()
+    assert "location_context" not in state.json()
+    assert RaceState.model_validate(state.json()).session_time_seconds == .5
+    focused = client.get("/api/v1/replay/monza-2025/state",
+                         params={"seconds": .5, "focus_driver": "1"})
+    assert focused.status_code == 200
+    focused_payload = focused.json()
+    context = focused_payload.pop("location_context")
+    assert focused_payload == state.json()
+    assert context["session_time_seconds"] == focused_payload["session_time_seconds"] == .5
+    assert context["driver_id"] == "1"
+    assert context["segments"][0][-1] == {
+        "session_time_seconds": .5, "track_x": 15., "track_y": 20., "quality": "estimated",
+    }
+    assert context["heading_radians"] == 0
+    assert context["location_available"]
+    assert client.get("/api/v1/replay/monza-2025/state",
+        params={"seconds": .5, "focus_driver": "unknown"}).status_code == 404
+    assert client.get("/api/v1/replay/monza-2025/state",
+        params={"seconds": 1.1, "focus_driver": "unknown"}).status_code == 422
+
     other_state = client.get("/api/v1/replay/monaco-2023/state", params={"seconds": .5}).json()
     assert other_state["session"]["season"] == 2023
     assert "pit_stops" in state.json()["capabilities"]

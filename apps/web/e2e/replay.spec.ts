@@ -133,6 +133,32 @@ test('telemetry crosshair follows the canonical replay clock on its reference la
   await expectSynchronized(page)
 })
 
+test('validated geometry and selected trail follow exact canonical seeks', async ({ page }, testInfo) => {
+  const map = page.getByRole('region', { name: 'Circuit position map' })
+  await expect(map).toHaveAttribute('data-geometry-id', /^openf1-driving-line:/)
+  await expect(map.locator('.trace-origin')).toHaveCount(1)
+  await page.getByRole('region', { name: 'Timing tower' }).getByRole('button', { name: /VER/ }).click()
+  await page.getByRole('button', { name: 'Jump to reference lap' }).click()
+  const seconds = await expectSynchronized(page)
+  const trail = page.getByTestId('selected-trail')
+  await expect(trail).toHaveAttribute('data-driver-id', '1')
+  await expect(trail).toHaveAttribute('data-session-time', String(seconds))
+  await expect(page.getByTestId('selected-heading')).toHaveCount(1)
+  expect(Number(await trail.getAttribute('data-latest-sample-time'))).toBeLessThanOrEqual(seconds)
+  const originalPaths = await trail.locator('path').evaluateAll((paths) => paths.map((path) => path.getAttribute('d')))
+  expect(originalPaths.length).toBeGreaterThan(0)
+  await page.getByRole('button', { name: 'Forward 10 seconds' }).click()
+  await expect(page.getByTestId('state-clock')).toHaveAttribute('data-seconds', String(seconds + 10))
+  await page.getByRole('button', { name: 'Back 10 seconds' }).click()
+  await expect(trail).toHaveAttribute('data-session-time', String(seconds))
+  expect(await trail.locator('path').evaluateAll((paths) => paths.map((path) => path.getAttribute('d')))).toEqual(originalPaths)
+  await page.getByRole('region', { name: 'Timing tower' }).getByRole('button', { name: /NOR/ }).click()
+  await expect(trail).toHaveAttribute('data-driver-id', '4')
+  await expect(trail).toHaveAttribute('data-session-time', String(seconds))
+  expect(await expectSynchronized(page)).toBe(seconds)
+  await page.screenshot({ path: testInfo.outputPath('monza-geometry-trail.png'), fullPage: true })
+})
+
 test('Prediction Lab labels retrospective forecasts and separates validation from holdout', async ({
   page,
 }, testInfo) => {

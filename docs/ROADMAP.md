@@ -12,7 +12,7 @@ is in `SOL61_MASTER_EXECUTION.md`; this page tracks execution.
 | M5: production ML audit | Partial | FP1/FP2/pre-qualifying phase snapshots, practice-only allowlists and scheduled cutoff audit exist; provider publication times, calibration, driver identity audit and walk-forward 2026 remain |
 | P0: domain contracts and repo hardening | Partial | Python event/state contract and reducer tests exist; CI, schema export and ownership remain |
 | P1: replay pack | Three-reference offline gate verified; broader contracts partial | Monza/Monaco/Brazil match available final results; 15,162 boundary/arbitrary-time checks and 600 shuffled seeks; context adds 700 as-of checks; 148 source-timed stint histories are reconstructed without changing pack events; full geometry remains |
-| P2: 2D Race Control | Partial, real browser interaction proof | Session picker, 0.25×–16× clock, synchronized map/timing/control/weather/status/stints/telemetry cursor, playback transforms and exact source-time jumps; 10 Chromium scenarios pass; fuller geometry and rendering performance coverage remain |
+| P2: 2D Race Control | Partial, real browser interaction proof | Session picker, 0.25×–16× clock, synchronized map/timing/control/weather/status/stints/telemetry cursor, playback transforms and exact source-time jumps; 11 Chromium scenarios pass; versioned driving-line geometry, 12-second selected trail/direction and bounded browser measurements exist; physical geometry and broader rendering evidence remain |
 | P3–P4: telemetry and Prediction Lab | Partial, historical phase-aware UI integrated | Monza telemetry follows canonical `RaceState`; local qualifying lab serves checksum-verified FP1/FP2/pre-Q snapshots, same-provider 2023 training/2024 validation/2025 holdout and phase feature registries; wider telemetry, publication timestamps and calibration remain |
 | P5–P6: strategy and counterfactual | Not started | Tested units, seeded worlds, real-event sanity checks |
 | P7–P8: live, radio and 3D | Not started | Provider-aware live fan-out and same-clock 3D |
@@ -31,3 +31,18 @@ is in `SOL61_MASTER_EXECUTION.md`; this page tracks execution.
 
 The React app now has a three-race offline workstation. The full product
 inventory remains required; this is an early integrated slice.
+
+
+## Current P2 geometry and observation checkpoint (verified; publication pending)
+
+The worktree now contains a versioned, quality-checked driving-line geometry
+contract, a selected-driver 12-second trail and estimated movement direction
+returned with canonical replay state, and an opt-in browser observation harness.
+Three packs were rebuilt from cached OpenF1 source. Offline CLI rebuild, replay/context validators, 360 real trail probes and
+11 browser scenarios now pass. Final full Python/static/build checks also pass.
+P1/P2 remain partial: physical circuit dimensions, pit-lane geometry, official
+timing-line location and broader rendering evidence are still required.
+
+Next: publish with source/manifest fingerprints, then expand
+telemetry coverage and evaluate a licensed source of physical circuit geometry.
+See `REPLAY_GEOMETRY_AND_PERFORMANCE.md` for this checkpoint's evidence.

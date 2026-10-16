@@ -173,3 +173,39 @@ to the planned race workstation.
     official P1/P2 are missing, the eligible leader can be official P3. F1LAB
     shows eligible rank and official qualifying position separately; its
     current rank-error and leader/top-three metrics use the eligible cohort.
+
+
+## Geometry and observation checkpoint learning notes
+
+**Driving line versus surveyed circuit:** a driver's measured XY path describes
+where that car was reported on one lap. It does not establish track edges,
+pit-lane shape, physical track width or the official timing line. F1LAB retains
+unknown provider units and marks this display geometry estimated.
+
+**Closure ratio:** endpoint separation divided by source polyline length. A
+small ratio identifies a nearly closed trace; appending the first point creates
+an explicit inferred closing segment. It does not repair missing circuit arcs
+or prove correct physical geometry.
+
+**Normalization and arc distance:** subtracting the bounding-box midpoint and
+dividing both axes by the largest span centers/scales the trace without changing
+aspect ratio. Summed Euclidean segment lengths are polyline arc distance in
+provider units, distinct from telemetry distance in meters.
+
+**Displacement heading:** `atan2(dy,dx)` estimates direction from two connected
+location samples. It is not measured car yaw. SVG flips Y, so its display angle
+has the opposite sign. A trailing window uses only source points at or before
+the canonical state time; dropouts create separate path segments.
+
+**RAF versus painted FPS:** requestAnimationFrame callback intervals describe
+browser scheduling opportunities. They do not count completed GPU/compositor
+frames. F1LAB's bounded benchmark also records synchronized DOM state, request
+latencies and unforced-GC JS heap; these quantities need distinct interpretation.
+
+Temporal detail: measured trail vertices are at or before requested time `t`.
+The canonical estimated endpoint may use a later source sample as the existing
+historical interpolation bracket; this is retrospective reconstruction, not
+proof that data had been published live by `t`. Without `focus_driver`, the API
+returns strict canonical `RaceState` schema 3. Focused `location_context` is a
+view extension of that same state response; it does not change the canonical
+state schema or create another position/clock authority.

@@ -254,3 +254,54 @@ despite a refreshed checksum, a future-session feature registry, a source/Q
 schedule mismatch and a cohort made too small after target filtering. These
 checks validate artifact consistency; they do not prove provider publication
 times or prediction calibration.
+
+
+## 2026-10-16 — geometry, selected trail and browser observation worktree
+
+Starting source SHA `1a5b7b4fa64ae3ceab0ab7cb6957c2331a5ce7b6`.
+Final full Python/static verification passed; publication remains pending. Offline
+build, replay/context validators and 11 browser scenarios have passed.
+
+| Check / command | Current evidence | Class / limit |
+|---|---|---|
+| Focused geometry tests | 13 new plus 5 existing focused tests passed | Synthetic invariants, selection/rejection and existing replay coverage |
+| `cd apps/web && npm run test:unit` | 8 passed | Synthetic clock/projection/heading contracts |
+| `cd apps/web && npm run build`; `npm run lint` | Passed | Static/build; final combined rerun also passed |
+| `.venv/bin/python -m f1_racelab.session.openf1_replay --all --offline` | Three packs rebuilt successfully | Real cached source; no upstream request |
+| `cd apps/web && npm run benchmark:replay` | Baseline report completed; no page errors; zero sampled panel mismatch frames in all three sessions | Real cached packs / short local Chromium observation; predates final map/trail source |
+
+Baseline report: `data/processed/browser_benchmarks/replay-performance-2026-10-16T16-32-00-868Z.json`.
+Monza/Monaco/Brazil RAF callback interval p95: 33.3/16.8/33.3 ms; request
+latency p95 including seeks: 9.02/6.75/16.04 ms. Twelve individual seek
+observations range 50.0–163.8 ms input-to-synchronized-DOM. Four-second playback
+windows and one run per session do not establish stable release performance.
+RAF is scheduling, request timings include proxy/API/browser delivery, decoded
+bytes are JSON size and heap is JS heap without forced GC. Final idle fingerprints and observations are recorded below; changed
+source/packs prevent causal claims.
+
+Final idle browser artifact:
+`data/processed/browser_benchmarks/replay-performance-2026-10-16T16-46-32-467Z.json`,
+SHA-256 `2c16efc9ec43e43ed6dcd1b461afa7c1bee527ee09928cd2db89eac218764477`.
+Monza/Monaco/Brazil callbacks/s: 59.08/59.54/60.00; interval p95:
+16.7/16.8/16.7 ms; local state-request p95: 11.49/8.89/7.05 ms.
+All eight panel clocks agreed, no long-task entries; twelve seek observations
+range 47.30–171.34 ms. An intermediate 16:45 report overlapped validator
+workload; the 16:46 run was idle. These are bounded local development
+observations; differing source/features/packs preclude causal speedup claims.
+
+Offline checks: `.venv/bin/python -m f1_racelab.session.openf1_replay --all --offline`;
+`.venv/bin/python -m f1_racelab.session.validate_replay --all`;
+`.venv/bin/python -m f1_racelab.session.validate_context --all`. Monza/Monaco/
+Brazil replay checks pass 4,120/6,149/4,893 cases plus 200 shuffled seeks each;
+seek p50/p95 ms are 1.356/3.360, 1.444/3.617 and 1.319/2.962.
+Context validation and 360 real source-trail QA probes pass. Browser
+`npm run test:e2e`: 11 scenarios passed in 33 seconds.
+
+Final integrated checks (all exit 0): `uv run pytest -q` — 92 passed in
+6.87 s, one upstream Starlette/httpx deprecation warning;
+`uv run ruff check src/f1_racelab tests` — clean;
+`uv run mypy src/f1_racelab/session src/f1_racelab/api.py src/f1_racelab/data/openf1_qualifying.py --ignore-missing-imports`
+— 16 source files, no issues. In `apps/web`, `npm run test:unit` — 8 passed;
+`npm run build` and `npm run lint` passed. Build JS is 434.63 KB
+(142.33 KB gzip), CSS 78.65 KB (15.55 KB gzip). Milestone source commit and
+normal push are pending; the root agent will record publication proof.

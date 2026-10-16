@@ -30,9 +30,11 @@ PRACTICE_NAMES = ("Practice 1", "Practice 2", "Practice 3")
 class OpenF1Client:
     """Cache exact JSON responses and pace uncached public requests."""
 
-    def __init__(self, cache_root: Path = RAW_ROOT, *, interval: float = MIN_REQUEST_INTERVAL_SECONDS):
+    def __init__(self, cache_root: Path = RAW_ROOT, *,
+                 interval: float = MIN_REQUEST_INTERVAL_SECONDS, offline: bool = False):
         self.cache_root = Path(cache_root)
         self.interval = interval
+        self.offline = offline
         self._last_request = 0.0
         self._http = httpx.Client(timeout=30.0, headers={"User-Agent": "F1LAB/0.1 research"})
         self.hashes: dict[str, str] = {}
@@ -51,6 +53,8 @@ class OpenF1Client:
         if destination.exists():
             payload = destination.read_bytes()
         else:
+            if self.offline:
+                raise FileNotFoundError(f"Offline OpenF1 resource is not cached: {resource}")
             for attempt in range(4):
                 delay = self.interval - (time.monotonic() - self._last_request)
                 if delay > 0:
