@@ -7,11 +7,12 @@ current `RaceState` output is schema 3 with source-time weather, conservative
 global track signals and as-of tyre stint history. Eight actual Chromium
 browser tests pass, and desktop/mobile screenshots were inspected. P1/P2
 remain partial. This milestone starts at `2feed4059141107b43c31bf87f9937c565e2bdef`;
-its implementation SHA and remote verification are recorded in the latest
-worklog entry and publication follow-up. The preceding pushed context
-checkpoint is `111fb60777fa55327ddca36d0b95c04d06990e6f`. Git uses the
-repository's Aymen Jedidi identity and no assistant coauthor trailers. Two
-unrelated untracked `ml/features/` helpers remain untouched.
+implementation commit `4a0434aea67ff99a2f949abc08babdcbf0b50578` is pushed to
+`origin/feat/foundation` and `git ls-remote` returned the same SHA. The
+preceding pushed context checkpoint is
+`111fb60777fa55327ddca36d0b95c04d06990e6f`. Git uses the repository's Aymen
+Jedidi identity and no assistant coauthor trailers. Two unrelated untracked
+`ml/features/` helpers remain untouched.
 
 ## What exists and what does not
 
@@ -165,6 +166,9 @@ the combined local report is `replay_packs/golden_sessions.qa.json`.
 Packs change hashes on rebuild because ingest/gzip timestamps change.
 
 ## Latest milestone — source-time stints and map motion
+
+Implementation commit `4a0434aea67ff99a2f949abc08babdcbf0b50578` is pushed
+and remote-verified.
 
 `TyreStintState` carries source event/time, compound, one-based lap range,
 quality, start tyre age and closing event. A lap event advances only its open

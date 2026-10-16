@@ -374,9 +374,11 @@ PY
 - **Starting source SHA:** `2feed4059141107b43c31bf87f9937c565e2bdef` on
   `feat/foundation`, previously synchronized with `origin/feat/foundation`.
   Two unrelated untracked user helpers under `ml/features/` were preserved.
-  The implementation/documentation checkpoint is to be committed and pushed
-  normally; this entry will be completed with both exact SHAs in a follow-up
-  documentation checkpoint. No assistant coauthor will be added.
+  Implementation commit `4a0434aea67ff99a2f949abc08babdcbf0b50578` was
+  committed as Aymen Jedidi, pushed normally to `origin/feat/foundation`, and
+  verified with `git ls-remote` at the same SHA. This documentation-only
+  checkpoint records the exact publication state. No assistant coauthor
+  trailer was added.
 - **Changed source paths and functions:**
   `src/f1_racelab/session/contracts.py` adds immutable `TyreStintState`,
   `DriverState.tyre_stints`, and `RaceState` output schema 3;

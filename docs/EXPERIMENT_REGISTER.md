@@ -123,7 +123,8 @@
 - Starting source SHA `2feed4059141107b43c31bf87f9937c565e2bdef`; real source
   data is the already-audited OpenF1 stint/lap timeline in the three local
   packs. Event envelopes and pack files remain schema 2; current emitted
-  `RaceState` is schema 3.
+  `RaceState` is schema 3. Implementation commit
+  `4a0434aea67ff99a2f949abc08babdcbf0b50578` is pushed and remote-verified.
 - `TyreStintState` records source event ID, source time, compound, lap start,
   as-of lap end, quality, observed time, tyre age at start and closing event.
   A lap event advances only the currently open segment. A later stint-start

@@ -4,7 +4,8 @@
 
 **Branch:** `feat/foundation`
 
-**Implementation commit:** recorded in the follow-up publication checkpoint
+**Implementation commit:** `4a0434aea67ff99a2f949abc08babdcbf0b50578`, pushed
+to `origin/feat/foundation` and verified with `git ls-remote`
 **Source data:** existing local OpenF1 packs for sessions 9912, 9094 and 9636. No new provider request or pack event was required.
 
 This milestone exposes tyre stint history at the canonical replay cutoff and
