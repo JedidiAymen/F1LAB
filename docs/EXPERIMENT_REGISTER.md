@@ -358,3 +358,50 @@ Final integrated checks (all exit 0): `uv run pytest -q` — 92 passed in
 `npm run build` and `npm run lint` passed. Build JS is 434.63 KB
 (142.33 KB gzip), CSS 78.65 KB (15.55 KB gzip). Milestone source commit `132e3aaff34f4c805485e54bbef24f39025aab03` was pushed normally to
 `origin/feat/foundation`; `git ls-remote` returned the identical SHA.
+
+
+## R-011 — three-session six-channel distance comparison (verified; publication pending)
+
+Starting source `acff2d86ba79ef9dc23c20ac3070d54a989bab8e`. This is an engineering/data-quality
+extension, not a predictive model experiment. Catalog pairs are Monza 2025
+#1 L50 vs #4 L50, Monaco 2023 #1 L40 vs #31 L40 and Brazil 2024 #1 L52 vs
+#31 L52. Source lap durations, integrated metres, 5 m grid counts, maximum gaps,
+source hashes and chart paths are recorded in the regenerated QA artifacts.
+
+The comparison integrates speed and aligns at a shared distance from approximate
+lap starts. Six channels retain provider/null semantics, and delta remains
+elapsed B−A. Distances are estimated and source conditions are not controlled;
+Monaco lacks pit data. No clean-lap, equal-condition or general performance
+claim follows. Offline reproduction and contracts/API/UI checks pass;
+normal publication remains pending.
+
+Verified reproduction: `uv run python -m f1_racelab.telemetry.openf1_lap_comparison --all --offline`
+completed from cached data; log `data/processed/telemetry_comparisons/catalog_build.log`.
+JSON, `.qa.json` and PNG files share basenames under that directory:
+`monza-2025_driver_1_lap_50_vs_4_lap_50`,
+`monaco-2023_driver_1_lap_40_vs_31_lap_40`,
+`brazil-2024_driver_1_lap_52_vs_31_lap_52`.
+
+| Session | JSON bytes | 5 m grid points | Common end m | End-grid B−A s | Maximum source gaps A/B s | Pit source |
+|---|---:|---:|---:|---:|---|---|
+| Monza | 847,715 | 1,150 | 5,746.06 | −0.234 | 0.799 / 0.799 | Cached, checked |
+| Monaco | 547,035 | 656 | 3,279.04 | −0.184 | 0.640 / 0.520 | Unavailable; pit-in unverified |
+| Brazil | 669,987 | 849 | 4,241.19 | +0.252 | 0.560 / 0.560 | Cached, checked |
+
+All six channels are nonnull at every aligned grid point for both laps in
+these artifacts; null handling remains tested for incomplete future inputs.
+Source hashes were checked directly against 4/3/4 raw cached resources
+(Monza/Monaco/Brazil). Artifact SHA-256 values:
+
+- Monza: `9bc3aa5ea7750541deff8d10a4f84f8f228e0c5e372f85692e1923821d8dfea6`.
+- Monaco: `5ac531b5e3ada9e3c90a3e0e86e27c169283163ab5328904d2b71d47f558b0d5`.
+- Brazil: `774191e671021aac0519452d771f9395d68e5ae1a6f4b929ec03b8f0a2c33998`.
+
+Final checks: `uv run pytest -q` — 104 passed in 4.26 s, one upstream
+Starlette/httpx warning; `uv run ruff check src/f1_racelab tests` passed.
+`uv run mypy src/f1_racelab/telemetry src/f1_racelab/session src/f1_racelab/api.py --ignore-missing-imports`
+passed, 20 source files. In `apps/web`, `npm run test:unit` — 12 passed;
+`npm run build` and `npm run lint` passed. Build JS 452.50 KB (147.99 KB gzip),
+CSS 79.61 KB (15.71 KB gzip). `npm run test:e2e` — 14 passed in 39.2 s,
+including exact six-channel cursor assertions for all three races and mobile;
+Monaco/Brazil PNG plots and mobile panel screenshot were visually inspected. Publication commit/push remains pending.

@@ -5,15 +5,15 @@ historical Prediction Lab is now integrated; three real historical race packs
 build, reconcile and play through one local API/UI:
 Monza 2025, Monaco 2023 and Brazil 2024. Stored packs/events are schema 2;
 current `RaceState` output is schema 3 with source-time weather, conservative
-global track signals and as-of tyre stint history. Eleven actual Chromium
+global track signals and as-of tyre stint history. Fourteen actual Chromium
 browser scenarios pass, and desktop/mobile screenshots were inspected. P1/P2
 remain partial. Versioned approximate driving-line geometry, a selected-driver
 12-second trail/direction and fingerprinted local browser observations now
-exist; physical circuit geometry remains incomplete. A real Monza 2025 two-lap telemetry comparison is available
-through the local API and its chart cursor follows the canonical replay state
-time. P3/P4 remain partial; a three-phase historical qualifying lab is now
-integrated, while exact feature publication timestamps, calibration and wider
-telemetry are not done. The overall product goal is far from complete.
+exist; physical circuit geometry remains incomplete. Three real two-lap telemetry comparisons (Monza/Monaco/Brazil) now expose
+speed, throttle, brake source value, RPM, gear and DRS plus persistent time
+delta through the local API/UI; their cursor follows canonical replay time. P3/P4 remain partial; a three-phase historical qualifying lab is now
+integrated, while exact feature publication timestamps, calibration, arbitrary comparison selection and wider
+telemetry analysis remain incomplete. The overall product goal is far from complete.
 Telemetry source starts at `89351502ccb6389c25886d18022430f2ce6319f8`, with comparison
 foundation commit `2ac01012c780552f26bd9504f88c9cac87541000` and docs checkpoint
 `10b53fd4905a6a22ad94ac249dc9632ce016845e` pushed and remote-verified. The
@@ -471,3 +471,71 @@ required milestone documents. `git push origin feat/foundation` succeeded;
 Author: Aymen Jedidi; no assistant coauthor. Generated evidence remains local
 and ignored; the two unrelated user feature helpers remain untouched.
 Next: extend shared-clock telemetry beyond the Monza reference pair.
+
+
+## Latest P3 worktree — three-session six-channel telemetry (verified; publication pending)
+
+Starting published source `acff2d86ba79ef9dc23c20ac3070d54a989bab8e`, branch `feat/foundation`.
+New changes remain uncommitted; verification passed and publication is pending.
+The previous checkpoint's 92 Python / 8 frontend unit / 11 browser results are
+baseline evidence, not proof for this milestone.
+
+Current source introduces explicit Monza #1 L50/#4 L50, Monaco #1 L40/#31 L40
+and Brazil #1 L52/#31 L52 selections; stronger comparison artifact math/grid
+contracts; six source-labelled channel definitions; null-aware/step-wise values
+and cursor coverage handling. Offline catalog build, full API channel projection,
+six-channel UI and final new artifacts now pass integrated checks. Key paths are
+`telemetry/artifacts.py`, `contracts.py`, `openf1_lap_comparison.py`, `api.py`,
+`lib/telemetry-comparison.ts` and `components/TelemetryPanel.tsx`.
+
+Speed-integrated distance remains estimated in metres. Continuous channels are
+speed/throttle/RPM; brake source values, gear and DRS codes remain discrete.
+Null source data stay unknown. Canonical reference-A lap time determines the
+shared cursor and it disappears beyond shared grid coverage rather than
+freezing at a shorter lap's tail. Delta is elapsed B−A seconds. No independent
+telemetry clock or surveyed geometry is introduced. Missing Monaco pit source
+means no pit-in-clean proof; tyres, fuel, traffic and weather are not controlled.
+
+Next: publish the verified source/docs checkpoint. Broader arbitrary lap/driver selection,
+sector/corner bands, cross-layout comparisons and ghost laps remain incomplete.
+Full milestone detail is maintained by root in `DISTANCE_ALIGNED_TELEMETRY.md`.
+
+Additional current contract evidence: 16 focused distance-alignment tests pass
+and scoped Ruff passes, including eight serialized-contract mutation cases,
+two fractional gear/DRS rejection cases and one missing-channel case. The
+builder rejects fractional discrete codes instead of silently truncating them
+with `int()`. The previous real Monza artifact validates against the stricter
+contract. API projection exposes all aligned channels and lap-quality metadata
+while omitting the large raw `lap.points` arrays; all three-session builds
+and integrated checks pass.
+
+Verified reproduction: `uv run python -m f1_racelab.telemetry.openf1_lap_comparison --all --offline`
+completed from cached data; log `data/processed/telemetry_comparisons/catalog_build.log`.
+JSON, `.qa.json` and PNG files share basenames under that directory:
+`monza-2025_driver_1_lap_50_vs_4_lap_50`,
+`monaco-2023_driver_1_lap_40_vs_31_lap_40`,
+`brazil-2024_driver_1_lap_52_vs_31_lap_52`.
+
+| Session | JSON bytes | 5 m grid points | Common end m | End-grid B−A s | Maximum source gaps A/B s | Pit source |
+|---|---:|---:|---:|---:|---|---|
+| Monza | 847,715 | 1,150 | 5,746.06 | −0.234 | 0.799 / 0.799 | Cached, checked |
+| Monaco | 547,035 | 656 | 3,279.04 | −0.184 | 0.640 / 0.520 | Unavailable; pit-in unverified |
+| Brazil | 669,987 | 849 | 4,241.19 | +0.252 | 0.560 / 0.560 | Cached, checked |
+
+All six channels are nonnull at every aligned grid point for both laps in
+these artifacts; null handling remains tested for incomplete future inputs.
+Source hashes were checked directly against 4/3/4 raw cached resources
+(Monza/Monaco/Brazil). Artifact SHA-256 values:
+
+- Monza: `9bc3aa5ea7750541deff8d10a4f84f8f228e0c5e372f85692e1923821d8dfea6`.
+- Monaco: `5ac531b5e3ada9e3c90a3e0e86e27c169283163ab5328904d2b71d47f558b0d5`.
+- Brazil: `774191e671021aac0519452d771f9395d68e5ae1a6f4b929ec03b8f0a2c33998`.
+
+Final checks: `uv run pytest -q` — 104 passed in 4.26 s, one upstream
+Starlette/httpx warning; `uv run ruff check src/f1_racelab tests` passed.
+`uv run mypy src/f1_racelab/telemetry src/f1_racelab/session src/f1_racelab/api.py --ignore-missing-imports`
+passed, 20 source files. In `apps/web`, `npm run test:unit` — 12 passed;
+`npm run build` and `npm run lint` passed. Build JS 452.50 KB (147.99 KB gzip),
+CSS 79.61 KB (15.71 KB gzip). `npm run test:e2e` — 14 passed in 39.2 s,
+including exact six-channel cursor assertions for all three races and mobile;
+Monaco/Brazil PNG plots and mobile panel screenshot were visually inspected. Publication commit/push remains pending.

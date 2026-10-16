@@ -280,3 +280,49 @@ proof that data had been published live by `t`. Without `focus_driver`, the API
 returns strict canonical `RaceState` schema 3. Focused `location_context` is a
 view extension of that same state response; it does not change the canonical
 state schema or create another position/clock authority.
+
+
+## Three-session telemetry catalog and channel semantics (worktree)
+
+`telemetry/artifacts.py` defines frozen `ComparisonSpec(session_slug,driver_a,
+lap_a,driver_b,lap_b)`, deriving stable `comparison_id`, label and local path.
+`COMPARISONS` explicitly selects one pair for each supported replay; no hidden
+provider default is used as a scientific clean-lap certificate. The comparison
+builder/API consume those selections; offline CLI and all three final artifacts pass verification. Monaco pit-in absence cannot be proved from missing pit data.
+
+`telemetry/contracts.py`: `LapTelemetry.ordered_samples` validates counts,
+start/end, monotonic time/distance and reported max gap. `LapComparison` checks
+both laps' session/meeting identity, distinct source laps, common end equal to
+the shorter integrated lap, full uniform grid count/spacing, increasing elapsed
+times within both lap bounds, zero-time origin and exact delta B−A. These checks
+prevent internally inconsistent persisted JSON from entering UI scoring.
+
+`lib/telemetry-comparison.ts`: `TELEMETRY_CHANNELS` maps speed/throttle/brake/
+RPM/gear/DRS to API field names, display units and continuous/discrete semantics.
+`channelValue` preserves missing values as null. `telemetryChannelPath` breaks
+at missing values and draws step segments for discrete source channels.
+`comparisonCursorAtSessionTime` binary-searches reference-A elapsed time on the
+common grid, interpolates continuous values and holds earlier discrete values;
+it returns null outside available sampled time, including a short trailing
+portion of the reference lap beyond the common grid. Replay session origin
+and lap UTC start define time; changing channels does not advance another clock.
+The six-channel UI is integrated; final coverage/test evidence is in
+`TEST_EVIDENCE.md`.
+
+Additional current contract evidence: 16 focused distance-alignment tests pass
+and scoped Ruff passes, including eight serialized-contract mutation cases,
+two fractional gear/DRS rejection cases and one missing-channel case. The
+builder rejects fractional discrete codes instead of silently truncating them
+with `int()`. The previous real Monza artifact validates against the stricter
+contract. API projection exposes all aligned channels and lap-quality metadata
+while omitting the large raw `lap.points` arrays; all three-session builds
+and integrated checks pass.
+
+`openf1_lap_comparison.py --all --offline` now builds catalog artifacts, PNGs
+and QA records using only existing cached resources. The API projects every
+aligned channel and lap sample/gap/boundary/pit-quality metadata without raw
+source-lap point arrays. `TelemetryPanel.tsx` selects six channels while keeping
+elapsed B−A visible and memoizing channel paths; missing values break paths,
+discrete codes stay step-valued and out-of-coverage cursors are absent. Final
+proof: 104 Python, 12 JS unit and 14 browser tests; exact artifact data and
+commands are in `TEST_EVIDENCE.md`.

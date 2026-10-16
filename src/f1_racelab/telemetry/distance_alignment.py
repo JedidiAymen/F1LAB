@@ -55,10 +55,10 @@ def _raw_point(
     for field in ("gear", "drs_code"):
         value = values[field]
         if value is not None:
-            try:
-                values[field] = int(value)
-            except (TypeError, ValueError) as exc:
-                raise ValueError(f"Telemetry field {field} must be an integer") from exc
+            numeric = _number(value, field)
+            if numeric is None or not numeric.is_integer():
+                raise ValueError(f"Telemetry field {field} must be an integer")
+            values[field] = int(numeric)
     return when, {**values, "elapsed_seconds": (when - start_utc).total_seconds()}
 
 

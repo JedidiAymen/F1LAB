@@ -13,7 +13,7 @@ is in `SOL61_MASTER_EXECUTION.md`; this page tracks execution.
 | P0: domain contracts and repo hardening | Partial | Python event/state contract and reducer tests exist; CI, schema export and ownership remain |
 | P1: replay pack | Three-reference offline gate verified; broader contracts partial | Monza/Monaco/Brazil match available final results; 15,162 boundary/arbitrary-time checks and 600 shuffled seeks; context adds 700 as-of checks; 148 source-timed stint histories are reconstructed without changing pack events; full geometry remains |
 | P2: 2D Race Control | Partial, real browser interaction proof | Session picker, 0.25×–16× clock, synchronized map/timing/control/weather/status/stints/telemetry cursor, playback transforms and exact source-time jumps; 11 Chromium scenarios pass; versioned driving-line geometry, 12-second selected trail/direction and bounded browser measurements exist; physical geometry and broader rendering evidence remain |
-| P3–P4: telemetry and Prediction Lab | Partial, historical phase-aware UI integrated | Monza telemetry follows canonical `RaceState`; local qualifying lab serves checksum-verified FP1/FP2/pre-Q snapshots, same-provider 2023 training/2024 validation/2025 holdout and phase feature registries; wider telemetry, publication timestamps and calibration remain |
+| P3–P4: telemetry and Prediction Lab | Partial, historical phase-aware UI integrated | Three-race six-channel telemetry follows canonical `RaceState`, offline catalog and stronger artifact contracts pass; local qualifying lab serves checksum-verified FP1/FP2/pre-Q snapshots, same-provider 2023 training/2024 validation/2025 holdout and phase feature registries; wider telemetry, publication timestamps and calibration remain |
 | P5–P6: strategy and counterfactual | Not started | Tested units, seeded worlds, real-event sanity checks |
 | P7–P8: live, radio and 3D | Not started | Provider-aware live fan-out and same-clock 3D |
 
@@ -22,8 +22,9 @@ is in `SOL61_MASTER_EXECUTION.md`; this page tracks execution.
 1. Continue P2 with fuller circuit geometry and rendering performance coverage
    while preserving the integrated source-time weather, stint history and
    conservative track-signal state.
-2. Expand the shared-clock telemetry comparison beyond the Monza reference
-   pair, then continue cross-provider overlap checks for qualifying.
+2. Expand shared-clock telemetry beyond explicit reference pairs to audited
+   driver/lap selection, compatible layouts and sector/corner comparisons;
+   continue cross-provider overlap checks for qualifying.
 3. Find or retain timestamped practice-result availability before making any
    operational prediction claim. The new phase study uses scheduled practice
    ends and explicitly does not establish provider publication time; details
@@ -45,3 +46,14 @@ timing-line location and broader rendering evidence are still required.
 
 Next: expand telemetry coverage and evaluate a licensed source of physical circuit geometry.
 See `REPLAY_GEOMETRY_AND_PERFORMANCE.md` for this checkpoint's evidence.
+
+
+## P3 multi-session, multi-channel telemetry milestone (verified; publication pending)
+
+Expand the existing distance-aligned comparison to an explicit three-race
+catalog, offline reproducible build, and six source-labelled channels with a
+persistent cumulative delta. Preserve the canonical replay cursor and hide it
+outside the shared sampled interval. Contract validation now checks comparison
+mathematics and complete grid coverage; all three real artifacts and integrated
+checks pass. This advances P3 without completing arbitrary lap/driver,
+cross-year or track-layout comparisons, sector/corner bands or ghost laps.

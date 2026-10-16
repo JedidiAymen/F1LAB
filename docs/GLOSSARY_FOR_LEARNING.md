@@ -209,3 +209,24 @@ proof that data had been published live by `t`. Without `focus_driver`, the API
 returns strict canonical `RaceState` schema 3. Focused `location_context` is a
 view extension of that same state response; it does not change the canonical
 state schema or create another position/clock authority.
+
+
+## Multi-channel telemetry learning notes
+
+**Common distance versus full lap duration:** two laps can have different
+speed-integrated lengths. The comparison grid stops at the shorter length, so
+its last reference-A elapsed time may precede A's own lap finish. A cursor after
+that grid end is unavailable even while A is still in the source lap.
+
+**Discrete source channel:** gear, brake-source values and DRS codes use the
+previous retained sample between timestamps. A blend such as gear 4.5 would
+invent a state. Continuous speed, throttle and RPM can interpolate when both
+endpoints exist; a missing endpoint remains unknown.
+
+**Delta identity:** at every shared distance, `delta_seconds = elapsed_B −
+elapsed_A`. A positive value means B required more elapsed time to reach that
+estimated distance. It does not establish equal fuel, tyres, traffic or weather.
+
+**Catalog versus quality certificate:** an explicit source pair gives stable,
+reproducible selection. It does not prove both laps are clean; missing Monaco
+pit coverage leaves pit-in status uncertain despite available non-pit-out flags.

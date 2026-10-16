@@ -890,3 +890,82 @@ required milestone documents. `git push origin feat/foundation` succeeded;
 Author: Aymen Jedidi; no assistant coauthor. Generated evidence remains local
 and ignored; the two unrelated user feature helpers remain untouched.
 Next: extend shared-clock telemetry beyond the Monza reference pair.
+
+
+## 2026-10-16 UTC — multi-session telemetry and six-channel inspection (P3 partial)
+
+- **Starting source SHA:** `acff2d86ba79ef9dc23c20ac3070d54a989bab8e` on `feat/foundation`.
+  The prior checkpoint verified 92 Python tests, 8 frontend unit tests and 11
+  browser scenarios. Those are prior evidence; new final checks are recorded below.
+  Preserve the two unrelated untracked user helpers. No publication yet.
+- **Scope:** grow the Monza-only comparison into an explicit per-race catalog,
+  locally reproducible offline builder, six-channel API/UI and stricter math
+  contracts. Current selected pairs: Monza #1 L50/#4 L50; Monaco #1 L40/#31
+  L40; Brazil #1 L52/#31 L52. Real rebuilt artifact metrics are recorded below.
+- **Current source changes:** `telemetry/artifacts.py` introduces immutable
+  `ComparisonSpec`, `COMPARISONS` and stable artifact identities/paths;
+  `contracts.py` validates sessions, distinct laps, full regular common grid,
+  increasing within-lap elapsed times and B−A delta. API channel projection and
+  offline CLI now support the explicit catalog. `lib/telemetry-comparison.ts` now defines six
+  channels, null-aware/discrete cursor values and disconnected channel paths;
+  `TelemetryPanel.tsx` integration and new browser cases pass.
+- **Algorithms/units:** speed trapezoids integrate metres using km/h÷3.6;
+  resample both laps on a 5 m common grid ending before the shorter integrated
+  lap distance. Delta is elapsed B minus elapsed A in seconds. Speed/throttle/
+  RPM are continuous channels; brake source values, gear and DRS codes hold
+  earlier values between samples. Missing source values remain null and break
+  plotted paths. The replay cursor uses reference-lap UTC start relative to
+  canonical session origin; it becomes unavailable outside sampled elapsed
+  coverage rather than freezing at its tail.
+- **Caveats:** estimated speed-integrated distance is not surveyed track
+  distance. These selected laps do not establish equal fuel, tyres, weather or
+  unobstructed running. Monaco has no cached pit resource, so no pit-in-clean
+  proof is available. Brake/DRS codes retain source semantics and throttle may
+  exceed nominal 100; do not reinterpret them as measured pressure or a
+  universal DRS-open boolean. No independent telemetry clock is introduced.
+- **Evidence/publication:** dataset rows, source/artifact hashes, commands/tests and
+  charts are recorded below; commit/push proof remains pending.
+  Source: https://openf1.org/docs/; no upstream implementation copied and raw
+  source/derived artifacts remain ignored under the existing rights policy.
+- **Next:** publish the verified source/docs checkpoint normally, then expand
+  arbitrary lap/driver selection and compatible-layout/sector comparisons.
+
+Additional current contract evidence: 16 focused distance-alignment tests pass
+and scoped Ruff passes, including eight serialized-contract mutation cases,
+two fractional gear/DRS rejection cases and one missing-channel case. The
+builder rejects fractional discrete codes instead of silently truncating them
+with `int()`. The previous real Monza artifact validates against the stricter
+contract. API projection exposes all aligned channels and lap-quality metadata
+while omitting the large raw `lap.points` arrays; all three-session builds
+and integrated checks pass.
+
+Verified reproduction: `uv run python -m f1_racelab.telemetry.openf1_lap_comparison --all --offline`
+completed from cached data; log `data/processed/telemetry_comparisons/catalog_build.log`.
+JSON, `.qa.json` and PNG files share basenames under that directory:
+`monza-2025_driver_1_lap_50_vs_4_lap_50`,
+`monaco-2023_driver_1_lap_40_vs_31_lap_40`,
+`brazil-2024_driver_1_lap_52_vs_31_lap_52`.
+
+| Session | JSON bytes | 5 m grid points | Common end m | End-grid B−A s | Maximum source gaps A/B s | Pit source |
+|---|---:|---:|---:|---:|---|---|
+| Monza | 847,715 | 1,150 | 5,746.06 | −0.234 | 0.799 / 0.799 | Cached, checked |
+| Monaco | 547,035 | 656 | 3,279.04 | −0.184 | 0.640 / 0.520 | Unavailable; pit-in unverified |
+| Brazil | 669,987 | 849 | 4,241.19 | +0.252 | 0.560 / 0.560 | Cached, checked |
+
+All six channels are nonnull at every aligned grid point for both laps in
+these artifacts; null handling remains tested for incomplete future inputs.
+Source hashes were checked directly against 4/3/4 raw cached resources
+(Monza/Monaco/Brazil). Artifact SHA-256 values:
+
+- Monza: `9bc3aa5ea7750541deff8d10a4f84f8f228e0c5e372f85692e1923821d8dfea6`.
+- Monaco: `5ac531b5e3ada9e3c90a3e0e86e27c169283163ab5328904d2b71d47f558b0d5`.
+- Brazil: `774191e671021aac0519452d771f9395d68e5ae1a6f4b929ec03b8f0a2c33998`.
+
+Final checks: `uv run pytest -q` — 104 passed in 4.26 s, one upstream
+Starlette/httpx warning; `uv run ruff check src/f1_racelab tests` passed.
+`uv run mypy src/f1_racelab/telemetry src/f1_racelab/session src/f1_racelab/api.py --ignore-missing-imports`
+passed, 20 source files. In `apps/web`, `npm run test:unit` — 12 passed;
+`npm run build` and `npm run lint` passed. Build JS 452.50 KB (147.99 KB gzip),
+CSS 79.61 KB (15.71 KB gzip). `npm run test:e2e` — 14 passed in 39.2 s,
+including exact six-channel cursor assertions for all three races and mobile;
+Monaco/Brazil PNG plots and mobile panel screenshot were visually inspected. Publication commit/push remains pending.

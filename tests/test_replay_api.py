@@ -2,26 +2,32 @@
 
 import gzip
 import json
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 
 from fastapi.testclient import TestClient
 
 from f1_racelab.api import create_app
+from f1_racelab.session.catalog import SESSIONS
 from f1_racelab.session.contracts import RaceState
 from f1_racelab.session.replay_source import ReplaySource
+from f1_racelab.telemetry.artifacts import COMPARISONS
 from f1_racelab.telemetry.distance_alignment import build_lap_telemetry, compare_laps
 
 
-def _write_telemetry_comparison(path: Path) -> None:
-    start = datetime(2025, 9, 7, 14, tzinfo=UTC)
+def _write_telemetry_comparison(path: Path, session_slug: str = "monza-2025") -> None:
+    session = SESSIONS[session_slug]
+    selection = COMPARISONS[session_slug]
+    start = session.clock_origin
     laps = []
-    for driver_number, base_speed in ((1, 72), (4, 54)):
+    for driver_number, lap_number, base_speed in (
+        (selection.driver_a, selection.lap_a, 72), (selection.driver_b, selection.lap_b, 54),
+    ):
         rows = [
             {
                 "date": (start + timedelta(seconds=second)).isoformat(),
-                "session_key": 9912,
-                "meeting_key": 1268,
+                "session_key": session.session_key,
+                "meeting_key": session.meeting_key,
                 "driver_number": driver_number,
                 "speed": base_speed,
                 "throttle": 70,
@@ -33,16 +39,16 @@ def _write_telemetry_comparison(path: Path) -> None:
             for second in range(3)
         ]
         lap_row = {
-            "session_key": 9912,
-            "meeting_key": 1268,
+            "session_key": session.session_key,
+            "meeting_key": session.meeting_key,
             "driver_number": driver_number,
-            "lap_number": 50,
+            "lap_number": lap_number,
             "date_start": start.isoformat(),
             "lap_duration": 2,
             "is_pit_out_lap": False,
         }
         laps.append(build_lap_telemetry(
-            rows, lap_row, session_key=9912, meeting_key=1268,
+            rows, lap_row, session_key=session.session_key, meeting_key=session.meeting_key,
             driver_number=driver_number,
         ))
     comparison = compare_laps(
@@ -106,6 +112,18 @@ def test_manifest_and_state_share_clock(tmp_path: Path) -> None:
     assert comparison.status_code == 200
     assert comparison.json()["distance_quality"] == "estimated"
     assert len(comparison.json()["samples"]) == 7
+    sample = comparison.json()["samples"][0]
+    for field in ("elapsed_a_seconds", "elapsed_b_seconds", "throttle_a_percent", "throttle_b_percent",
+                  "brake_a_source_value", "brake_b_source_value", "rpm_a", "rpm_b", "gear_a",
+                  "gear_b", "drs_a_code", "drs_b_code", "quality"):
+        assert field in sample
+    assert sample["rpm_a"] == 9000
+    assert sample["gear_a"] == 5
+    assert sample["quality"] == "estimated"
+    assert comparison.json()["lap_a"]["source_sample_count"] == 3
+    assert comparison.json()["lap_a"]["interpolated_boundary_count"] == 0
+    assert comparison.json()["lap_a"]["maximum_sample_gap_seconds"] == 1
+    assert "points" not in comparison.json()["lap_a"]
     state = client.get("/api/v1/replay/monza-2025/state", params={"seconds": .5})
     assert state.status_code == 200
     assert state.json()["schema_version"] == 3
@@ -167,3 +185,47 @@ def test_missing_telemetry_artifact_is_reported_without_fetching(tmp_path: Path)
     response = client.get("/api/v1/replay/monza-2025/telemetry/lap-comparison")
     assert response.status_code == 503
     assert "openf1_lap_comparison" in response.json()["detail"]
+
+
+def test_each_session_advertises_and_serves_its_own_catalogued_comparison(tmp_path: Path) -> None:
+    pack_paths = {}
+    telemetry_paths = {}
+    for slug, spec in SESSIONS.items():
+        pack = {
+            "schema_version": 1, "slug": slug,
+            "session": {"season": spec.season, "round": spec.round, "kind": "race"},
+            "session_name": "synthetic", "clock_origin_utc": spec.clock_origin.isoformat(),
+            "provider": "synthetic", "capabilities": [], "coverage": {},
+            "drivers": [{"driver_id": "1"}], "events": [],
+            "locations": {"1": [[0, 10, 20], [1, 20, 20]]}, "intervals": {},
+            "geometry": {"source": "synthetic", "centerline_xy": [[10, 20]]},
+        }
+        pack_path = tmp_path / f"{slug}.json.gz"
+        with gzip.open(pack_path, "wt", encoding="utf-8") as handle:
+            json.dump(pack, handle)
+        pack_paths[slug] = pack_path
+        telemetry_path = tmp_path / f"{slug}.telemetry.json"
+        _write_telemetry_comparison(telemetry_path, slug)
+        telemetry_paths[slug] = telemetry_path
+    client = TestClient(create_app(pack_paths=pack_paths, telemetry_comparison_paths=telemetry_paths))
+    for slug, selection in COMPARISONS.items():
+        manifest = client.get(f"/api/v1/replay/{slug}/manifest").json()
+        assert manifest["telemetry_comparisons"] == [{
+            "id": selection.comparison_id, "label": selection.label,
+            "available": True, "quality": "estimated",
+        }]
+        comparison = client.get(f"/api/v1/replay/{slug}/telemetry/lap-comparison")
+        assert comparison.status_code == 200
+        data = comparison.json()
+        assert data["lap_a"]["driver_number"] == selection.driver_a
+        assert data["lap_a"]["lap_number"] == selection.lap_a
+        assert data["lap_b"]["driver_number"] == selection.driver_b
+        assert data["lap_b"]["lap_number"] == selection.lap_b
+        assert data["samples"][0]["rpm_a"] == 9000
+    # Correct session identity does not excuse a mislabelled pair.
+    wrong = json.loads(telemetry_paths["monaco-2023"].read_text())
+    wrong["lap_b"]["lap_number"] = 41
+    telemetry_paths["monaco-2023"].write_text(json.dumps(wrong))
+    response = client.get("/api/v1/replay/monaco-2023/telemetry/lap-comparison")
+    assert response.status_code == 503
+    assert "comparison catalog" in response.json()["detail"]

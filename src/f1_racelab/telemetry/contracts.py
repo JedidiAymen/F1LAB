@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from math import floor, isclose
 from typing import Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
@@ -56,6 +57,14 @@ class LapTelemetry(BaseModel):
             previous_distance = point.distance_m
         if abs(self.points[0].elapsed_seconds) > 1e-6:
             raise ValueError("Lap telemetry must begin at elapsed time zero")
+        if abs(self.points[0].distance_m) > 1e-6:
+            raise ValueError("Lap telemetry distance must begin at zero")
+        if self.bounded_point_count != len(self.points):
+            raise ValueError("Bounded point count must match telemetry points")
+        largest_gap = max(b.elapsed_seconds - a.elapsed_seconds
+                          for a, b in zip(self.points, self.points[1:]))
+        if not isclose(largest_gap, self.maximum_sample_gap_seconds, abs_tol=1e-6):
+            raise ValueError("Reported sample gap disagrees with telemetry points")
         if abs(self.points[-1].elapsed_seconds - self.lap_duration_seconds) > 1e-6:
             raise ValueError("Lap telemetry must end at its lap duration")
         if abs(self.points[-1].distance_m - self.integrated_distance_m) > 1e-6:
@@ -112,11 +121,28 @@ class LapComparison(BaseModel):
             raise ValueError("Lap B does not belong to the comparison session")
         if self.lap_a.driver_number == self.lap_b.driver_number and self.lap_a.lap_number == self.lap_b.lap_number:
             raise ValueError("A lap cannot be compared with itself")
+        expected_end = min(self.lap_a.integrated_distance_m, self.lap_b.integrated_distance_m)
+        if not isclose(self.common_distance_end_m, expected_end, abs_tol=1e-6):
+            raise ValueError("Shared distance must equal the shorter integrated lap")
+        if len(self.samples) != floor(expected_end / self.sample_spacing_m) + 1:
+            raise ValueError("Comparison must cover the complete uniform common grid")
         previous = -1.0
-        for point in self.samples:
+        previous_a = previous_b = -1.0
+        for index, point in enumerate(self.samples):
             if point.distance_m <= previous:
                 raise ValueError("Comparison distances must strictly increase")
+            if not isclose(point.distance_m, index * self.sample_spacing_m, abs_tol=1e-6):
+                raise ValueError("Comparison samples must follow the stated distance grid")
+            if not (previous_a < point.elapsed_a_seconds <= self.lap_a.lap_duration_seconds
+                    and previous_b < point.elapsed_b_seconds <= self.lap_b.lap_duration_seconds):
+                raise ValueError("Comparison elapsed times must increase inside their source laps")
+            if not isclose(point.delta_time_b_minus_a_seconds,
+                           point.elapsed_b_seconds - point.elapsed_a_seconds, abs_tol=1e-9):
+                raise ValueError("Comparison delta must equal elapsed B minus elapsed A")
             previous = point.distance_m
+            previous_a, previous_b = point.elapsed_a_seconds, point.elapsed_b_seconds
+        if self.samples[0].elapsed_a_seconds != 0 or self.samples[0].elapsed_b_seconds != 0:
+            raise ValueError("Comparison must begin at both lap starts")
         if self.samples[-1].distance_m > self.common_distance_end_m + 1e-6:
             raise ValueError("Comparison grid extends beyond shared lap distance")
         return self

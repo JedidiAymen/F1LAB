@@ -434,3 +434,56 @@ test('map cars interpolate on playback and reduce motion remains immediate', asy
     .poll(async () => car.evaluate((element) => getComputedStyle(element).transitionDuration))
     .toBe('0s')
 })
+
+for (const session of [
+  { slug: 'monza-2025', name: '2025 Italian Grand Prix', title: '#1 L50 vs #4 L50' },
+  { slug: 'monaco-2023', name: '2023 Monaco Grand Prix', title: '#1 L40 vs #31 L40' },
+  { slug: 'brazil-2024', name: '2024 São Paulo Grand Prix', title: '#1 L52 vs #31 L52' },
+]) {
+  test(`${session.slug} six telemetry channels retain one clock and exact seek readouts`, async ({ page, request }, testInfo) => {
+    if (session.slug !== 'monza-2025') await chooseSession(page, session.name)
+    const panel = page.getByRole('region', { name: 'Telemetry comparison' })
+    await expect(panel.getByRole('heading', { name: session.title, exact: true })).toBeVisible()
+    const response = await request.get(`/api/v1/replay/${session.slug}/telemetry/lap-comparison`)
+    expect(response.status()).toBe(200)
+    const comparison = await response.json()
+    await panel.getByRole('button', { name: 'Jump to reference lap' }).click()
+    const start = await expectSynchronized(page)
+    await page.getByRole('button', { name: 'Forward 10 seconds' }).click()
+    await expect(page.getByTestId('state-clock')).toHaveAttribute('data-seconds', String(start + 10))
+    await expect(panel).toHaveAttribute('data-cursor-visible', 'true')
+    const readouts = panel.getByRole('table', { name: 'Canonical telemetry cursor readings' })
+    const before = await readouts.innerText()
+    const distance = await panel.getAttribute('data-cursor-distance')
+    const leftIndex = comparison.samples.findLastIndex((point: { elapsed_a_seconds: number }) => point.elapsed_a_seconds <= 10)
+    const left = comparison.samples[leftIndex]
+    const right = comparison.samples[leftIndex + 1]
+    const fraction = (10 - left.elapsed_a_seconds) / (right.elapsed_a_seconds - left.elapsed_a_seconds)
+    const expectedDistance = left.distance_m + fraction * (right.distance_m - left.distance_m)
+    expect(Number(distance)).toBeCloseTo(expectedDistance, 2)
+    // Discrete channels use the preceding grid value, never fractional source states.
+    for (const [id, field] of [['gear', 'gear_a'], ['drs', 'drs_a_code'], ['brake', 'brake_a_source_value']]) {
+      await expect(readouts.locator(`tr[data-channel="${id}"] td`).first()).toHaveText(String(left[field]))
+    }
+    for (const label of ['Speed', 'Throttle', 'Brake', 'RPM', 'Gear', 'DRS']) {
+      await panel.getByRole('tab', { name: label, exact: true }).click()
+      await expect(panel).toHaveAttribute('data-channel', label.toLowerCase())
+      await expect(panel.getByTestId('telemetry-trace-a')).toHaveAttribute('d', /^M/)
+      await expect(panel.getByTestId('telemetry-trace-b')).toHaveAttribute('d', /^M/)
+      expect(await expectSynchronized(page)).toBe(start + 10)
+      expect(await readouts.innerText()).toBe(before)
+    }
+    await page.getByRole('button', { name: 'Back 10 seconds' }).click()
+    await expect(page.getByTestId('state-clock')).toHaveAttribute('data-seconds', String(start))
+    await page.getByRole('button', { name: 'Forward 10 seconds' }).click()
+    await expect(panel).toHaveAttribute('data-cursor-distance', distance!)
+    expect(await readouts.innerText()).toBe(before)
+    await panel.screenshot({ path: testInfo.outputPath(`${session.slug}-telemetry-channels.png`) })
+    if (session.slug === 'monaco-2023') {
+      await page.setViewportSize({ width: 390, height: 844 })
+      await expect(panel.getByRole('tab', { name: 'DRS', exact: true })).toBeVisible()
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+      await panel.screenshot({ path: testInfo.outputPath('monaco-telemetry-mobile.png') })
+    }
+  })
+}

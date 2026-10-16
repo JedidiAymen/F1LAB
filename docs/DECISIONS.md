@@ -269,3 +269,18 @@ proof that data had been published live by `t`. Without `focus_driver`, the API
 returns strict canonical `RaceState` schema 3. Focused `location_context` is a
 view extension of that same state response; it does not change the canonical
 state schema or create another position/clock authority.
+
+
+## 2026-10-16 — explicit lap catalog and source-valued telemetry channels
+
+Use an explicit per-session catalog for supported historical comparisons and
+retain source hashes; choosing laps does not certify identical conditions or
+absence of pit-in when source coverage is unavailable. Require internally
+consistent full shared-distance artifacts before API projection.
+
+Expose speed, throttle, brake source value, RPM, gear and DRS code while retaining
+nulls and provider units. Hold discrete channel values rather than inventing
+fractional gears or DRS codes. Keep cumulative elapsed B−A beside the selected
+channel. Canonical replay time determines the cursor; outside the shorter
+shared-grid coverage the cursor is unavailable, avoiding a frozen tail that
+could imply current data. Memoize distance paths before adding rendering tools.

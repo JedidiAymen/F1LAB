@@ -1,9 +1,10 @@
 # Distance-aligned telemetry foundation
 
-This document records the first reproducible telemetry comparison and its
-initial shared-clock UI integration. The only real comparison is still the
-Monza 2025 reference pair; it does not claim a precise surveyed track distance
-or represent a general performance result.
+This document records the original Monza telemetry comparison and its initial
+shared-clock UI integration. The sections below describe that historical
+checkpoint. The current three-session, six-channel extension is documented in
+`TELEMETRY_CHANNELS_AND_COVERAGE.md`; its source catalogue and checks supersede
+the original Monza-only coverage statements. All distance remains estimated.
 
 The comparison foundation started at source SHA
 `89351502ccb6389c25886d18022430f2ce6319f8`; implementation commit

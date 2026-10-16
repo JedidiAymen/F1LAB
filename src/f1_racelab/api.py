@@ -23,7 +23,7 @@ from f1_racelab.session.catalog import DEFAULT_SESSION, SESSIONS
 from f1_racelab.session.contracts import WeatherPayload
 from f1_racelab.session.location_history import build_location_context
 from f1_racelab.session.replay_source import ReplaySource
-from f1_racelab.telemetry.artifacts import COMPARISON_ROOT
+from f1_racelab.telemetry.artifacts import COMPARISONS
 from f1_racelab.telemetry.contracts import LapComparison
 
 DEFAULT_PACK = DEFAULT_SESSION.pack_path
@@ -58,10 +58,7 @@ def create_app(
     """Create an API bound to a local replay pack, allowing isolated fixtures."""
     paths = {slug: spec.pack_path for slug, spec in SESSIONS.items()}
     paths.update(pack_paths or {})
-    telemetry_paths = {
-        slug: COMPARISON_ROOT / f"{slug}_driver_1_lap_50_vs_4_lap_50.json"
-        for slug in SESSIONS
-    }
+    telemetry_paths = {slug: comparison.path for slug, comparison in COMPARISONS.items()}
     telemetry_paths.update(telemetry_comparison_paths or {})
     prediction_path = Path(qualifying_prediction_path or DEFAULT_PREDICTION_ARTIFACTS)
     phase_prediction_path = Path(
@@ -116,11 +113,11 @@ def create_app(
             "race_control": [event for event in pack["events"] if event["type"] == "race_control"],
             "weather_changes": _rainfall_changes(replay),
             "telemetry_comparisons": ([{
-                "id": "driver-1-lap-50-vs-driver-4-lap-50",
-                "label": "#1 L50 vs #4 L50",
+                "id": COMPARISONS[slug].comparison_id,
+                "label": COMPARISONS[slug].label,
                 "available": telemetry_paths[slug].is_file(),
                 "quality": "estimated",
-            }] if slug in telemetry_paths else []),
+            }] if slug in COMPARISONS and slug in telemetry_paths else []),
         }
 
     @app.get("/api/v1/replay/{slug}/state")
@@ -169,31 +166,14 @@ def create_app(
         spec = SESSIONS[slug]
         if (comparison.session_key, comparison.meeting_key) != (spec.session_key, spec.meeting_key):
             raise HTTPException(status_code=503, detail="Telemetry artifact belongs to a different session")
+        expected = COMPARISONS.get(slug)
+        if expected is not None and (
+            comparison.lap_a.driver_number, comparison.lap_a.lap_number,
+            comparison.lap_b.driver_number, comparison.lap_b.lap_number,
+        ) != (expected.driver_a, expected.lap_a, expected.driver_b, expected.lap_b):
+            raise HTTPException(status_code=503, detail="Telemetry artifact differs from comparison catalog")
         return comparison.model_dump(
-            mode="json",
-            include={
-                "session_key": True,
-                "meeting_key": True,
-                "source": True,
-                "distance_quality": True,
-                "sample_spacing_m": True,
-                "common_distance_end_m": True,
-                "source_hashes": True,
-                "lap_a": {
-                    "driver_number", "lap_number", "start_utc",
-                    "lap_duration_seconds", "integrated_distance_m",
-                },
-                "lap_b": {
-                    "driver_number", "lap_number", "start_utc",
-                    "lap_duration_seconds", "integrated_distance_m",
-                },
-                "samples": {
-                    "__all__": {
-                        "distance_m", "elapsed_a_seconds",
-                        "delta_time_b_minus_a_seconds", "speed_a_kmh", "speed_b_kmh",
-                    },
-                },
-            },
+            mode="json", exclude={"lap_a": {"points"}, "lap_b": {"points"}},
         )
 
     def prediction_artifacts() -> dict:

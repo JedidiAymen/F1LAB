@@ -151,3 +151,80 @@ def test_comparison_requires_a_shared_session_and_valid_spacing() -> None:
             lap_a, lap_b, spacing_m=0,
             source_hashes={"laps": "a", "car_a": "b", "car_b": "c"},
         )
+
+
+@pytest.mark.parametrize(("field", "replacement", "message"), [
+    ("bounded_point_count", 99, "Bounded point count"),
+    ("maximum_sample_gap_seconds", 0.5, "Reported sample gap"),
+])
+def test_serialized_lap_rejects_inconsistent_quality_metadata(field, replacement, message):
+    from f1_racelab.telemetry.contracts import LapTelemetry
+
+    payload = comparison_lap(1, (72, 72, 72)).model_dump()
+    payload[field] = replacement
+    with pytest.raises(ValueError, match=message):
+        LapTelemetry.model_validate(payload)
+
+
+@pytest.mark.parametrize(("mutation", "message"), [
+    ("delta", "delta must equal"),
+    ("grid", "stated distance grid"),
+    ("truncated", "complete uniform common grid"),
+    ("shared_end", "shorter integrated lap"),
+    ("elapsed_order", "elapsed times must increase"),
+    ("elapsed_bound", "elapsed times must increase"),
+])
+def test_serialized_comparison_rejects_inconsistent_math(mutation, message):
+    from f1_racelab.telemetry.contracts import LapComparison
+
+    result = compare_laps(
+        comparison_lap(1, (72, 72, 72)), comparison_lap(4, (72, 72, 72)),
+        spacing_m=10, source_hashes={"laps": "a", "car_a": "b", "car_b": "c"},
+    )
+    payload = result.model_dump(mode="json")
+    if mutation == "delta":
+        payload["samples"][1]["delta_time_b_minus_a_seconds"] = 1
+    elif mutation == "grid":
+        payload["samples"][1]["distance_m"] = 11
+    elif mutation == "truncated":
+        payload["samples"].pop()
+    elif mutation == "shared_end":
+        payload["common_distance_end_m"] += 1
+    elif mutation == "elapsed_order":
+        payload["samples"][1]["elapsed_a_seconds"] = 0
+    elif mutation == "elapsed_bound":
+        payload["samples"][-1]["elapsed_b_seconds"] = 3
+    with pytest.raises(ValueError, match=message):
+        LapComparison.model_validate(payload)
+
+
+@pytest.mark.parametrize("source_field", ["n_gear", "drs"])
+def test_fractional_discrete_source_codes_are_rejected(source_field):
+    rows = [car_row(1, i, speed=72) for i in range(3)]
+    rows[1][source_field] = 2.5
+    with pytest.raises(ValueError, match="must be an integer"):
+        build_lap_telemetry(rows, lap_row(1), session_key=SESSION_KEY,
+                            meeting_key=MEETING_KEY, driver_number=1)
+
+
+def test_missing_channel_samples_stay_missing_on_shared_distance_grid():
+    rows = [car_row(1, i, speed=72) for i in range(3)]
+    rows[1]["throttle"] = None
+    rows[1]["brake"] = None
+    rows[1]["rpm"] = None
+    rows[1]["n_gear"] = None
+    rows[1]["drs"] = None
+    lap_a = build_lap_telemetry(rows, lap_row(1), session_key=SESSION_KEY,
+                                meeting_key=MEETING_KEY, driver_number=1)
+    result = compare_laps(lap_a, comparison_lap(4, (72, 72, 72)), spacing_m=5,
+                          source_hashes={"laps": "a", "car_a": "b", "car_b": "c"})
+    at_missing = result.samples[4]  # 20 metres == one elapsed second
+    assert at_missing.speed_a_kmh == 72
+    assert at_missing.throttle_a_percent is None
+    assert at_missing.brake_a_source_value is None
+    assert at_missing.rpm_a is None
+    assert at_missing.gear_a is None
+    assert at_missing.drs_a_code is None
+    assert at_missing.throttle_b_percent == 50
+    assert result.samples[3].throttle_a_percent is None  # no interpolation across missing channel
+    assert result.samples[3].gear_a == 5  # previous discrete source state
