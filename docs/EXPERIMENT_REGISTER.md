@@ -279,8 +279,9 @@
   `data/processed/qualifying_phases/`; exact commands and every artifact hash
   are in `QUALIFYING_PHASES.md`.
 
-- **Publication:** verification passed; normal feature-branch commit/push
-  pending; the root agent will record the publication SHA in the handoff.
+- **Publication:** implementation and required docs are in
+  `8a2c06c898e93f0083058a7abb3bcbd5b3f9b606`, pushed normally to
+  `origin/feat/foundation`; remote SHA matched exactly.
 
 Phase rankings are relative to the eligible phase cohort: `predicted_rank`
 and `actual_rank` are consecutive ranks within the retained drivers. The API

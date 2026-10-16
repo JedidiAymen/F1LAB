@@ -230,8 +230,10 @@ A subsequent audit removed an unintended FP3-best-time requirement in shared
 `prepare_dataset`: eligibility now uses each phase's own measured baseline.
 The real experiment was regenerated after that fix. Eligible train/validation/
 test rows are FP1 275/325/319, FP2 310/333/351 and pre-Q 311/342/354,
-with 16/18/18 events in every phase. The full suite passed with 65 tests in 3.99 s; milestone publication
-remains pending.
+with 16/18/18 events in every phase. The full suite passed with 65 tests in
+3.99 s. Implementation commit `8a2c06c898e93f0083058a7abb3bcbd5b3f9b606`
+was pushed normally; `git ls-remote origin refs/heads/feat/foundation` returned
+that exact SHA.
 
 Phase rankings are relative to the eligible phase cohort: `predicted_rank`
 and `actual_rank` are consecutive ranks within the retained drivers. The API

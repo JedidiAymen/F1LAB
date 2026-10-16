@@ -22,7 +22,7 @@ Jedidi identity and no assistant coauthor trailers. Two unrelated untracked
 `ml/features/` helpers remain untouched.
 
 The latest Prediction Lab implementation is commit
-`9f928361c9c7fdf59a2e685dc2994137cf942e35`, pushed and remote-verified on
+`8a2c06c898e93f0083058a7abb3bcbd5b3f9b606`, pushed and remote-verified on
 `origin/feat/foundation`; the owner's identity is the author.
 
 ## What exists and what does not
@@ -288,9 +288,10 @@ superiority or probability claim. Exact reproduction and tests are in
 ## Latest milestone — phase-aware qualifying snapshots (partial M5/P4)
 
 Starting source SHA: `d60c36f77295075bd50a1950ccabefc7eb5022b9`.
-Implementation and required documentation are in the current worktree.
-Verification passed; milestone commit and publication are pending. The root
-agent will add the commit SHA after push. It
+Implementation and required documentation are committed together in
+`8a2c06c898e93f0083058a7abb3bcbd5b3f9b606`, pushed normally to
+`origin/feat/foundation`; `git ls-remote` returned the exact same SHA.
+The owner is the author and there is no assistant coauthor trailer. This
 adds three retrospective forecast moments to the Prediction Lab: after FP1,
 after FP2 and before qualifying. The API validates phase feature allowlists
 and checksums and returns predicted ranks, actual ranks for scoring, and the

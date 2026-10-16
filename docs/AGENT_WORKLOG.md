@@ -767,9 +767,11 @@ PY
   validation uncertainty label displays 2024. Two delegated reviews helped
   identify the classification ambiguity and incomplete artifact-coverage
   checks; both are corrected and tested in this checkpoint.
-- **Commit/push:** verification passed; milestone commit and publication are
-  pending; the root agent will record the commit SHA and remote verification
-  in `CHATGPT_HANDOFF.md` after push. No assistant coauthor trailer is used.
+- **Commit/push:** source and required documentation committed together as
+  `8a2c06c898e93f0083058a7abb3bcbd5b3f9b606`, pushed normally to
+  `origin/feat/foundation`. `git ls-remote origin refs/heads/feat/foundation`
+  returned that exact SHA. Author/committer are Aymen Jedidi; no assistant
+  coauthor trailer is used. A docs follow-up records this publication proof.
 
 Phase rankings are relative to the eligible phase cohort: `predicted_rank`
 and `actual_rank` are consecutive ranks within the retained drivers. The API

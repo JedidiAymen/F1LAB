@@ -185,6 +185,8 @@ no raw timing records.
 The next prediction work should secure timestamped/archived feature
 availability and expand cross-provider overlap checks. In parallel, the
 roadmap's P2 geometry and rendering performance work remains open; strategy,
-what-if, live and 3D phases are not started. The milestone implementation and
-this documentation are committed and pushed together; final publication SHA
-is recorded in the handoff/worklog follow-up.
+what-if, live and 3D phases are not started. Implementation and required docs
+are committed together as `8a2c06c898e93f0083058a7abb3bcbd5b3f9b606`,
+pushed normally to `origin/feat/foundation` and remote-verified at that SHA.
+The owner is the author; there is no assistant coauthor trailer. A docs
+follow-up records the publication verification.
