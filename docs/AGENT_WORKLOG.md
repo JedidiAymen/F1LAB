@@ -475,10 +475,11 @@ PY
 ## 2026-10-16 UTC — distance-aligned telemetry foundation (partial P3)
 
 - **Starting source SHA:** `89351502ccb6389c25886d18022430f2ce6319f8` on
-  `feat/foundation`, synchronized with `origin/feat/foundation`. Preserved the
-  two unrelated untracked user helpers under `ml/features/`. This milestone
-  will be committed and pushed as the repository identity Aymen Jedidi, with
-  no assistant coauthor trailer.
+  `feat/foundation`, synchronized with `origin/feat/foundation`. Implementation
+  commit `2ac01012c780552f26bd9504f88c9cac87541000` was pushed normally and
+  verified at the same remote SHA. The two unrelated untracked user helpers
+  under `ml/features/` remain untouched. Commit author is Aymen Jedidi; no
+  assistant coauthor trailer was added.
 - **Changed source paths and symbols:** new
   `src/f1_racelab/telemetry/contracts.py` defines immutable
   `LapTelemetryPoint`, `LapTelemetry`, `DistanceComparisonPoint` and
@@ -536,5 +537,6 @@ PY
   sector model, GPS alignment, surveyed geometry, uncertainty band, prediction,
   strategy or live feed. Next: derive a telemetry cursor from the existing
   replay time and display it within that shared clock; then widen event
-  coverage. P3/P4 remain partial. Commit and remote verification SHAs are
-  recorded in the immediate documentation publication checkpoint.
+  coverage. P3/P4 remain partial. Remote verification used
+  `git ls-remote origin refs/heads/feat/foundation` and returned the exact
+  implementation SHA above.

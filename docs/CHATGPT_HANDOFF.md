@@ -10,10 +10,11 @@ remain partial. A real Monza 2025 two-lap telemetry comparison now builds from
 cached OpenF1 data on an estimated 5 m distance grid; it is not yet connected
 to the replay API or shared-clock UI. P3/P4 remain partial and the overall
 product goal is far from complete. The telemetry implementation starts at
-`89351502ccb6389c25886d18022430f2ce6319f8`; its pushed commit and exact remote
-verification are recorded in the latest worklog entry below. Git uses the
-repository's Aymen Jedidi identity and no assistant coauthor trailers. Two
-unrelated untracked `ml/features/` helpers remain untouched.
+`89351502ccb6389c25886d18022430f2ce6319f8`. Implementation commit
+`2ac01012c780552f26bd9504f88c9cac87541000` is pushed to `origin/feat/foundation`
+and `git ls-remote` returned the same SHA. Git uses the repository's Aymen
+Jedidi identity and no assistant coauthor trailers. Two unrelated untracked
+`ml/features/` helpers remain untouched.
 
 ## What exists and what does not
 
@@ -213,8 +214,8 @@ claim is made.
 ## Latest milestone — distance-aligned telemetry foundation (partial P3)
 
 The source commit starts from `89351502ccb6389c25886d18022430f2ce6319f8` and
-is pushed to `origin/feat/foundation`; its exact implementation SHA and
-remote SHA verification are in `AGENT_WORKLOG.md`. The telemetry implementation
+implementation commit `2ac01012c780552f26bd9504f88c9cac87541000` is pushed to
+`origin/feat/foundation` with matching remote SHA. The telemetry implementation
 adds immutable lap/comparison contracts, source identity and pit-out checks,
 one-second maximum gaps, trapezoidal speed integration, a common 5 m grid and
 a CLI JSON/PNG artifact. Exact formulas, decisions, source/license links and

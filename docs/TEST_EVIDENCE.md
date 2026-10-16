@@ -138,6 +138,7 @@ contracts, screenshot paths and limitations are in
 | `.venv/bin/ruff check src tests scripts` | Passed | Repository static checks |
 | `.venv/bin/mypy src/f1_racelab/telemetry src/f1_racelab/session src/f1_racelab/api.py --follow-imports=silent --ignore-missing-imports` | 17 files passed | Static type checking |
 | Visual inspection of comparison PNG | Readable speed and B−A panels with estimated-distance labeling | Real derived artifact; not an interactive UI or precision geometry claim |
+| `git push origin feat/foundation`; `git ls-remote origin refs/heads/feat/foundation` | Exit 0; implementation SHA `2ac01012c780552f26bd9504f88c9cac87541000` matches remote | Published source and documentation checkpoint; repository identity, no coauthor trailer |
 
 Full input hashes, formulas, output hashes and caveats are in
 `DISTANCE_ALIGNED_TELEMETRY.md`. This milestone does not include web tests

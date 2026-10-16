@@ -164,6 +164,8 @@
 - Starting source SHA `89351502ccb6389c25886d18022430f2ce6319f8`; source is
   cached OpenF1 v1 historical session 9912 (Monza 2025), with response hashes
   and provider/license links in `DISTANCE_ALIGNED_TELEMETRY.md`.
+- Implementation commit `2ac01012c780552f26bd9504f88c9cac87541000` is pushed
+  to `origin/feat/foundation` and remote-verified at the same SHA.
 - Compared VER #1 lap 50 (81.297 s) with NOR #4 lap 50 (81.123 s). Inputs are
   29,611 car-data rows per driver and the session lap table. In-window counts
   are 318 and 309; bounded point counts 320 and 311 include two interpolated

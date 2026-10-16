@@ -5,6 +5,12 @@ backend/data milestone only: the result is not yet served by the replay API or
 shown in the Race Control UI, and it does not claim a precise surveyed track
 distance.
 
+The implementation starts at source SHA
+`89351502ccb6389c25886d18022430f2ce6319f8`. Commit
+`2ac01012c780552f26bd9504f88c9cac87541000` is pushed to
+`origin/feat/foundation`; `git ls-remote` returned the same SHA. It was
+committed as Aymen Jedidi with no assistant coauthor trailer.
+
 ## Source and coverage
 
 - Provider: OpenF1 historical API v1, session `9912` (Monza 2025), meeting
