@@ -100,6 +100,17 @@ approximate geometry trace and one offline replay pack exist. The full
 `CircuitGeometry` contract, more golden sessions and live/simulation adapters
 remain. See `REPLAY_2025_MONZA.md` for field-level semantics.
 
+### Schema 2 replay context
+
+| Symbol | Input → algorithm → output | Proof and limit |
+|---|---|---|
+| `session.openf1_context.weather_payload` | OpenF1 row → finite/range/unit validation → canonical weather values | Real cache validation matches all 350 retained observations; no interpolation or rain intensity inference |
+| `session.openf1_context.track_status_payload` | OpenF1 race-control message and scope → accept only eligible track-wide cases → conservative `TrackStatusPayload` | Reviewed golden boundaries: 2 Monza, 2 Monaco, 10 Brazil; ending signals do not assert green |
+| `session.reducer.reduce_event` | Schema 1/2 event + immutable state → copy current observation/status at event time → schema 2 `RaceState` | 20 context reducer/contract tests; schema 1 packs stay readable |
+| `session.validate_context.validate` | Local schema 2 pack + exact raw cache bytes → independent source-lineage, cutoff and golden-message audit → QA JSON | 700 weather before/exact cutoff checks and 14 signal boundary checks; only three cached races |
+| `web.lib.session_context.weatherAt` | Canonical session time + observation → age seconds and `0 <= age <= 120` freshness → shown/stale state | Three unit cases include zero-valued temperatures, exact 120-second limit, future and stale observations |
+| `WeatherPanel` | Canonical state + all historical rainfall state changes → source-labelled readings and exact seek buttons | Six browser tests use actual local packs; rain means provider-reported presence only |
+
 ## Local Race Control UI (partial P2)
 
 | Symbol | Input → algorithm → output | Proof and limit |

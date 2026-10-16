@@ -14,9 +14,25 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Query
 
 from f1_racelab.session.catalog import DEFAULT_SESSION, SESSIONS
+from f1_racelab.session.contracts import WeatherPayload
 from f1_racelab.session.replay_source import ReplaySource
 
 DEFAULT_PACK = DEFAULT_SESSION.pack_path
+
+
+def _rainfall_changes(replay: ReplaySource) -> list[dict]:
+    changes = []
+    previous = None
+    for event in replay.events:
+        reading = event.payload
+        if isinstance(reading, WeatherPayload) and reading.rainfall is not None and (
+            reading.rainfall != previous
+        ):
+            changes.append({"event_id": event.event_id,
+                            "session_time_seconds": event.session_time_seconds,
+                            "rainfall": reading.rainfall})
+            previous = reading.rainfall
+    return changes
 
 
 def create_app(pack_path: Path | None = None, *, pack_paths: dict[str, Path] | None = None) -> FastAPI:
@@ -70,6 +86,7 @@ def create_app(pack_path: Path | None = None, *, pack_paths: dict[str, Path] | N
             "geometry": pack["geometry"],
             "coverage": pack["coverage"],
             "race_control": [event for event in pack["events"] if event["type"] == "race_control"],
+            "weather_changes": _rainfall_changes(replay),
         }
 
     @app.get("/api/v1/replay/{slug}/state")

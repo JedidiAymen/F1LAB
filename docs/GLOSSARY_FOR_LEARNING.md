@@ -104,3 +104,18 @@ to the planned race workstation.
     timestamps. The browser tests do not replace provider data with mock
     payloads. Separate unit tests use artificial timestamps to isolate clock
     arithmetic, including pause and seek after end.
+21. **Observation age and as-of display.** A source row keeps its provider
+    session timestamp. At replay time `t`, its age is `t - t_observed`. A
+    seek before the row makes it future data and it is hidden; a sufficiently
+    old row is stale and its values are hidden. F1LAB currently displays
+    weather through age 120 seconds. This is a UI policy, not a provider
+    promise or a new measurement.
+22. **Rainfall presence versus track grip.** OpenF1's boolean says whether
+    rain was reported. It contains no amount or intensity, and cannot prove
+    that the road is wet or estimate tyre grip. Missing is not the same as
+    `false`; the panel displays “No rain reported” only for an explicit false.
+23. **Track status versus race-control text.** Many source messages are
+    local to one driver or sector. A global status needs global scope and a
+    conservative phrase mapping. “Safety Car in this lap” means an ending
+    phase; it does not certify that the track is already green. A session
+    restart without a new global flag is shown as running/unknown.

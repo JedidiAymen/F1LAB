@@ -64,3 +64,38 @@ Generated data and metric tables are ignored by Git. The public OpenF1 source
 contract and documented 30 requests/minute free limit are at
 [OpenF1](https://openf1.org/docs/). `OpenF1Client` spaces uncached requests by
 at least 2.1 seconds. No production paid API or live feed was used.
+
+## 2026-10-16 — schema 2 weather and track context
+
+| Exact command/check | Result | Evidence class and artifact |
+|---|---|---|
+| `.venv/bin/pytest -q` | 50 passed; 1 existing Starlette/httpx deprecation warning | Synthetic contracts, replay/API behavior and raw-cache tamper fixture |
+| `.venv/bin/ruff check src tests scripts` | Passed | Static source checks |
+| `.venv/bin/mypy src/f1_racelab/session src/f1_racelab/api.py --follow-imports=silent --ignore-missing-imports` | 13 files passed | Static type checking |
+| `cd apps/web && npm run test:unit` | 3 passed | Synthetic clock and weather freshness boundaries |
+| `cd apps/web && npm run lint` | Passed | Frontend static checks |
+| `cd apps/web && npm run build` | Passed | TypeScript/Vite production bundle |
+| `cd apps/web && npm run test:e2e` | 6 passed against three real local packs | Chromium interactions, Monaco rain changes, Brazil signal meanings, synced panel timestamps; screenshots are ignored under `data/processed/browser_tests/results/` |
+| `.venv/bin/python -m f1_racelab.session.validate_context --all` | 700 weather cutoff comparisons, 14 reviewed track-signal boundaries, all source rows reconciled, zero invalid weather rows | Real raw OpenF1 cache; reports `data/processed/replay_packs/golden_context.qa.json` and per-pack `*.context.qa.json` |
+| `.venv/bin/python -m f1_racelab.session.validate_replay --all` | 15,162 event-boundary/regular cutoffs and 600 shuffled revisits agree with independent forward reduction | Real local schema 2 packs; `data/processed/replay_packs/golden_sessions.qa.json` |
+| `git diff --check` | Passed before commit | Static whitespace check |
+
+The new context pack SHA-256/bytes/event totals are Monza
+`cdb6a7a6f79d18c24c51001aef9c7829bfbf4db1d9da7fd9b4fab2559c1ae1dd` /
+1,781,361 / 1,592; Monaco
+`3b2cb79107ed8d5c72e14a87f0c3705d1cb29c9a7a2b735f52c07686b0294f2a` /
+2,534,796 / 2,220; Brazil
+`ca3df608046d96d9d87d9ae383037a11192800802f7d5c88603a7ca6bbb5cdec` /
+2,436,435 / 1,842. Pack hashes may change on rebuild because gzip metadata
+contains build-time data. Raw weather response SHA-256 values are documented
+in `REPLAY_CONTEXT.md` and the generated manifests.
+
+The first six-case browser run had five passes and one readiness timeout; its
+captured page showed that all 20 timing rows eventually rendered. An isolated
+rerun then exposed that a repeated `SESSION STARTED` message made `.first()`
+seek to the wrong event. The test now waits up to 15 seconds for the real
+20-driver render and selects the exact event by session seconds. The targeted
+Brazil case and final six-case suite pass. No behavior test uses mocked race
+observations; the weather freshness unit tests use synthetic times by design.
+Toolchain: Python 3.12.13 / FastAPI 0.142.2; Node 22.23.2 / npm 10.9.8;
+Playwright 1.64.1 / Chromium 156; Vite 8.3.2.

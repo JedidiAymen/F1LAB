@@ -10,7 +10,12 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
+
+type Flag = Literal["green", "yellow", "red", "safety_car", "vsc", "chequered"]
+type TrackStatus = Flag | Literal[
+    "running_unknown", "suspended", "vsc_ending", "safety_car_ending"
+]
 
 
 class Quality(StrEnum):
@@ -103,7 +108,7 @@ class StintPayload(BaseModel):
 
 class FlagPayload(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
-    flag: Literal["green", "yellow", "red", "safety_car", "vsc", "chequered"]
+    flag: Flag
     message: str | None = None
 
 
@@ -119,15 +124,65 @@ class RaceControlPayload(BaseModel):
     message: str
     flag: str | None = None
     scope: str | None = None
+    sector: int | None = Field(default=None, ge=1)
+    driver_id: str | None = None
+
+
+class WeatherPayload(BaseModel):
+    """Provider weather readings; rainfall is presence, not intensity or grip."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+    air_temperature_c: float | None = None
+    track_temperature_c: float | None = None
+    humidity_percent: float | None = Field(default=None, ge=0, le=100)
+    pressure_mbar: float | None = Field(default=None, gt=0)
+    wind_direction_degrees: float | None = Field(default=None, ge=0, le=359)
+    wind_speed_mps: float | None = Field(default=None, ge=0)
+    rainfall: bool | None = Field(default=None, strict=True)
+
+    @model_validator(mode="after")
+    def has_observation(self) -> WeatherPayload:
+        if all(value is None for value in self.model_dump().values()):
+            raise ValueError("Weather payload contains no observations")
+        return self
+
+
+class TrackStatusPayload(BaseModel):
+    """Last unambiguous track-wide source signal, including pending endings."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+    status: TrackStatus
+    message: str = Field(min_length=1)
+    basis: Literal["track_flag", "safety_car_message", "session_status", "canonical_flag_event"]
+
+
+class ObservationMetadata(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+    event_id: str = Field(min_length=1)
+    source: str = Field(min_length=1)
+    observed_at: AwareDatetime
+    session_time_seconds: float = Field(ge=0)
+    quality: Quality
+
+
+class WeatherObservation(ObservationMetadata):
+    values: WeatherPayload
+    # Freshness policy for display/consumers, not a claim of measurement rate.
+    max_age_seconds: float = Field(default=120.0, gt=0)
+
+
+class TrackStatusObservation(ObservationMetadata):
+    signal: TrackStatusPayload
 
 
 class SessionEvent(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    schema_version: Literal[1] = 1
+    schema_version: Literal[1, 2] = 2
     session: SessionId
     event_id: str = Field(min_length=1)
-    type: Literal["position", "pit", "lap", "pit_stop", "stint", "flag", "retirement", "race_control"]
+    type: Literal["position", "pit", "lap", "pit_stop", "stint", "flag", "retirement",
+                  "race_control", "weather", "track_status"]
     source: str = Field(min_length=1)
     source_timestamp: datetime
     observed_at: datetime
@@ -137,14 +192,18 @@ class SessionEvent(BaseModel):
     applicable_lap: int | None = Field(default=None, ge=0)
     quality: Quality
     payload: (PositionPayload | PitPayload | LapPayload | PitStopPayload | StintPayload
-              | FlagPayload | RetirementPayload | RaceControlPayload)
+              | FlagPayload | RetirementPayload | RaceControlPayload | WeatherPayload
+              | TrackStatusPayload)
 
     @model_validator(mode="after")
     def validate_payload(self) -> SessionEvent:
+        if self.schema_version == 1 and self.type in {"weather", "track_status"}:
+            raise ValueError("Context events require schema_version 2")
         expected = {"position": PositionPayload, "pit": PitPayload,
                     "lap": LapPayload, "pit_stop": PitStopPayload, "stint": StintPayload,
                     "flag": FlagPayload, "retirement": RetirementPayload,
-                    "race_control": RaceControlPayload}
+                    "race_control": RaceControlPayload, "weather": WeatherPayload,
+                    "track_status": TrackStatusPayload}
         if not isinstance(self.payload, expected[self.type]):
             # Pydantic wraps ValueError into a public ValidationError.
             raise ValueError(f"{self.type} event requires {expected[self.type].__name__}")  # noqa: TRY004
@@ -157,12 +216,14 @@ class SessionEvent(BaseModel):
 class RaceState(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    schema_version: Literal[1] = 1
+    schema_version: Literal[1, 2] = 2
     session: SessionId
     capabilities: tuple[str, ...] = ()
     session_time_seconds: float = Field(default=0, ge=0)
-    flag: Literal["green", "yellow", "red", "safety_car", "vsc", "chequered"] | None = None
+    flag: Flag | None = None
     flag_message: str | None = None
+    track_status: TrackStatusObservation | None = None
+    weather: WeatherObservation | None = None
     drivers: dict[str, DriverState] = Field(default_factory=dict)
     last_sequence: int = -1
     applied_event_ids: frozenset[str] = frozenset()

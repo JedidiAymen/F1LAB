@@ -9,6 +9,8 @@ async function expectSynchronized(page: Page) {
     'Circuit position map',
     'Driver focus',
     'Race control feed',
+    'Weather observations',
+    'Session summary',
   ]) {
     await expect(page.getByRole('region', { name })).toHaveAttribute(
       'data-session-time',
@@ -38,7 +40,9 @@ test.beforeEach(async ({ page, request }) => {
     'Build all three replay packs before running real-data browser tests',
   ).toEqual([])
   await page.goto('/')
-  await expect(page.locator('.timing-row')).toHaveCount(20)
+  await expect(page.locator('.timing-row')).toHaveCount(20, {
+    timeout: 15_000,
+  })
   await expect(page.locator('.source-footer')).toContainText('SYNCED')
 })
 
@@ -88,6 +92,10 @@ test('real Monza seeks keep map, timing, focus and control on the same state', a
   )
   await expectSynchronized(page)
   expect(errors).toEqual([])
+  await expect(page.getByTestId('track-status')).toHaveAttribute(
+    'data-status',
+    'chequered',
+  )
 })
 
 test('play, speed change, pause and exact message seek use the central clock', async ({
@@ -153,6 +161,10 @@ test('switching real sessions resets time and exposes missing Monaco pit data', 
     '6484',
   )
   await expectSynchronized(page)
+  await expect(page.getByTestId('track-status')).toHaveAttribute(
+    'data-status',
+    'safety_car_ending',
+  )
   await page.screenshot({
     path: testInfo.outputPath('brazil-desktop.png'),
     fullPage: true,
@@ -180,6 +192,75 @@ test('mobile keeps the session selector and replay controls usable', async ({
   await expectSynchronized(page)
   await page.screenshot({
     path: testInfo.outputPath('monaco-mobile.png'),
+    fullPage: true,
+  })
+})
+
+test('Monaco rainfall reports seek to measured weather without retaining future readings', async ({
+  page,
+}, testInfo) => {
+  await chooseSession(page, '2023 Monaco Grand Prix')
+  const rain = page.getByRole('button', {
+    name: 'Rain reported at 01:12:43',
+    exact: true,
+  })
+  await rain.click()
+  await expect(page.getByTestId('state-clock')).toHaveAttribute(
+    'data-seconds',
+    '4363.946',
+  )
+  await expect(page.getByTestId('rainfall')).toHaveText('Rain reported')
+  await expect(
+    page.getByRole('region', { name: 'Weather observations' }),
+  ).toHaveAttribute('data-observed-time', '4363.946')
+  await expectSynchronized(page)
+  await page
+    .getByRole('button', { name: 'No rain reported at 01:38:43', exact: true })
+    .click()
+  await expect(page.getByTestId('rainfall')).toHaveText('No rain reported')
+  await rain.click()
+  await expect(page.getByTestId('rainfall')).toHaveText('Rain reported')
+  await expectSynchronized(page)
+  await page.screenshot({
+    path: testInfo.outputPath('monaco-rain-desktop.png'),
+    fullPage: true,
+  })
+})
+
+test('Brazil ending signals and restart keep their source meaning', async ({
+  page,
+}, testInfo) => {
+  await chooseSession(page, '2024 São Paulo Grand Prix')
+  const slider = page.getByRole('slider', { name: 'Session time' })
+  for (const [message, seconds, status] of [
+    ['VIRTUAL SAFETY CAR ENDING', '3590', 'vsc_ending'],
+    ['RED FLAG', '4042', 'red'],
+    ['SESSION STARTED', '5520.39', 'running_unknown'],
+    ['SAFETY CAR IN THIS LAP', '6484', 'safety_car_ending'],
+  ]) {
+    await slider.focus()
+    await slider.press('End')
+    await expect(page.getByTestId('state-clock')).toHaveAttribute(
+      'data-seconds',
+      '8935.817',
+    )
+    await page
+      .getByRole('region', { name: 'Race control feed' })
+      .locator(`.control-row[data-session-time="${seconds}"]`)
+      .filter({ hasText: message })
+      .click()
+    await expect(page.getByTestId('state-clock')).toHaveAttribute(
+      'data-seconds',
+      seconds,
+    )
+    await expect(page.getByTestId('track-status')).toHaveAttribute(
+      'data-status',
+      status,
+    )
+    await expectSynchronized(page)
+  }
+  await page.screenshot({
+    path: testInfo.outputPath('brazil-context-desktop.png'),
     fullPage: true,
   })
 })

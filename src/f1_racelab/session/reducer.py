@@ -7,6 +7,7 @@ from collections.abc import Iterable
 
 from .contracts import (
     DriverState,
+    Flag,
     FlagPayload,
     LapPayload,
     PitPayload,
@@ -18,7 +19,22 @@ from .contracts import (
     SessionEvent,
     SessionId,
     StintPayload,
+    TrackStatusObservation,
+    TrackStatusPayload,
+    WeatherObservation,
+    WeatherPayload,
 )
+
+FLAG_BY_STATUS: dict[str, Flag] = {
+    "green": "green", "yellow": "yellow", "red": "red", "safety_car": "safety_car",
+    "vsc": "vsc", "chequered": "chequered",
+}
+
+
+def _observation_metadata(event: SessionEvent) -> dict:
+    return {"event_id": event.event_id, "source": event.source,
+            "observed_at": event.observed_at, "session_time_seconds": event.session_time_seconds,
+            "quality": event.quality}
 
 
 def reduce_event(state: RaceState, event: SessionEvent) -> RaceState:
@@ -43,10 +59,24 @@ def reduce_event(state: RaceState, event: SessionEvent) -> RaceState:
     drivers = dict(state.drivers)
     flag = state.flag
     flag_message = state.flag_message
+    track_status = state.track_status
+    weather = state.weather
     race_control_messages = state.race_control_messages
     payload = event.payload
     if isinstance(payload, FlagPayload):
         flag, flag_message = payload.flag, payload.message
+        signal = TrackStatusPayload(status=payload.flag, message=payload.message or payload.flag,
+                                    basis="canonical_flag_event")
+        track_status = TrackStatusObservation.model_validate(
+            _observation_metadata(event) | {"signal": signal})
+    elif isinstance(payload, TrackStatusPayload):
+        # Pending endings/restarts do not establish a steady global flag.
+        flag, flag_message = FLAG_BY_STATUS.get(payload.status), payload.message
+        track_status = TrackStatusObservation.model_validate(
+            _observation_metadata(event) | {"signal": payload})
+    elif isinstance(payload, WeatherPayload):
+        weather = WeatherObservation.model_validate(
+            _observation_metadata(event) | {"values": payload})
     elif isinstance(payload, RaceControlPayload):
         race_control_messages = (*race_control_messages, payload)
     else:
@@ -105,8 +135,10 @@ def reduce_event(state: RaceState, event: SessionEvent) -> RaceState:
                 "quality": event.quality, "observed_at": event.observed_at,
             })
     return state.model_copy(update={
+        "schema_version": 2,
         "session_time_seconds": event.session_time_seconds,
         "flag": flag, "flag_message": flag_message, "drivers": drivers,
+        "track_status": track_status, "weather": weather,
         "race_control_messages": race_control_messages,
         "last_sequence": event.sequence,
         "applied_event_ids": state.applied_event_ids | {event.event_id},

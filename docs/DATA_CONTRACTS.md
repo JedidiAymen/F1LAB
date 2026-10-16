@@ -100,6 +100,8 @@ The local API now lists session availability at `GET /api/v1/replays`;
 manifest and state paths are `/api/v1/replay/{slug}/manifest` and
 `/api/v1/replay/{slug}/state?seconds=...`. Old Monza paths remain valid.
 The API does not expose future final classifications through the event
-timeline. Weather and SC/VSC/red-flag source tables/messages have been
-audited, but global track-status/weather state remains future work.
-`REPLAY_GOLDEN_SESSIONS.md` records current exact artifacts and proof.
+timeline. Schema 2 now carries timestamped weather and conservatively scoped
+global track-status observations in the same `RaceState`; exact units, event
+mapping, age rules, raw hashes and proof are in `REPLAY_CONTEXT.md`.
+`REPLAY_GOLDEN_SESSIONS.md` records replay state and `REPLAY_CONTEXT.md`
+records context artifacts and proof.

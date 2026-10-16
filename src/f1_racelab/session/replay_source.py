@@ -35,7 +35,7 @@ class ReplaySource:
     """One offline source with deterministic seek and event-index checkpoints."""
 
     def __init__(self, pack: dict):
-        if pack.get("schema_version") != 1:
+        if pack.get("schema_version") not in (1, 2):
             raise ValueError("Unsupported replay pack schema version")
         self.pack = pack
         self.session = SessionId.model_validate(pack["session"])
@@ -43,6 +43,8 @@ class ReplaySource:
         if self.clock_origin.tzinfo is None:
             raise ValueError("Replay clock origin must be timezone-aware")
         self.events = [SessionEvent.model_validate(row) for row in pack["events"]]
+        if pack["schema_version"] == 1 and any(event.schema_version != 1 for event in self.events):
+            raise ValueError("Schema 1 pack contains a newer event envelope")
         self.event_times = [event.session_time_seconds for event in self.events]
         if self.event_times != sorted(self.event_times):
             raise ValueError("Replay events are not sorted by session time")
@@ -83,10 +85,10 @@ class ReplaySource:
             if index % CHECKPOINT_EVENTS == 0:
                 self.checkpoint_indices.append(index)
                 self.checkpoint_states.append(state)
-        self.duration_seconds = max(
+        self.duration_seconds = max([
             self.event_times[-1] if self.event_times else 0.0,
             *(rows[-1][0] for rows in self.locations.values() if rows),
-        )
+        ])
 
     @classmethod
     def from_file(cls, path: Path) -> ReplaySource:

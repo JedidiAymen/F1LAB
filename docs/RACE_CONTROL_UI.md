@@ -1,8 +1,10 @@
 # Race Control UI — first local 2D replay, 2026-10-16
 
-**Later checkpoint:** `REPLAY_GOLDEN_SESSIONS.md` supersedes the one-race
-and browser-unavailable status below. Three packs, session selection and four
-real Chromium interaction tests now work; screenshots were inspected.
+**Later checkpoints:** `REPLAY_GOLDEN_SESSIONS.md` supersedes the one-race
+status below, and `REPLAY_CONTEXT.md` documents schema 2 weather and scoped
+track status. Three packs, session selection and six real Chromium interaction
+tests now work; desktop/mobile screenshots were inspected. Weather and global
+status follow the same canonical session clock. P2 remains partial.
 
 **Status:** one real 2025 Monza offline demo implemented; broader P2 gate is
 partial. Starting source commit: `abe031c` on `feat/foundation`. Find this

@@ -99,3 +99,21 @@
   synthetic clock tests and 30 Python contract tests pass. Full artifact
   hashes, exact commands, code map and caveats:
   `REPLAY_GOLDEN_SESSIONS.md`.
+
+## R-005 — source-time weather and scoped status in canonical replay
+
+- Starting source SHA `418806099b7670d96cfe13c13c6484d5f8644a50`; three real
+  cached OpenF1 races. Schema 2 adds 350 exact-time weather observations and
+  14 conservative global track signals; durations remain unchanged. Weather
+  maximum retained gaps are 60.042/60.093/60.225 seconds. No interpolation,
+  rain intensity, or green state is inferred from ending messages.
+- Independent raw-cache lineage and as-of audit: 700 weather before/exact
+  checks, 14 golden boundaries, zero invalid weather. The replay differential
+  validator checks 15,162 boundary/regular cutoffs and 600 shuffled revisits.
+- Six real-pack Chromium tests cover synced panels, Monaco's rain/dry/rain
+  seeks and Brazil's VSC ending, red, session restart and Safety Car ending.
+  Fifty Python tests and three JS unit tests pass. Exact commands, hashes,
+  units, signal sequence, screenshots and interpretation limits are in
+  `REPLAY_CONTEXT.md` and `TEST_EVIDENCE.md`.
+- This is replay-context evidence for three events, not weather calibration,
+  wet-track estimation, live behavior or a general race-condition model.

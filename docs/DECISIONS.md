@@ -109,3 +109,22 @@ packs; browser snapshots exposed an unnamed slider input, which was fixed.
 The web lockfile is tracked despite a user-global ignore; the shadcn CLI is
 a development dependency. Production-only npm audit is clean, with seven
 upstream high advisories still reported for the development CLI chain.
+
+## D-010 — source-time context and conservative display rules, 2026-10-16
+
+Weather readings are source observations, so packs store them at their exact
+provider timestamps and never interpolate or extend a session's existing time
+window. `RaceState` retains the last observation for deterministic seeks; the
+UI shows its values only when its age on that same session clock is between
+zero and 120 seconds. The threshold is a display policy. `rainfall` means the
+provider reported rain presence and does not mean the surface is wet or encode
+intensity. Rainfall changes become historical navigation markers, while
+current panel values still derive from the selected canonical state.
+
+Global track status requires provider scope and message conditions. Explicit
+Track flags require no driver number or sector; pit-exit messages are excluded.
+Known SC/VSC endings and restart notices map to ending/unknown statuses and
+never to green. This avoids turning a phrase such as “SAFETY CAR IN THIS LAP”
+or “SESSION STARTED” into a false current flag. Unsupported and local signals
+stay available as raw race-control messages. Proof on three real races and the
+source lineage report are in `REPLAY_CONTEXT.md`.

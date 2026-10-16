@@ -20,6 +20,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { PlaybackClock } from '@/lib/playback-clock'
+import { WeatherPanel } from '@/components/WeatherPanel'
+import {
+  formatSessionTime as secondsLabel,
+  trackStatusLabels,
+  type TrackStatusObservation,
+  type WeatherObservation,
+  type WeatherChange,
+} from '@/lib/session-context'
 import './App.css'
 
 type Driver = {
@@ -48,6 +56,8 @@ type DriverState = {
 type RaceState = {
   session_time_seconds: number
   flag: string | null
+  track_status: TrackStatusObservation | null
+  weather: WeatherObservation | null
   drivers: Record<string, DriverState>
 }
 type ControlEvent = {
@@ -73,6 +83,7 @@ type Manifest = {
   drivers: Driver[]
   geometry: { centerline_xy: number[][]; quality: string; source: string }
   race_control: ControlEvent[]
+  weather_changes: WeatherChange[]
   coverage: Record<string, unknown>
 }
 
@@ -84,10 +95,6 @@ type CatalogEntry = {
   display_name: string
   circuit: string
   available: boolean
-}
-const secondsLabel = (value: number) => {
-  const n = Math.floor(value)
-  return `${String(Math.floor(n / 3600)).padStart(2, '0')}:${String(Math.floor((n % 3600) / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`
 }
 const lapLabel = (value: number | null) =>
   value == null
@@ -475,7 +482,12 @@ function ReplayWorkspace({
               )}
             </p>
           </div>
-          <div className="race-facts">
+          <div
+            className="race-facts"
+            role="region"
+            aria-label="Session summary"
+            data-session-time={state?.session_time_seconds}
+          >
             <div>
               <span>SESSION CLOCK</span>
               <strong
@@ -493,10 +505,22 @@ function ReplayWorkspace({
               </strong>
             </div>
             <div>
-              <span>STATUS</span>
-              <strong className="status-value">
-                {state?.flag?.toUpperCase() ?? 'UNCONFIRMED'}
+              <span>LAST TRACK SIGNAL</span>
+              <strong
+                className="status-value"
+                data-testid="track-status"
+                data-status={state?.track_status?.signal.status ?? 'unconfirmed'}
+                title={state?.track_status?.signal.message}
+              >
+                {state?.track_status
+                  ? trackStatusLabels[state.track_status.signal.status]
+                  : 'UNCONFIRMED'}
               </strong>
+              {state?.track_status && (
+                <small className="signal-time">
+                  at {secondsLabel(state.track_status.session_time_seconds)}
+                </small>
+              )}
             </div>
           </div>
         </div>
@@ -521,6 +545,13 @@ function ReplayWorkspace({
           </div>
         ) : (
           <>
+            <WeatherPanel
+              seconds={state?.session_time_seconds ?? 0}
+              observation={state?.weather ?? null}
+              available={manifest.capabilities.includes('weather')}
+              changes={manifest.weather_changes}
+              onSeek={(seconds) => seek(seconds, true)}
+            />
             <div className="workspace-grid">
               <section
                 className="timing-panel panel"
@@ -669,6 +700,7 @@ function ReplayWorkspace({
                           type="button"
                           key={e.event_id}
                           className="control-row"
+                          data-session-time={e.session_time_seconds}
                           onClick={() => seek(e.session_time_seconds, true)}
                         >
                           <time>{secondsLabel(e.session_time_seconds)}</time>

@@ -161,3 +161,25 @@ provider points and branding was created locally; no official broadcast
 graphics were copied.
 Next: scoped global track-status/weather contracts, smoother timestamped
 rendering and fuller P2 panel coverage, then distance-aligned telemetry.
+
+## 2026-10-16 context follow-up — schema 2
+
+The preceding section records the earlier session-selection checkpoint. Its
+weather/status “next” items have since been implemented from starting source
+SHA `418806099b7670d96cfe13c13c6484d5f8644a50`. Current schema 2 packs contain
+5,654 events (1,592 Monza; 2,220 Monaco; 1,842 Brazil) and retain the same
+799,422 source XY points. Available final results and pack durations are
+unchanged. Pack SHA-256 values are now:
+
+- Monza: `cdb6a7a6f79d18c24c51001aef9c7829bfbf4db1d9da7fd9b4fab2559c1ae1dd`
+- Monaco: `3b2cb79107ed8d5c72e14a87f0c3705d1cb29c9a7a2b735f52c07686b0294f2a`
+- Brazil: `ca3df608046d96d9d87d9ae383037a11192800802f7d5c88603a7ca6bbb5cdec`
+
+All-boundary/regular seek checks now total 15,162 plus 600 shuffled revisits;
+latest local p50/p95 seek milliseconds are 1.148/2.544, 1.329/3.276 and
+1.194/2.606 for Monza, Monaco and Brazil. These are local backend measurements,
+not browser FPS. Schema 2 adds 350 weather observations and 14 accepted global
+signals without extending replay clocks. See `REPLAY_CONTEXT.md` for source
+hashes, units, per-field semantics, exact as-of validation, UI freshness,
+browser scenarios and limits. P1/P2 are still partial: smooth motion, stint
+views, surveyed geometry, retirement chronology and telemetry remain open.

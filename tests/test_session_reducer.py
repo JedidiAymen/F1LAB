@@ -107,7 +107,7 @@ def test_replay_source_checkpoint_and_location_quality() -> None:
     events = [event(0, 0, "position", PositionPayload(driver_id="VER", position=1))]
     events.extend(event(i, float(i), "flag", FlagPayload(flag="yellow")) for i in range(1, 70))
     pack = {
-        "schema_version": 1,
+        "schema_version": 2,
         "session": SESSION.model_dump(mode="json"),
         "clock_origin_utc": START.isoformat(),
         "events": [item.model_dump(mode="json") for item in events],

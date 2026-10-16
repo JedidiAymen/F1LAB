@@ -142,6 +142,94 @@ main {
   color: #d3b17a;
   letter-spacing: 0.05em;
 }
+.race-facts .signal-time {
+  display: block;
+  font-size: 9px;
+  margin-top: 5px;
+}
+.status-value[data-status='red'] {
+  color: #ff847c;
+}
+.status-value[data-status='green'] {
+  color: #84d8bb;
+}
+.status-value[data-status='chequered'] {
+  color: #e9edef;
+}
+.weather-panel {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  margin-bottom: 12px;
+}
+.weather-heading {
+  display: flex;
+  gap: 10px;
+  padding: 14px 17px;
+  align-items: center;
+  border-right: 1px solid #2a343b;
+  color: #a4b4be;
+}
+.weather-heading h2 {
+  font-size: 12px;
+  color: #e4eaed;
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+.weather-heading p,
+.weather-heading small {
+  font-size: 10px;
+  color: #81929d;
+  margin: 0;
+}
+.weather-readings {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  margin: 0;
+}
+.weather-readings > div {
+  padding: 14px 14px 12px;
+  border-right: 1px solid #27323a;
+}
+.weather-readings > div:last-child {
+  border-right: 0;
+}
+.weather-readings dt {
+  font-size: 10px;
+  color: #82939e;
+  margin-bottom: 6px;
+}
+.weather-readings dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.weather-readings dd small {
+  color: #92a5b1;
+  font-size: 10px;
+  font-weight: 400;
+}
+.weather-readings [data-testid='rainfall'] {
+  font-size: 12px;
+  line-height: 1.4;
+}
+.weather-panel[data-fresh='false'] .weather-readings {
+  opacity: 0.55;
+}
+.weather-changes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  grid-column: 1/-1;
+  overflow-x: auto;
+  border-top: 1px solid #2a343b;
+}
+.weather-changes > span {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: #8c9fa9;
+  margin-right: 8px;
+}
 .panel {
   background: #151c21;
   border: 1px solid #2a343b;
@@ -149,10 +237,7 @@ main {
 }
 .workspace-grid {
   display: grid;
-  grid-template-columns: minmax(245px, 290px) minmax(420px, 1fr) minmax(
-      270px,
-      320px
-    );
+  grid-template-columns: minmax(245px, 290px) minmax(420px, 1fr) minmax(270px, 320px);
   gap: 12px;
   align-items: stretch;
 }
@@ -591,6 +676,25 @@ button:focus-visible {
   }
 }
 @media (max-width: 750px) {
+  .weather-panel {
+    grid-template-columns: 1fr;
+  }
+  .weather-heading {
+    border-right: 0;
+    border-bottom: 1px solid #2a343b;
+    padding: 10px 14px;
+  }
+  .weather-readings {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .weather-readings > div {
+    padding: 10px 12px;
+    border-bottom: 1px solid #27323a;
+  }
+  .race-facts .status-value {
+    font-size: 10px;
+    line-height: 1.4;
+  }
   .topbar {
     padding: 0 15px;
   }

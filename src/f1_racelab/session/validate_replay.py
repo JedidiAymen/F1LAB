@@ -94,7 +94,7 @@ def validate(path: Path = OUTPUT) -> dict:
         "indexed_seek_p50_ms": round(statistics.median(elapsed_ms), 3),
         "indexed_seek_p95_ms": round(sorted(elapsed_ms)[int(.95 * (len(elapsed_ms) - 1))], 3),
         "limits": ["This pack only", "Approximate provider coordinates", "No full telemetry",
-                   "No sector-correct global flag inference"],
+                   "No inferred green at ending/restart signals"],
     }
     destination = path.with_suffix(".qa.json")
     destination.write_text(json.dumps(report, indent=2))

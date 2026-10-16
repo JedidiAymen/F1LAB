@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Literal
 
 import httpx
+from pydantic import ValidationError
 
 from f1_racelab.data.openf1_qualifying import OpenF1Client
 from f1_racelab.session.catalog import DEFAULT_SESSION, SESSIONS, ReplaySpec
@@ -30,15 +31,21 @@ from f1_racelab.session.contracts import (
     SessionEvent,
     SessionId,
     StintPayload,
+    TrackStatusPayload,
+    WeatherPayload,
 )
+from f1_racelab.session.openf1_context import track_status_payload, weather_payload
 
 SESSION_KEY = DEFAULT_SESSION.session_key
 CLOCK_ORIGIN = DEFAULT_SESSION.clock_origin
 OUTPUT = DEFAULT_SESSION.pack_path
 SOURCE = "OpenF1 v1"
-type CandidateKind = Literal["position", "position_seed", "lap", "pit_stop", "stint", "race_control"]
-type EventKind = Literal["position", "lap", "pit_stop", "stint", "race_control"]
-type EventPayload = PositionPayload | LapPayload | PitStopPayload | StintPayload | RaceControlPayload
+type CandidateKind = Literal["position", "position_seed", "lap", "pit_stop", "stint",
+                             "race_control", "track_status", "weather"]
+type EventKind = Literal["position", "lap", "pit_stop", "stint", "race_control",
+                         "track_status", "weather"]
+type EventPayload = (PositionPayload | LapPayload | PitStopPayload | StintPayload
+                    | RaceControlPayload | TrackStatusPayload | WeatherPayload)
 
 
 def _time(value: str) -> datetime:
@@ -82,6 +89,7 @@ def _rows(client: OpenF1Client, endpoint: str, spec: ReplaySpec = DEFAULT_SESSIO
 
 def _timed_events(raw: dict[str, list[dict]], session: SessionId, ingested_at: datetime,
                   clock_origin: datetime = CLOCK_ORIGIN,
+                  location_end_seconds: float | None = None,
                   ) -> tuple[list[SessionEvent], dict[str, int]]:
     """Use source timestamps where present; label derived lap/stint time estimated."""
     candidates: list[tuple[datetime, int, CandidateKind, int, EventPayload, int | None, Quality]] = []
@@ -155,15 +163,40 @@ def _timed_events(raw: dict[str, list[dict]], session: SessionId, ingested_at: d
             continue
         payload = RaceControlPayload(category=row.get("category") or "Unknown",
                                      message=row.get("message") or "",
-                                     flag=row.get("flag"), scope=row.get("scope"))
+                                     flag=row.get("flag"), scope=row.get("scope"),
+                                     sector=row.get("sector"),
+                                     driver_id=str(row["driver_number"])
+                                     if row.get("driver_number") is not None else None)
         candidates.append((when, 5, "race_control", index, payload,
                            row.get("lap_number"), Quality.MEASURED))
+        signal = track_status_payload(row)
+        if signal is not None:
+            candidates.append((when, 6, "track_status", index, signal,
+                               row.get("lap_number"), Quality.MEASURED))
+
+    context_end = None if location_end_seconds is None else max(
+        [location_end_seconds, *(_seconds(item[0], clock_origin) for item in candidates)])
+    for index, row in enumerate(raw.get("weather", [])):
+        when = _time(row["date"])
+        seconds = _seconds(when, clock_origin)
+        if seconds < 0:
+            counts["weather_before_clock"] += 1
+            continue
+        if context_end is not None and seconds > context_end:
+            counts["weather_after_replay_window"] += 1
+            continue
+        try:
+            reading = weather_payload(row)
+        except ValidationError:
+            counts["weather_invalid_rows"] += 1
+            continue
+        candidates.append((when, 7, "weather", index, reading, None, Quality.MEASURED))
 
     candidates.sort(key=lambda item: (item[0], item[1], item[3]))
     events = []
     for sequence, (when, _, kind, index, payload, lap, quality) in enumerate(candidates):
         source_table = {"position_seed": "position", "lap": "laps",
-                        "pit_stop": "pit", "stint": "stints"}
+                        "pit_stop": "pit", "stint": "stints", "track_status": "race_control"}
         source_row = raw[source_table.get(kind, kind)][index]
         timestamp_field = "date_start" if kind in {"lap", "stint"} else "date"
         if kind == "stint":
@@ -305,13 +338,14 @@ def build_replay_pack(output: Path | None = None, *, spec: ReplaySpec = DEFAULT_
         raw = {name: _rows(client, name, spec) for name in
                ("drivers", "position", "laps", "stints", "race_control",
                 "intervals", "session_result")}
-        try:
-            raw["pit"] = _rows(client, "pit", spec)
-        except httpx.HTTPStatusError as exc:
-            if exc.response.status_code != 404:
-                raise
-            raw["pit"] = []
-            unavailable["pit"] = "HTTP 404: provider resource unavailable"
+        for optional in ("pit", "weather"):
+            try:
+                raw[optional] = _rows(client, optional, spec)
+            except httpx.HTTPStatusError as exc:
+                if exc.response.status_code != 404:
+                    raise
+                raw[optional] = []
+                unavailable[optional] = "HTTP 404: provider resource unavailable"
         drivers = sorted(raw["drivers"], key=lambda row: int(row["driver_number"]))
         numbers = [int(row["driver_number"]) for row in drivers]
         if len(numbers) < 2 or len(numbers) != len(set(numbers)):
@@ -330,10 +364,12 @@ def build_replay_pack(output: Path | None = None, *, spec: ReplaySpec = DEFAULT_
         source_hashes = dict(client.hashes)
     session = SessionId(season=spec.season, round=spec.round, kind="race",
                         provider_key=f"openf1:{spec.session_key}")
-    events, event_coverage = _timed_events(raw, session, datetime.now(UTC), spec.clock_origin)
+    location_end = max([0.0, *(rows[-1][0] for rows in locations.values() if rows)])
+    events, event_coverage = _timed_events(raw, session, datetime.now(UTC),
+                                          spec.clock_origin, location_end)
     geometry = _geometry(locations["1"], raw["laps"], spec.clock_origin)
     pack = {
-        "schema_version": 1,
+        "schema_version": 2,
         "session": session.model_dump(mode="json"),
         "slug": spec.slug,
         "session_name": f"{spec.title} — Race",
@@ -343,7 +379,9 @@ def build_replay_pack(output: Path | None = None, *, spec: ReplaySpec = DEFAULT_
         "provider": SOURCE,
         "capabilities": ["positions", "laps", "stints", "race_control_messages",
                          "approximate_location", "intervals"]
-                        + ([] if "pit" in unavailable else ["pit_stops"]),
+                        + ([] if "pit" in unavailable else ["pit_stops"])
+                        + (["weather"] if event_coverage.get("weather") else [])
+                        + (["track_status_signals"] if event_coverage.get("track_status") else []),
         "drivers": [{"driver_id": str(row["driver_number"]),
                      "number": int(row["driver_number"]),
                      "acronym": row.get("name_acronym"), "name": row.get("full_name"),

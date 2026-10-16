@@ -302,3 +302,67 @@ with log.open('w') as handle:
   print(slug, json.dumps({k:manifest[k] for k in ('sha256','bytes','event_count','driver_count','sample_count','qa')}),flush=True)
 PY
 ```
+
+## 2026-10-16 UTC — schema 2 weather observations and scoped track signals
+
+- **Starting source SHA:** `418806099b7670d96cfe13c13c6484d5f8644a50` on
+  `feat/foundation`, synchronized with `origin/feat/foundation`; the two
+  unrelated untracked `ml/features/` helpers were preserved. The implementation
+  and complete note set are committed and pushed together; exact implementation
+  and publication SHAs are recorded in the follow-up handoff entry after push.
+- **Changed paths and contracts:** `session/contracts.py` adds schema 2
+  `WeatherObservation`, `TrackStatusObservation`, strict weather units/ranges,
+  observation metadata, 120-second maximum display age, and scoped status
+  enums. `session/openf1_context.py` normalizes weather and conservative
+  session-wide messages. `session/reducer.py` applies both at their provider
+  event time; `ReplaySource` reads schema 1 and 2 packs and exposes schema 2
+  state. `openf1_replay.py` adds weather and eligible global signals without
+  changing the position/lap replay window. `validate_context.py` independently
+  verifies the raw-source lineage and golden signal boundaries.
+- **UI and API paths:** `api.py` exposes rainfall-change navigation points in
+  the manifest. `apps/web/src/lib/session-context.ts` derives weather freshness
+  from the canonical session clock. `WeatherPanel.tsx`, `App.tsx` and `App.css`
+  display units, observation age, rainfall reports and last track signal.
+  Every panel remains tied to one state timestamp. Race-control buttons expose
+  their exact source seconds for stable access and browser checks.
+- **Real inputs and algorithm:** OpenF1 historical weather values remain at
+  exact provider timestamps: air/track °C, humidity %, pressure mbar, wind
+  direction degrees, wind speed m/s, and rain presence boolean. They are not
+  interpolated. In UI, age is `state.session_time_seconds - observed_at`; data
+  is fresh only when `0 <= age <= 120 s`. Rainfall labels state only whether
+  the provider reported rain. Global flag rows require Track scope and no
+  driver/sector; pit-exit flags are discarded. Exact SC/VSC deployed/ending,
+  session-started/aborted messages are mapped, but ending/restart signals do
+  not imply green. Other rows remain ordinary race-control messages.
+- **Real evidence:** packs contain 5,654 events (Monza 1,592; Monaco 2,220;
+  Brazil 1,842), including 350 weather and 14 track-status events, and retain
+  799,422 source XY points. Raw weather coverage is 144/176/201 rows; retained
+  rows are 84/117/149 after 54/59/52 pre-clock records and six post-window
+  Monza records are handled without extending replay duration. All 350 records
+  match raw cache bytes, source timestamps and values. The independent audit
+  performs 700 before/exact-as-of comparisons and checks 14 reviewed global
+  status boundaries. Max retained weather gaps are 60.042/60.093/60.225 seconds.
+  Pack durations remain 5,014.715/7,030.073/8,935.817 seconds. Details, source
+  hashes, command lines, limitations and generated report paths are in
+  `REPLAY_CONTEXT.md`.
+- **Synthetic and browser evidence:** 50 Python tests pass (one existing
+  Starlette/httpx deprecation warning); Ruff and session/API mypy pass (13
+  files); three JS unit tests, web lint and Vite build pass. Six Playwright
+  Chromium checks pass with all three real local packs, including Monaco rain
+  transitions and Brazil VSC ending/red/restart/SC ending semantics. Screenshots
+  in ignored browser output were inspected. A first full browser attempt exposed
+  two test issues: cold page initialization exceeded the default five-second
+  assertion despite a complete page snapshot, and `.first()` selected a later
+  repeated SESSION STARTED message. A 15-second bounded data readiness check
+  and exact event-time selector fixed these; the Brazil case then passed alone
+  and the complete suite passed. No 60 Hz/FPS or official track-condition claim
+  is made.
+- **Sources and caveats:** documented [OpenF1 API](https://openf1.org/docs/),
+  including native weather units; source/license audit and non-commercial
+  upstream CC BY-NC-SA 4.0 terms remain in D-001. No raw pack is committed.
+  `running_unknown` intentionally makes no green assertion; `suspended` follows
+  SESSION ABORTED, not a guessed red flag. Reported rain does not imply a wet
+  surface, rainfall amount, or intensity. The 120-second age is a UI freshness
+  policy, not a provider guarantee. Offline replay only; live feed, smooth
+  rendering, stint bars, telemetry, strategy and the remaining roadmap gates
+  are incomplete.
