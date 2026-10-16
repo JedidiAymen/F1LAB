@@ -113,3 +113,15 @@ All transport times are seconds since scheduled 2025 Monza race origin. SVG
 projection is dimensionless. Driver lap durations/gaps remain seconds from
 the backend contract. `RACE_CONTROL_UI.md` has precise reproduction, source,
 test evidence and caveats.
+
+## Additional session audit
+
+| Symbol | Input → algorithm → output | Proof and limit |
+|---|---|---|
+| `audit_candidates.Candidate` | Year and country → immutable session lookup request | Monaco 2023 and Brazil 2024 are explicit defaults |
+| `audit_candidates.audit_candidate` | One OpenF1 Race session and nine source tables → checked table rows; only 404 becomes unavailable | Real audit found Monaco `pit` 404; all other HTTP failures propagate |
+| `audit_candidates.summarize` | Source rows and hashes → counts, driver coverage, rain/compound categories, critical control timestamps | Synthetic fixture distinguishes null from zero; counts are raw source records, not events |
+
+The ignored `data/processed/replay_candidate_audit.json` preserves response
+hashes for reproduction. `REPLAY_CANDIDATES.md` records numbers and the
+builder changes required before claiming a second replay.

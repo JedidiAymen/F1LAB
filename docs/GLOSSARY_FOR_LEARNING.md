@@ -81,3 +81,8 @@ to the planned race workstation.
     a visible update indicator covers request lag. The circuit line is a
     fixed approximate provider trace. No independent timing or map clock
     is used.
+17. **Unavailable versus empty provider table.** HTTP 404 for Monaco's
+    historical `pit` resource means the resource is unavailable. A successful
+    HTTP response with zero rows would mean the provider supplied an empty
+    result. Treating both as zero pit stops would create a false sporting
+    conclusion; the candidate audit records the first as `null`.

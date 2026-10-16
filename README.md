@@ -74,4 +74,5 @@ npm run dev -- --host 127.0.0.1
 The UI provides one shared playback clock, timing, a provider-derived 2D map
 and race-control messages. See [the replay evidence](docs/REPLAY_2025_MONZA.md)
 and [the UI milestone](docs/RACE_CONTROL_UI.md) for coverage, clock semantics,
-tests and limitations.
+tests and limitations. [The additional-session audit](docs/REPLAY_CANDIDATES.md)
+records why Monaco/Brazil cannot yet be treated as validated replay packs.

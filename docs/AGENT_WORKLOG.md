@@ -191,3 +191,31 @@
   data and the repository/license details in `REPLAY_2025_MONZA.md`.
   Find the final checkpoint SHA and push state with `git log -1` and
   `git ls-remote origin refs/heads/feat/foundation`.
+
+## 2026-10-16 UTC — source audit for two replay candidates
+
+- **Starting SHA:** pushed `2d270fc` on `feat/foundation`; two preexisting
+  untracked helper scripts remain untouched. This is a source-coverage
+  checkpoint, not a second/third built replay pack.
+- **Code:** `session/audit_candidates.py:Candidate/audit_candidate/summarize`
+  resolves each race, fetches nine tables through the existing OpenF1 client,
+  validates session keys, records rows/driver coverage/rain/compounds/critical
+  messages/SHA-256, and marks HTTP 404 unavailable rather than zero.
+  `tests/test_replay_candidate_audit.py` checks that contract synthetically.
+  The ignored output is `data/processed/replay_candidate_audit.json`.
+- **Real findings:** 2023 Monaco session 9094 has 20 drivers in position and
+  lap tables, 26/176 rainfall records and INTERMEDIATE/WET stints; its
+  `pit` endpoint returned HTTP 404. 2024 Brazil session 9636 has 20
+  position drivers, 19 lap drivers, 117/201 rainfall records and VSC/SC/red
+  control messages. Full counts, times, hashes and source/licensing links
+  are in `REPLAY_CANDIDATES.md`.
+- **Evidence/bug:** first naive fetch stopped on Monaco `pit` 404; the
+  auditor now catches only that status and keeps `null` distinct from a
+  successful empty response. CLI rerun succeeded; one synthetic audit test,
+  full 28-test suite, Ruff and audit mypy passed. Exact commands are in
+  `TEST_EVIDENCE.md`.
+- **Next:** parameterize the Monza builder, carry optional pit coverage into
+  capabilities, then build/validate both packs before changing global flag
+  state or claiming wider replay reliability. Find this checkpoint's final
+  commit/push via `git log -1` and `git ls-remote origin
+  refs/heads/feat/foundation`.

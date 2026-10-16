@@ -20,8 +20,9 @@ is in `SOL61_MASTER_EXECUTION.md`; this page tracks execution.
 
 1. Inspect the local Race Control UI in an available browser, exercise seek,
    playback, driver selection and responsive widths, and fix any visual issues.
-2. Add two more historical sessions only after auditing actual provider
-   coverage, including safety-car/VSC and mixed-weather cases.
+2. Generalize the pack builder for audited 2023 Monaco and 2024 Brazil.
+   Monaco lacks a `pit` resource (HTTP 404); Brazil contains VSC, safety-car,
+   red-flag and rain records. See `REPLAY_CANDIDATES.md`.
 3. Audit provider agreement across more events and timestamp lineage before
    treating the mixed-source ranking as a production claim.
 

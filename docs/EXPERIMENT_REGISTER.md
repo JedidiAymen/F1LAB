@@ -68,3 +68,17 @@
 - Web TypeScript/Vite build and ESLint passed. Browser UI inspection was
   unavailable; no visual FPS, real-user playback or interaction metric is
   claimed. See `RACE_CONTROL_UI.md` for commands, files and limits.
+
+## R-003 — additional session source coverage
+
+- Starting SHA `2d270fc`; real OpenF1 v1 sessions 9094 (2023 Monaco) and
+  9636 (2024 Brazil). The output is an ignored source audit JSON, not a
+  replay pack or UI test. Source table counts, response hashes and exact
+  reproduction are in `REPLAY_CANDIDATES.md`.
+- Monaco: 20 position/lap drivers, 26 of 176 weather records with rainfall,
+  20 INTERMEDIATE plus 3 WET stint rows; pit endpoint HTTP 404. Brazil: 20
+  position drivers, 19 lap drivers, 117 of 201 rain records and six critical
+  VSC/SC/red control messages. This establishes useful source cases, not
+  validated pack behavior.
+- Synthetic auditor test and full suite (28 passed) plus Ruff and scoped
+  mypy passed. Generalization and pack QA remain next.

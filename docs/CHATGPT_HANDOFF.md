@@ -4,8 +4,9 @@
 real 2025 Monza offline pack now builds, seeks and serves through a local API.
 The first shared-clock 2D Race Control screen is implemented. Branch
 `feat/foundation`; pushed checkpoints `b6835e7`, `4c5bd37` and
-`abe031c`. Check `git log -1`, `git status` and `git ls-remote origin
-refs/heads/feat/foundation` for the exact later UI checkpoint SHA/push state.
+`abe031c`, and UI checkpoint `2d270fc`. Check `git log -1`, `git status`
+and `git ls-remote origin refs/heads/feat/foundation` for the exact later
+candidate-audit checkpoint SHA/push state.
 
 ## What exists and what does not
 
@@ -35,6 +36,12 @@ refs/heads/feat/foundation` for the exact later UI checkpoint SHA/push state.
   are hidden, including unchanged coordinates after 15 seconds. Backend
   states are requested at most 5 Hz. See `RACE_CONTROL_UI.md` for source
   paths, API, data semantics and exact evidence.
+- **Two further sessions audited, not built:** OpenF1 2023 Monaco race 9094
+  has wet/intermediate coverage but its `pit` resource returned HTTP 404.
+  OpenF1 2024 Brazil race 9636 has rain, VSC, safety-car and red-flag records.
+  `session/audit_candidates.py` preserves a real source coverage/hash report
+  in ignored `data/processed/replay_candidate_audit.json`. See
+  `REPLAY_CANDIDATES.md` for counts, times, SHA-256 and implementation limits.
 - **Not done:** calibrated probabilities, prediction serving, full historical
   replay across three representative sessions, browser visual/interaction
   proof, 3D visualization, telemetry comparison, strategy, what-if, live
@@ -83,12 +90,13 @@ uv sync --dev
 .venv/bin/python -m f1_racelab.session.openf1_sample
 .venv/bin/python -m f1_racelab.session.openf1_replay
 .venv/bin/python -m f1_racelab.session.validate_replay
+.venv/bin/python -m f1_racelab.session.audit_candidates
 .venv/bin/uvicorn f1_racelab.api:app --host 127.0.0.1 --port 8000
 cd apps/web && npm ci && npm run dev -- --host 127.0.0.1
 ```
 
-The latest full test run passed **27/27**, Ruff passed, mypy passed for the
-eight session source files plus API, and web ESLint/TypeScript/Vite build
+The latest full test run passed **28/28**, Ruff passed, mypy passed for ten
+session/API source files, and web ESLint/TypeScript/Vite build
 passed; exact commands are
 in `TEST_EVIDENCE.md`. Fixture tests are separate from the real provider data
 and model experiment. Generated
@@ -127,14 +135,15 @@ the pack hash changes across rebuilds because ingest timestamps change.
 | Approximate replay geometry | OpenF1 positions have arbitrary origin and unknown unit; trace is VER lap 3 | Show coordinate/quality labels; do not call the trace surveyed or precise |
 | Repeated stopped-car locations | Provider may repeat constant points after a DNF/DNS | 15-second identical-coordinate streak now hides the map point; heuristic may hide a legitimate stationary car; no retirement time inferred |
 | Browser QA | Computer-use Chrome and in-app browser unavailable | Build/static/API tests pass; visual, responsive and interaction QA remain |
+| Optional historical pit resource | Monaco 2023 `pit` HTTP 404; other eight audited resources available | Generic builder must expose unavailable pit capability instead of assuming zero pit stops |
 
 ## Next five actions
 
 1. Confirm current UI checkpoint SHA and remote push state.
 2. Inspect the rendered local UI at desktop/mobile widths and exercise
    seek, playback, speed, driver selection and message jumps in a browser.
-3. Audit two additional historical sessions with real SC/VSC and mixed weather
-   coverage before claiming general replay reliability.
+3. Generalize the replay builder to audited Monaco/Brazil with explicit
+   missing-resource semantics; build and run end-state/seek QA for both.
 4. Expand cross-provider overlap and as-of timestamp audits before promoting
    a qualifying model toward production use.
 

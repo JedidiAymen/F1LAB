@@ -38,4 +38,6 @@ For the richer offline Monza race pack, run
 `.venv/bin/python -m f1_racelab.session.validate_replay` and read
 `REPLAY_2025_MONZA.md`. The pack is local and ignored. Run the first
 browser screen using the two terminal commands in `RACE_CONTROL_UI.md`;
-browser interaction and visual QA remain open.
+browser interaction and visual QA remain open. `REPLAY_CANDIDATES.md`
+records source coverage for Monaco 2023 and Brazil 2024 before extending
+the one-race builder.

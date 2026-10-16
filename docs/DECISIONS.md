@@ -74,3 +74,13 @@ small, auditable, source-faithful first milestone. Provider coordinates that
 repeat unchanged for 15 seconds are hidden as stale on the map; no retirement
 event is inferred. The 15-second threshold is a visual heuristic and needs
 validation on more sessions. Design and test evidence: `RACE_CONTROL_UI.md`.
+
+## D-007 — distinguish missing provider resources, 2026-10-16
+
+An OpenF1 `pit?session_key=9094` request for the 2023 Monaco race returned
+HTTP 404 while eight other expected resources were available. The candidate
+auditor therefore records only 404 as `null` availability, separate from a
+successful zero-row response, and rethrows all other HTTP failures. The
+future generic pack builder must carry this distinction into capability and
+quality metadata rather than pretending Monaco had zero pit stops. See
+`REPLAY_CANDIDATES.md`.
