@@ -4,10 +4,12 @@
 real historical race packs build, reconcile and play through one local API/UI:
 Monza 2025, Monaco 2023 and Brazil 2024. Four actual Chromium browser tests
 pass, and desktop/mobile screenshots were inspected. P1/P2 remain partial.
-Branch `feat/foundation`; pushed prior checkpoints include `2d270fc`
-(first UI) and `7940f2c` (candidate audit), the starting SHA of the current
-three-session milestone. Check `git log -1`, `git status` and
-`git ls-remote origin refs/heads/feat/foundation` for its final SHA/push state.
+Branch `feat/foundation`; implementation checkpoint
+`af2f64677d48d7f9573451de1419fbe3e0b98e08` is pushed to
+`origin/feat/foundation` and was verified with `git ls-remote`.
+Prior checkpoints include `2d270fc` (first UI) and `7940f2c`
+(candidate audit/source SHA). This handoff's later documentation commit
+records that push; use `git log -1` for the current documentation HEAD.
 Git uses the repository's Aymen Jedidi identity and no assistant coauthor
 trailers. Two unrelated untracked `ml/features/` helpers remain untouched.
 

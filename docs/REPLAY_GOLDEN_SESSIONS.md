@@ -6,6 +6,10 @@ through the same adapter, replay source, API and UI. P1/P2 remain partial:
 global track status, weather display, continuous car motion, full geometry,
 retirement chronology and telemetry are not yet complete.
 
+Implementation commit: `af2f64677d48d7f9573451de1419fbe3e0b98e08`,
+pushed and verified on `origin/feat/foundation`. This follow-up metadata
+entry records the verified implementation SHA after publication.
+
 ## Real artifacts and reconciliation
 
 | Reference | Monza 2025 | Monaco 2023 | Brazil 2024 |

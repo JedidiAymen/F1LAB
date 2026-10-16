@@ -280,9 +280,11 @@
   partial (approximate geometry, 5 Hz state rendering, no global status or
   weather in state, missing source-time retirement handling). Next add
   scoped track-status/weather, smoother rendering/stint panels, then
-  distance-aligned telemetry. Final checkpoint/push lookup:
-  `git log -1 --oneline`; `git ls-remote origin
-  refs/heads/feat/foundation`. No coauthor trailers are added.
+  distance-aligned telemetry. Implementation checkpoint
+  `af2f64677d48d7f9573451de1419fbe3e0b98e08` was pushed to
+  `origin/feat/foundation`; remote SHA verified with `git ls-remote`.
+  A follow-up docs-only commit records this publication. No coauthor
+  trailers are added.
 
 The final cached rebuild executed:
 
