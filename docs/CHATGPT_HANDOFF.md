@@ -1,12 +1,15 @@
 # F1LAB handoff for the next ChatGPT session
 
-**Status at 2026-10-16 UTC:** qualifying research benchmark complete; one
-real 2025 Monza offline pack now builds, seeks and serves through a local API.
-The first shared-clock 2D Race Control screen is implemented. Branch
-`feat/foundation`; pushed checkpoints `b6835e7`, `4c5bd37` and
-`abe031c`, and UI checkpoint `2d270fc`. Check `git log -1`, `git status`
-and `git ls-remote origin refs/heads/feat/foundation` for the exact later
-candidate-audit checkpoint SHA/push state.
+**Status at 2026-10-16 UTC:** qualifying research benchmark complete; three
+real historical race packs build, reconcile and play through one local API/UI:
+Monza 2025, Monaco 2023 and Brazil 2024. Four actual Chromium browser tests
+pass, and desktop/mobile screenshots were inspected. P1/P2 remain partial.
+Branch `feat/foundation`; pushed prior checkpoints include `2d270fc`
+(first UI) and `7940f2c` (candidate audit), the starting SHA of the current
+three-session milestone. Check `git log -1`, `git status` and
+`git ls-remote origin refs/heads/feat/foundation` for its final SHA/push state.
+Git uses the repository's Aymen Jedidi identity and no assistant coauthor
+trailers. Two unrelated untracked `ml/features/` helpers remain untouched.
 
 ## What exists and what does not
 
@@ -22,30 +25,28 @@ candidate-audit checkpoint SHA/push state.
   dataset, real 2024 model selection and 2025 held-out evaluation, five-model
   form ablation, one-event provider overlap audit, one manual historical-form
   trace, and executed notebook chart. See `EXPERIMENT_REGISTER.md`.
-- **Now implemented in part:** Python Pydantic `SessionEvent`/`RaceState`, pure
-  ordered reducer, `RaceSource` protocol and indexed `ReplaySource`. A real
-  OpenF1 2025 Monza pack has 20 drivers, 1,506 discrete events, 198,300
-  retained approximate location points, laps, position changes, pit records,
-  stints, intervals and race-control messages. It includes a 166-point
-  approximate one-lap circuit trace. Read `REPLAY_2025_MONZA.md` for exact
-  source/time/quality contract and QA. The older 53-message smoke sample remains.
-- **First UI/API implemented:** local FastAPI manifest and `RaceState(t)`
-  endpoints, a React/Vite pit-wall screen with one playback clock (seek,
-  play/pause, 1/2/4×), timing tower, selected-driver detail, provider-derived
-  approximate 2D map and race-control message timeline. Missing locations
-  are hidden, including unchanged coordinates after 15 seconds. Backend
-  states are requested at most 5 Hz. See `RACE_CONTROL_UI.md` for source
-  paths, API, data semantics and exact evidence.
-- **Two further sessions audited, not built:** OpenF1 2023 Monaco race 9094
-  has wet/intermediate coverage but its `pit` resource returned HTTP 404.
-  OpenF1 2024 Brazil race 9636 has rain, VSC, safety-car and red-flag records.
-  `session/audit_candidates.py` preserves a real source coverage/hash report
-  in ignored `data/processed/replay_candidate_audit.json`. See
-  `REPLAY_CANDIDATES.md` for counts, times, SHA-256 and implementation limits.
-- **Not done:** calibrated probabilities, prediction serving, full historical
-  replay across three representative sessions, browser visual/interaction
-  proof, 3D visualization, telemetry comparison, strategy, what-if, live
-  and radio. The 2D screen is one-race and partial P2.
+- **Replay reference gate verified:** Python Pydantic events/state, pure
+  ordered reducer, `RaceSource`, indexed/checkpointed `ReplaySource` and
+  audited session catalog. The three packs have 20 drivers each and total
+  5,290 events / 799,422 retained source XY points. Available final positions
+  and lap totals reconcile; all-boundary seeks and shuffled jumps pass.
+  `REPLAY_GOLDEN_SESSIONS.md` contains per-race counts/hashes/proof.
+- **Partial Race Control UI:** local catalog and per-session state API;
+  session picker, anchored central clock, 0.25×–16×, exact seek/control and
+  race-start jumps, timing tower, driver focus, approximate 2D map, full
+  prior control feed, missing-source indicators and mobile transport.
+  Every data panel uses one returned state; React polls at 5 Hz rather
+  than rerendering the whole tree on every animation frame.
+- **Source quality:** Monaco `pit` is HTTP 404, so capability is absent and
+  UI displays unavailable. Brazil STR's null stint start is counted/skipped;
+  HUL's null DSQ lap total is excluded from that QA comparison. Global
+  SC/VSC/red-flag messages are preserved; a full track-status mapping and
+  weather state/display remain unfinished.
+- **Not done:** production ML timestamp/probability audit and prediction
+  serving; continuous smooth car rendering, surveyed/full geometry, complete
+  tyre/stint/weather panels and retirement-time handling; telemetry and
+  distance comparisons; strategy, what-if, live/radio, 3D, CI and storage/
+  schema-export hardening. The full product goal remains active.
 
 ## Why the provider changed
 
@@ -73,10 +74,13 @@ the actual data flow and partial unified replay architecture. The new
 `session/contracts.py`, `session/reducer.py`, `session/source.py`,
 `session/openf1_replay.py`, `session/replay_source.py` and
 `session/validate_replay.py` provide the first canonical, real-data replay
-path. The compressed pack, manifest and QA report are local ignored artifacts
-under `data/processed/replay_packs/`. `src/f1_racelab/api.py` exposes the
-pack and state locally; `apps/web/src/App.tsx` and `App.css` render the
-single-clock UI. `tests/test_replay_api.py` covers synthetic API contracts.
+path. `session/catalog.py` defines the three supported specifications.
+Compressed packs/manifests/QA stay ignored under `data/processed/replay_packs/`.
+`src/f1_racelab/api.py` caches sources by session slug;
+`apps/web/src/App.tsx` and `App.css` render the UI with
+`src/lib/playback-clock.ts` as the browser clock.
+`tests/test_replay_api.py` tests cross-session isolation synthetically;
+`apps/web/e2e/replay.spec.ts` tests real local packs in Chromium.
 
 ## Reproduction and evidence
 
@@ -89,15 +93,31 @@ uv sync --dev
 .venv/bin/python -m f1_racelab.models.qualifying_ablation --dataset data/processed/qualifying_mixed_2022_2023_2024_2025.parquet --feature-set common
 .venv/bin/python -m f1_racelab.session.openf1_sample
 .venv/bin/python -m f1_racelab.session.openf1_replay
-.venv/bin/python -m f1_racelab.session.validate_replay
+.venv/bin/python -m f1_racelab.session.openf1_replay --session monaco-2023
+.venv/bin/python -m f1_racelab.session.openf1_replay --session brazil-2024
+.venv/bin/python -m f1_racelab.session.validate_replay --all
 .venv/bin/python -m f1_racelab.session.audit_candidates
 .venv/bin/uvicorn f1_racelab.api:app --host 127.0.0.1 --port 8000
 cd apps/web && npm ci && npm run dev -- --host 127.0.0.1
 ```
 
-The latest full test run passed **28/28**, Ruff passed, mypy passed for ten
-session/API source files, and web ESLint/TypeScript/Vite build
-passed; exact commands are
+Start the API and frontend commands in separate terminals. Choose a session,
+jump to race start, play/pause/seek and select a driver. In Brazil, a control
+jump to “SAFETY CAR IN THIS LAP” shows t=6,484 s in all data panels. Monaco
+shows unavailable pit records. Restart the API after rebuilding cached packs.
+
+From `apps/web`, `npx playwright install chromium`,
+`npm run test:unit` and `npm run test:e2e` run the clock and actual browser
+checks. The browser suite launches/cleans up its own local servers on
+8011/5181, requires all three packs and performs no provider downloads.
+It passed **4/4**; screenshots under ignored
+`data/processed/browser_tests/results/` were visually inspected at
+desktop 1440×1000 and mobile 390×844. No measured 60 Hz/FPS claim is made.
+
+The latest full Python test run passed **30/30**, two JS clock tests passed,
+Ruff passed, mypy passed for 11 session/API source files, and web
+ESLint/TypeScript/Vite build passed. `npm ci` now uses a tracked lockfile.
+Exact commands are
 in `TEST_EVIDENCE.md`. Fixture tests are separate from the real provider data
 and model experiment. Generated
 datasets and metrics are under ignored `data/processed/`; inspect
@@ -109,19 +129,18 @@ source rows, with 35/18/18 eligible train/validation/test events and
 Ridge won on 2024 MAE (2.8362 vs FP3 2.8975). Its held-out 2025 MAE was
 3.2433 vs FP3 3.3141, with paired event delta -0.0708 and 95% bootstrap
 interval [-0.2934, +0.1587]. The interval crosses zero, so no reliable
-improvement is claimed. The UI now has a one-race local replay demo; browser
-inspection was unavailable, so no visual/interaction or FPS result is claimed.
+improvement is claimed.
 
-The replay builder checked 18/18 classified end positions and 20/20 completed
-lap totals against OpenF1 `session_result` without leaking that final table
-into earlier replay events. The validator compared 131 arbitrary/event-boundary
-seeks with full reduction and found no discrete-state differences; one exact
-location sample was preserved. The most recent validator run gave p50/p95
-0.975/2.066 ms. The API returned HTTP 200/35,246-byte manifest and 20 driver
-states at t=1,200 seconds (20 located, max completed lap 11). These are
-one-race backend results, not browser frame-rate or multi-race proof.
-Pack/source hashes are in the local manifest;
-the pack hash changes across rebuilds because ingest timestamps change.
+Monza/Monaco/Brazil match 18/18, 19/19 and 15/15 classified positions and
+20/20, 20/20 and 19/19 available lap totals; Brazil has one unavailable DSQ
+lap-total label. The validator compares all discrete/audit fields through
+14,112 event-boundary/regular cutoffs plus 600 seed-42 shuffled revisits.
+It preserves a measured first coordinate for 59 source-driver series;
+Brazil ALB has no retained location series. Latest per-race p50/p95 seek ms:
+Monza 1.078/2.309, Monaco 1.233/2.816, Brazil 1.057/2.438.
+Full artifact hashes and limits are in `REPLAY_GOLDEN_SESSIONS.md`;
+the combined local report is `replay_packs/golden_sessions.qa.json`.
+Packs change hashes on rebuild because ingest/gzip timestamps change.
 
 ## Known failure and risk matrix
 
@@ -134,18 +153,23 @@ the pack hash changes across rebuilds because ingest timestamps change.
 | Team names and driver acronyms as identifiers | Current row schema | Audit transfers, substitutions and renamed constructors before production |
 | Approximate replay geometry | OpenF1 positions have arbitrary origin and unknown unit; trace is VER lap 3 | Show coordinate/quality labels; do not call the trace surveyed or precise |
 | Repeated stopped-car locations | Provider may repeat constant points after a DNF/DNS | 15-second identical-coordinate streak now hides the map point; heuristic may hide a legitimate stationary car; no retirement time inferred |
-| Browser QA | Computer-use Chrome and in-app browser unavailable | Build/static/API tests pass; visual, responsive and interaction QA remain |
-| Optional historical pit resource | Monaco 2023 `pit` HTTP 404; other eight audited resources available | Generic builder must expose unavailable pit capability instead of assuming zero pit stops |
+| Optional historical pit resource | Monaco 2023 `pit` HTTP 404 | Builder/state/UI now expose missing capability; pit duration/count truth remains unavailable |
+| Global track status | SC/VSC/red messages are source-specific and ending signals are not green-running proof | Status remains unconfirmed until scoped status contract and transitions are validated |
+| Partial smoothness and geometry | Backend state is sampled at 5 Hz; outlines are one measured lap trace | Browser interactions pass, but continuous rendering/full geometry/FPS work remains |
+| Browser dependency audit | Production audit clean; full audit has seven high advisories in shadcn development CLI chain | CLI is dev-only; suggested fix is major downgrade and was not applied |
+| Null Brazil records | STR stint has no start, HUL DSQ lap total null, ALB location empty | Preserve gaps and coverage; do not inject final labels or synthetic coordinates |
 
 ## Next five actions
 
-1. Confirm current UI checkpoint SHA and remote push state.
-2. Inspect the rendered local UI at desktop/mobile widths and exercise
-   seek, playback, speed, driver selection and message jumps in a browser.
-3. Generalize the replay builder to audited Monaco/Brazil with explicit
-   missing-resource semantics; build and run end-state/seek QA for both.
+1. Confirm current three-session checkpoint SHA and remote push state.
+2. Implement scoped track-status/weather contracts and source-time transitions;
+   preserve unknown cases rather than deriving green from an ending notice.
+3. Add timestamped smooth map rendering, tyre/stint views and fuller P2
+   keyboard/performance coverage; then distance-align real lap telemetry.
 4. Expand cross-provider overlap and as-of timestamp audits before promoting
    a qualifying model toward production use.
+5. Continue Prediction Lab, independent strategy simulator, what-if, live
+   and 3D in the locked dependency order. Keep all modes on canonical state.
 
 For tutoring, read `AGENT_WORKLOG.md`, `IMPLEMENTATION_ATLAS.md`,
 `ML_EVALUATION.md`, `TEST_EVIDENCE.md`, `DATA_CONTRACTS.md`, `DECISIONS.md` and

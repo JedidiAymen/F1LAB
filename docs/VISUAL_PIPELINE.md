@@ -1,6 +1,6 @@
 # Visual pipeline contract (partial implementation)
 
-A synchronized local Race Control screen now renders one real Monza pack from
+A synchronized local Race Control screen now renders three real race packs from
 the Python `SessionEvent`/`RaceState` foundation.
 `REPLAY_2025_MONZA.md` details its 166-point approximate trace, indexed
 2 Hz retained source locations and interpolation quality rules.
@@ -17,7 +17,9 @@ centerline, lap distance, pit lane, corners, sectors, start line, source and
 version. Position samples must be projected onto matching geometry with error
 bounds and handling for the start/finish wrap, pit path and missing samples.
 The first 2D demo uses a real offline replay pack and labels its source XY
-trace approximate. Its browser state updates at most 5 Hz; interaction and
-visual review remain unverified. A 3D view will consume the same geometry
+trace approximate. Its browser state updates at 5 Hz during playback;
+four Chromium tests cover interactions and shared panel timestamps, and
+desktop/mobile screenshots were inspected. Continuous smooth car rendering
+still remains. A 3D view will consume the same geometry
 and state after 2D correctness is established. See
 `SOL61_MASTER_EXECUTION.md` for P1–P3 and P8 acceptance gates.

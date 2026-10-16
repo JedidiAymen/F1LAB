@@ -86,3 +86,21 @@ to the planned race workstation.
     HTTP response with zero rows would mean the provider supplied an empty
     result. Treating both as zero pit stops would create a false sporting
     conclusion; the candidate audit records the first as `null`.
+18. **Anchored playback.** A clock remembers session time `t₀` and
+    monotonic wall milliseconds `w₀`. At rate `r`, its current time is
+    `t₀ + (w−w₀)r/1000`, bounded by pack duration. Pause first saves the
+    current value; a rate change saves it before changing `r`. A slow
+    display tick therefore cannot slow the race clock. F1LAB samples at
+    5 Hz and all data panels use the same returned state.
+19. **Golden replay references and event boundaries.** The three local
+    reference races cover dry, mixed-tyre and SC/VSC/red-flag source cases.
+    Checking one millisecond before, at and after every normalized event
+    verifies which side of a clock cutoff owns it. Shuffled seeking then
+    checks that prior navigation cannot change the answer. This proves
+    deterministic code on these packs; it cannot certify every upstream
+    measurement.
+20. **Browser tests with real local data.** Playwright starts the local API
+    and frontend, operates actual controls and checks map/timing/focus/control
+    timestamps. The browser tests do not replace provider data with mock
+    payloads. Separate unit tests use artificial timestamps to isolate clock
+    arithmetic, including pause and seek after end.

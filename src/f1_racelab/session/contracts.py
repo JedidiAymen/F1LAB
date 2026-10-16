@@ -159,6 +159,7 @@ class RaceState(BaseModel):
 
     schema_version: Literal[1] = 1
     session: SessionId
+    capabilities: tuple[str, ...] = ()
     session_time_seconds: float = Field(default=0, ge=0)
     flag: Literal["green", "yellow", "red", "safety_car", "vsc", "chequered"] | None = None
     flag_message: str | None = None

@@ -219,3 +219,84 @@
   state or claiming wider replay reliability. Find this checkpoint's final
   commit/push via `git log -1` and `git ls-remote origin
   refs/heads/feat/foundation`.
+
+## 2026-10-16 UTC — P1-GOLDEN-3 / P2 multi-session browser replay
+
+- **Starting state:** pushed `7940f2c`, branch `feat/foundation`; two
+  unrelated untracked helpers in `ml/features/` remain untouched.
+  The prior checkpoint only audited candidate sources; the builder and UI
+  still selected Monza exclusively.
+- **Implementation paths:** `src/f1_racelab/session/catalog.py`,
+  `openf1_replay.py`, `contracts.py`, `replay_source.py`,
+  `validate_replay.py`, `src/f1_racelab/api.py`;
+  `tests/test_openf1_replay.py`, `tests/test_replay_api.py`;
+  `apps/web/src/App.tsx`, `App.css`, `index.css`,
+  `components/ui/slider.tsx`, `lib/playback-clock.ts`,
+  `apps/web/tests/playback-clock.test.ts`, `e2e/replay.spec.ts`,
+  `playwright.config.ts`, `package.json`, `package-lock.json`,
+  `vite.config.ts`, `index.html`, root `.gitignore` and `README.md`.
+  Documentation: this worklog, handoff, atlas, roadmap, test ledger, experiment
+  register, decisions, glossary, architecture, data contracts, visual pipeline,
+  start page, replay candidates, first UI notes and new
+  `REPLAY_GOLDEN_SESSIONS.md`.
+- **Behavior:** explicit audited catalog specs carry source IDs/clock and
+  display metadata. The builder checks provider metadata, uses per-session
+  event IDs/origins, preserves optional missing pit capability and null
+  stint/result counts. The API caches three sources by slug and every
+  canonical state includes capabilities. The UI cancels old requests and
+  resets its central clock when switching session; rates 0.25×–16×,
+  exact control jumps, race-start jump and numeric gaps work. React reads
+  a monotonic anchored clock every 200 ms. All data panels share one returned
+  state. Formula, units, inputs/outputs and functions are described in
+  `REPLAY_GOLDEN_SESSIONS.md` and the atlas.
+- **Real evidence:** three packs contain 5,290 sparse events and 799,422 XY
+  points overall. Available final classification/lap checks all pass;
+  Brazil DSQ lap total remains unknown. The validator checks every event
+  boundary ±1 ms and 101 regular times: 14,112 cutoffs match a separate
+  forward pass, plus 600 seeded shuffled revisits. Latest per-race p95 seek
+  times 2.309/2.816/2.438 ms are local backend results. Four actual Chromium
+  tests operate all three local packs and pass; screenshots inspected.
+  Exact metrics, hashes, sources and artifact paths are in the new milestone
+  document.
+- **Synthetic/static evidence:** 30 Python tests, two JS clock tests, Ruff,
+  11-file session/API mypy and web lint/build pass. Node 22.23.2, npm 10.9.8,
+  Python 3.12.13, FastAPI 0.142.2, Playwright 1.64.1/Chromium 156.
+  `npm ci` works with the now-tracked lockfile. Production-only npm audit
+  is clean; seven high advisories remain in the development shadcn CLI
+  chain. No force downgrade was applied.
+- **Failures/fixes:** Brazil's null `lap_start` initially raised TypeError;
+  it is now counted/skipped. HUL DSQ null lap total is no longer treated
+  as zero in QA. Browser tests found the scrubber's actual input unnamed;
+  forwarding the label fixed keyboard access. A synthetic clock assertion
+  now uses decimal tolerance. Numeric gaps had been hidden because only
+  lapped text was rendered; numeric seconds now display too. Global Git
+  ignore excluded npm lockfiles, so the repository adds an explicit include.
+- **Sources/rights:** independent adapter against documented
+  [OpenF1 API](https://openf1.org/docs/), source response hashes in local
+  manifests; exact prior repository/license audit in D-001. Playwright is
+  an Apache-2.0 test dependency. No provider data, browser binaries or
+  broadcast assets were committed.
+- **Scope and next:** P1 three-reference gate is verified; full P1/P2 remain
+  partial (approximate geometry, 5 Hz state rendering, no global status or
+  weather in state, missing source-time retirement handling). Next add
+  scoped track-status/weather, smoother rendering/stint panels, then
+  distance-aligned telemetry. Final checkpoint/push lookup:
+  `git log -1 --oneline`; `git ls-remote origin
+  refs/heads/feat/foundation`. No coauthor trailers are added.
+
+The final cached rebuild executed:
+
+```bash
+.venv/bin/python - <<'PY'
+import contextlib,json
+from pathlib import Path
+from f1_racelab.session.catalog import SESSIONS
+from f1_racelab.session.openf1_replay import build_replay_pack
+log=Path('data/processed/replay_packs/golden_build.log')
+with log.open('w') as handle:
+ for slug,spec in SESSIONS.items():
+  with contextlib.redirect_stdout(handle):
+   manifest=build_replay_pack(spec=spec)
+  print(slug, json.dumps({k:manifest[k] for k in ('sha256','bytes','event_count','driver_count','sample_count','qa')}),flush=True)
+PY
+```

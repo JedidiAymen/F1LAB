@@ -1,8 +1,9 @@
 # Start here: F1LAB status
 
 F1LAB is being built as one race intelligence workstation. The current working
-slice includes historical pre-qualifying evaluation and a one-race offline
-Monza replay. The React app now has a first local Race Control screen.
+slice includes historical pre-qualifying evaluation and three offline race
+replays: Monza 2025, Monaco 2023 and Brazil 2024. The local Race Control
+screen has a session picker and passes real-pack browser interaction checks.
 
 ## Run the verified local checks
 
@@ -36,8 +37,6 @@ real race-control sample is reproducible with
 For the richer offline Monza race pack, run
 `.venv/bin/python -m f1_racelab.session.openf1_replay` followed by
 `.venv/bin/python -m f1_racelab.session.validate_replay` and read
-`REPLAY_2025_MONZA.md`. The pack is local and ignored. Run the first
-browser screen using the two terminal commands in `RACE_CONTROL_UI.md`;
-browser interaction and visual QA remain open. `REPLAY_CANDIDATES.md`
-records source coverage for Monaco 2023 and Brazil 2024 before extending
-the one-race builder.
+`REPLAY_2025_MONZA.md`. The packs are local and ignored. Build all three
+and run the browser checks using `REPLAY_GOLDEN_SESSIONS.md`; it also
+provides the current demo narrative, exact metrics, screenshots and limits.

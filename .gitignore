@@ -16,6 +16,7 @@ htmlcov/
 
 # Node
 node_modules/
+!apps/web/package-lock.json
 apps/web/dist/
 *.tsbuildinfo
 

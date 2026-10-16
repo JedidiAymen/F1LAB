@@ -74,7 +74,9 @@ class ReplaySource:
                 if any(left >= right for left, right in zip(times[driver], times[driver][1:])):
                     raise ValueError(f"Unsorted or duplicate {name} timestamps for {driver}")
         self.checkpoint_indices = [0]
-        self.checkpoint_states = [RaceState(session=self.session)]
+        self.checkpoint_states = [RaceState(
+            session=self.session, capabilities=tuple(pack.get("capabilities", ())))
+        ]
         state = self.checkpoint_states[0]
         for index, event in enumerate(self.events, start=1):
             state = reduce_event(state, event)

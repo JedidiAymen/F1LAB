@@ -78,3 +78,28 @@ is estimated; lap time and classification are never interpolated. Raw
 `session_result` is used only to verify the final state, not injected as an
 early replay event. See `REPLAY_2025_MONZA.md` for counts, timestamp choices,
 source hashes, limits and reproduction.
+
+## Three-reference replay extension
+
+`session/catalog.py` now specifies Monza 2025 (9912), Monaco 2023 (9094)
+and Brazil 2024 (9636). Each spec has an audited scheduled UTC origin and
+provider IDs, checked against the actual session endpoint before building.
+Every event ID is scoped by provider session key, and all event/location/
+interval relative seconds use that selected origin. Driver car numbers
+remain session-local IDs; switching sessions changes the enclosing session.
+
+`RaceState.capabilities` is a tuple serialized as a JSON array on every
+state. A Monaco pit HTTP 404 produces `coverage.raw_rows.pit=null`,
+`coverage.unavailable_resources.pit` with reason and no `pit_stops`
+capability. The UI presents pit count as unavailable. A successful zero-row
+table remains zero. The builder propagates other HTTP failures.
+Null stint starts cannot form events and are counted in coverage; null
+post-session DSQ lap totals cannot be used as a zero-lap QA label.
+
+The local API now lists session availability at `GET /api/v1/replays`;
+manifest and state paths are `/api/v1/replay/{slug}/manifest` and
+`/api/v1/replay/{slug}/state?seconds=...`. Old Monza paths remain valid.
+The API does not expose future final classifications through the event
+timeline. Weather and SC/VSC/red-flag source tables/messages have been
+audited, but global track-status/weather state remains future work.
+`REPLAY_GOLDEN_SESSIONS.md` records current exact artifacts and proof.

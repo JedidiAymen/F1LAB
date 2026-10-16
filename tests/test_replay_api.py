@@ -22,7 +22,7 @@ def test_manifest_and_state_share_clock(tmp_path: Path) -> None:
         "schema_version": 1,
         "session": {"season": 2025, "round": 16, "kind": "race", "provider_key": "test"},
         "session_name": "fixture", "clock_origin_utc": "2025-09-07T13:00:00Z",
-        "provider": "synthetic", "capabilities": {}, "coverage": {},
+        "provider": "synthetic", "capabilities": ["positions", "pit_stops"], "coverage": {},
         "drivers": [{"driver_id": "1", "number": 1, "acronym": "ONE", "name": "One",
                      "team": "Fixture", "team_color": "FFFFFF"}],
         "events": [], "locations": {"1": [[0, 10, 20], [1, 20, 20]]},
@@ -32,7 +32,17 @@ def test_manifest_and_state_share_clock(tmp_path: Path) -> None:
     path = tmp_path / "pack.json.gz"
     with gzip.open(path, "wt", encoding="utf-8") as handle:
         json.dump(pack, handle)
-    client = TestClient(create_app(path))
+    other_path = tmp_path / "monaco.json.gz"
+    other = {**pack, "session": {"season": 2023, "round": 6, "kind": "race"},
+             "clock_origin_utc": "2023-05-28T13:00:00Z",
+             "capabilities": ["positions"],
+             "locations": {"1": [[0, 100, 20], [1, 110, 20]]}}
+    with gzip.open(other_path, "wt", encoding="utf-8") as handle:
+        json.dump(other, handle)
+    client = TestClient(create_app(path, pack_paths={"monaco-2023": other_path}))
+    catalog = client.get("/api/v1/replays").json()
+    assert next(row for row in catalog if row["slug"] == "monaco-2023")["available"]
+    assert client.get("/api/v1/replay/unknown/manifest").status_code == 404
     manifest = client.get("/api/v1/replay/monza-2025/manifest")
     assert manifest.status_code == 200
     assert manifest.json()["duration_seconds"] == 1
@@ -42,6 +52,12 @@ def test_manifest_and_state_share_clock(tmp_path: Path) -> None:
     assert state.json()["drivers"]["1"]["track_x"] == 15
     assert state.json()["drivers"]["1"]["location_quality"] == "estimated"
     assert "applied_event_hashes" not in state.json()
+    other_state = client.get("/api/v1/replay/monaco-2023/state", params={"seconds": .5}).json()
+    assert other_state["session"]["season"] == 2023
+    assert "pit_stops" in state.json()["capabilities"]
+    assert "pit_stops" not in other_state["capabilities"]
+    assert other_state["drivers"]["1"]["track_x"] == 105
+    assert client.get("/api/v1/replay/monza-2025/state", params={"seconds": .5}).json() == state.json()
     assert client.get("/api/v1/replay/monza-2025/state", params={"seconds": 1.1}).status_code == 422
 
 

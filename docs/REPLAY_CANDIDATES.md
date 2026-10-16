@@ -1,5 +1,9 @@
 # Additional replay session coverage audit — 2026-10-16
 
+**Follow-up:** both candidates now build through the shared replay adapter
+and run in the UI. The audit below records the earlier source findings;
+`REPLAY_GOLDEN_SESSIONS.md` records the later pack/browser evidence.
+
 **Starting source SHA:** `2d270fc` on `feat/foundation`. This is a real
 provider coverage audit, not two additional replay packs. The source is
 [OpenF1 historical API](https://openf1.org/docs/), queried through the

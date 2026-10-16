@@ -39,9 +39,11 @@ position changes, laps, pit stops, stints and indexed approximate locations.
 `ReplaySource.state_at(t)` reads sparse events through reducer checkpoints,
 then samples location and intervals at the same `t` into one `RaceState`.
 `validate_replay.py` compares indexed seek to full reduction at 131 times.
-The pack has one provider session, not a live source or a multi-session player.
-`api.create_app` serves a manifest and `RaceState(t)` from the pack;
-`apps/web` drives this API from one browser clock for the first 2D screen.
+The builder now accepts audited catalog specs for Monza 2025, Monaco 2023
+and Brazil 2024. `api.create_app` serves a session catalog and slug-specific
+manifest/`RaceState(t)`; `apps/web` selects a session and drives the API
+from one monotonic browser playback clock. Each state carries its source
+capabilities; unavailable Monaco pit records cannot be read as a measured zero.
 
 ## Locked temporal architecture to extend
 
@@ -59,9 +61,10 @@ flowchart LR
 `RaceState` must be the single source of visible session truth. A future
 animation frame may update drawing, but it cannot create a separate race clock.
 Measured, interpolated and simulated values must remain distinguishable. The
-local Monza UI is now wired to the replay pack through the Python API. It
-requests one canonical state at most five times per second. The full
-live/simulation and multi-session contract is still pending.
+local UI is wired to three replay packs through the Python API. It requests
+one canonical state every 200 ms during playback and immediately on seeks.
+Switching session remounts the workspace, cancels old requests and resets
+the clock. The full live/simulation contract remains pending.
 
 ## Storage and module ownership
 
@@ -71,7 +74,8 @@ live/simulation and multi-session contract is still pending.
 - `src/f1_racelab/session`: typed event/state contracts, reducer, offline
   `RaceSource`, OpenF1 pack builder and replay QA.
 - `src/f1_racelab/api.py`: local read-only replay HTTP API.
-- `apps/web`: React/Vite one-race Race Control interface.
+- `apps/web`: React/Vite three-reference Race Control interface and real-pack
+  Playwright tests; `lib/playback-clock.ts` owns browser playback time.
 - `apps/api`, `services/session-engine`, `packages/*`: future service split
   and shared contracts; current contents are mostly empty scaffolding.
 - `data/raw`, `data/cache`, `data/processed`: ignored local data artifacts.

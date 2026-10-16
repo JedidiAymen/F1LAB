@@ -125,3 +125,31 @@ test evidence and caveats.
 The ignored `data/processed/replay_candidate_audit.json` preserves response
 hashes for reproduction. `REPLAY_CANDIDATES.md` records numbers and the
 builder changes required before claiming a second replay.
+
+## Three-session implementation (supersedes one-race limits above)
+
+The current replay builder/source/API/UI call chain and every major changed
+symbol are documented in `REPLAY_GOLDEN_SESSIONS.md`. The new
+`session/catalog.py:ReplaySpec` supplies one explicit race specification;
+`_timed_events`, `_location_samples`, `_interval_samples` and
+`_geometry` all accept its scheduled UTC origin. Event IDs carry the
+selected provider key. `build_replay_pack` checks actual session metadata
+and preserves optional pit capability gaps; `_verify_pack_against_results`
+requires matching driver coverage and compares only available result totals.
+
+`api.create_app` lists local session availability and caches sources by slug;
+`RaceState.capabilities` reaches consumers even without a manifest fetch.
+`validate_replay._compare_discrete` compares all driver fields except
+explicit location/interval overlays against a separate forward reduction,
+at all boundaries and in shuffled order. The current proof is 14,112
+cutoffs plus 600 shuffled revisits across the three packs.
+
+`apps/web/src/lib/playback-clock.ts:PlaybackClock` implements anchored
+monotonic time. `ReplayWorkspace` in `App.tsx` owns one instance, samples
+it at 200 ms, cancels state requests on seek/session change and displays
+the same returned state in every data panel. The root `App` fetches the
+catalog and remounts the workspace by selected slug. Two Node clock tests
+and four Playwright tests in `apps/web/e2e/replay.spec.ts` cover invariants
+and real-pack browser integration. Screenshot and raw artifact locations,
+units, example timeline jumps, initial failures/fixes and exact reproduction
+commands are in the three-reference document.

@@ -82,3 +82,20 @@
   validated pack behavior.
 - Synthetic auditor test and full suite (28 passed) plus Ruff and scoped
   mypy passed. Generalization and pack QA remain next.
+
+## R-004 — three local reference packs and real browser replay
+
+- Starting SHA `7940f2c`. Same adapter/source/API/UI now supports Monza
+  2025, Monaco 2023 and Brazil 2024. Real sparse-event/location counts:
+  1,506/198,300; 2,101/280,028; 1,683/321,094.
+- Final classified positions match 18/18, 19/19 and 15/15; available lap
+  totals match 20/20, 20/20 and 19/19. Brazil's HUL DSQ lap total is null,
+  counted unavailable. Monaco pit source is unavailable, not zero stops.
+- All-boundary and evenly spaced seeks match a separate forward reducer:
+  3,868 / 5,798 / 4,446 cases, plus 200 shuffled seeks per pack. Latest
+  p50/p95 indexed seek ms: Monza 1.078/2.309, Monaco 1.233/2.816, Brazil
+  1.057/2.438. No general FPS claim follows from those backend numbers.
+- Four real-pack Chromium UI tests pass; screenshots inspected. Two
+  synthetic clock tests and 30 Python contract tests pass. Full artifact
+  hashes, exact commands, code map and caveats:
+  `REPLAY_GOLDEN_SESSIONS.md`.

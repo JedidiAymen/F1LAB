@@ -1,8 +1,8 @@
 # F1LAB
 
 F1LAB is an in-progress Formula 1 race intelligence workstation. The current
-verified slices are a historical pre-qualifying benchmark and a one-race
-offline Monza replay with a local 2D Race Control UI. Live timing, strategy,
+verified slices are a historical pre-qualifying benchmark and three historical
+race replays with a local 2D Race Control UI. Live timing, strategy,
 telemetry and broader race coverage remain future work.
 
 Start with [the project status](docs/START_HERE.md), [the execution roadmap](docs/ROADMAP.md)
@@ -58,7 +58,9 @@ approximate location points. Build and validate it with:
 
 ```bash
 .venv/bin/python -m f1_racelab.session.openf1_replay
-.venv/bin/python -m f1_racelab.session.validate_replay
+.venv/bin/python -m f1_racelab.session.openf1_replay --session monaco-2023
+.venv/bin/python -m f1_racelab.session.openf1_replay --session brazil-2024
+.venv/bin/python -m f1_racelab.session.validate_replay --all
 ```
 
 The pack is ignored by Git. Start the backend and frontend in separate
@@ -71,8 +73,16 @@ npm ci
 npm run dev -- --host 127.0.0.1
 ```
 
-The UI provides one shared playback clock, timing, a provider-derived 2D map
-and race-control messages. See [the replay evidence](docs/REPLAY_2025_MONZA.md)
-and [the UI milestone](docs/RACE_CONTROL_UI.md) for coverage, clock semantics,
-tests and limitations. [The additional-session audit](docs/REPLAY_CANDIDATES.md)
-records why Monaco/Brazil cannot yet be treated as validated replay packs.
+Select Monza 2025, Monaco 2023 or Brazil 2024. The UI provides one shared
+playback clock, timing, a provider-derived 2D map and race-control messages.
+Monaco's missing pit resource is shown explicitly. Run real-pack browser
+checks from `apps/web` with:
+
+```bash
+npx playwright install chromium
+npm run test:unit
+npm run test:e2e
+```
+
+See [the three-session evidence](docs/REPLAY_GOLDEN_SESSIONS.md) for exact
+source/clock semantics, checks, screenshots and remaining limitations.

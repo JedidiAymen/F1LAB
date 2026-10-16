@@ -84,3 +84,28 @@ successful zero-row response, and rethrows all other HTTP failures. The
 future generic pack builder must carry this distinction into capability and
 quality metadata rather than pretending Monaco had zero pit stops. See
 `REPLAY_CANDIDATES.md`.
+
+## D-008 — audited catalog and explicit source gaps, 2026-10-16
+
+`ReplaySpec` now binds each supported race's IDs, round, scheduled UTC
+origin and display metadata. The builder validates these against the
+provider session response, uses the selected origin for all event/sidecar
+times, and includes provider key in every event ID. Monaco's optional pit
+404 becomes an unavailable capability; other HTTP failures propagate.
+Null stint start and missing final DSQ lap total remain explicitly counted
+gaps. Every state carries capabilities. The API's three-source cache is
+keyed by slug, preventing one session's clock/state from serving another.
+Real references and null-handling proofs: `REPLAY_GOLDEN_SESSIONS.md`.
+
+## D-009 — anchored playback and real browser checks, 2026-10-16
+
+The prior UI advanced React state on every animation frame. It now uses a
+monotonic clock anchored at play/pause/seek/rate changes and samples that
+clock every 200 ms. Seeks retain exact source milliseconds. Switching session
+remounts the workspace and cancels old requests. This keeps one clock and
+avoids 60 Hz whole-tree rendering while continuous smooth map rendering is
+developed separately. Four Playwright Chromium tests run against real local
+packs; browser snapshots exposed an unnamed slider input, which was fixed.
+The web lockfile is tracked despite a user-global ignore; the shadcn CLI is
+a development dependency. Production-only npm audit is clean, with seven
+upstream high advisories still reported for the development CLI chain.
