@@ -241,3 +241,67 @@
 - This is a real-data view of one fixed Monza lap pair. More generated events,
   driver/lap selection, braking/gear/DRS charts, prediction outputs and
   uncertainty calibration remain unimplemented.
+
+## R-009 — practice-phase qualifying snapshots
+
+- **Question:** how does an event-grouped Q1-pace proxy compare with the best
+  measured lap after FP1, after FP2 and before qualifying?
+- **Source:** cached OpenF1 2023–2025, 1,038 driver-weekend rows across 52
+  events, plus cached session start/end metadata. Dataset SHA-256
+  `eef5a7277d2f62fdf263e94cadbc7a5f5c38cd6acdbea9dc00549d5caef37fd8`;
+  canonical schedule SHA-256
+  `af8ce323bb62591d925fded4fdaf696276921a305bb26fbc970573579d82734d`.
+- **Protocol:** train on 2023, select each phase's practice baseline/Ridge/
+  LightGBM by 2024 event-mean position MAE, evaluate once on 2025. Inputs are
+  restricted to sessions completed by that phase. Rows without the measured
+  baseline are removed. Shared preprocessing now uses that phase baseline
+  rather than requiring FP3 availability; the experiment was regenerated after
+  correcting this unintended future-session cohort restriction. Eligible
+  train/validation/test rows are FP1 275/325/319, FP2 310/333/351 and pre-Q
+  311/342/354 (16/18/18 events each). Cutoff values are scheduled practice ends; exact
+  provider publication times are unknown. FastF1 2022 is excluded because its
+  schedule was not available offline and this study keeps one provider across
+  all three splits.
+- **Result:** FP1 selects Ridge (2024 MAE 3.3744 vs FP1 3.5924); 2025 Ridge
+  MAE 3.6736 vs FP1 3.7245, paired delta −0.0508 [−0.1676,+0.0628]. FP2
+  selects Ridge (3.0788 vs 3.4291); 2025 Ridge 3.4827 vs FP2 3.6802,
+  delta −0.1975 [−0.4056,+0.0218]. Pre-Q selects FP3 baseline (2.8975); 2025
+  FP3 3.3141 vs Ridge 3.3100, delta −0.0041 [−0.2617,+0.2626]. All reported
+  2025 Ridge intervals cross zero.
+- **Evidence:** real cached historical evaluation plus synthetic schedule,
+  cutoff, feature allowlist, chronological split, API and tampered-file tests;
+  full Python/TypeScript/lint/type/browser evidence is in `TEST_EVIDENCE.md`.
+- **Interpretation:** the early Ridge point estimates do not establish a
+  reliable improvement; no probability calibration or deployment claim is
+  made. The late Ridge point result does not change the FP3 validation winner.
+  Q1 pace is a proxy and final qualifying classification is the label.
+- **Artifacts and reproduction:** ignored output under
+  `data/processed/qualifying_phases/`; exact commands and every artifact hash
+  are in `QUALIFYING_PHASES.md`.
+
+- **Publication:** verification passed; normal feature-branch commit/push
+  pending; the root agent will record the publication SHA in the handoff.
+
+Phase rankings are relative to the eligible phase cohort: `predicted_rank`
+and `actual_rank` are consecutive ranks within the retained drivers. The API
+projects raw final classification into a separate `qualifying_position` for
+retrospective scoring and omits raw `q1_gap_pct`/`final_position` field names.
+The UI labels leader-hit and top-three-overlap metrics as eligible-cohort
+metrics. Because phase cohorts differ, their MAEs alone do not establish
+improvement as more weekend information arrives; that comparison requires a
+shared-cohort analysis. Official classification and eligible rank can differ
+when a classified driver lacks the measured practice baseline.
+
+The phase artifact loader now checks per-driver coverage for every model,
+rank permutations, manifest cohort counts, event metrics recomputed from
+rank predictions, summary reconciliation, and bootstrap point estimates,
+event counts and interval-bound validity. Synthetic regressions reject
+a removed model row despite a refreshed checksum, an inconsistent summary
+despite a refreshed checksum, a future-session feature registry, a source/Q
+schedule mismatch and a cohort made too small after target filtering. These
+checks validate artifact consistency; they do not prove provider publication
+times or prediction calibration.
+
+Final checks: 65 Python tests passed in 3.99 s (one existing warning); Ruff,
+scoped four-file mypy, frontend build/lint and all 10 Chromium scenarios
+passed (23.8 s for Chromium).

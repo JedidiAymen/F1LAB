@@ -4,6 +4,10 @@
 `bd67b199a189fed6adc604a5130638b9c34b18c6`. **Status:** local historical
 Prediction Lab integrated; P4 and M5 remain partial.
 
+This page records the original mixed-provider benchmark. The current UI uses
+the separate phase-aware experiment described in `QUALIFYING_PHASES.md`; the
+original artifact API remains available.
+
 ## Question and temporal contract
 
 The model predicts each driver's Q1 pace gap percentage from practice-only
@@ -30,8 +34,9 @@ separate observation time for each practice feature. The audit validates the
 practice-only feature allowlist, session lineage, qualifying session marker,
 and parseable UTC cutoff metadata. The claim is an offline pre-qualifying
 reconstruction based on session ordering; it does not establish precisely when
-every provider field became available. There are no after-FP1/after-FP2
-snapshots yet.
+every provider field became available. This mixed-provider experiment does not
+contain after-FP1/after-FP2 snapshots. The separate OpenF1-only phase study
+adds them; see `QUALIFYING_PHASES.md` for the cutoffs, split and metrics.
 
 ## API and UI
 
@@ -124,11 +129,12 @@ on the 2025 outputs.
   data. No third-party source code was copied into this milestone; raw provider
   data and Parquet remain ignored local artifacts.
 - **Unresolved:** practice feature observation timestamps and provider
-  publication times are not preserved; 2022/2023 provider boundary may
-  confound comparisons; only one cross-provider weekend has been compared;
-  no per-phase forecast, 2026 walk-forward run, probability calibration,
-  feature attribution or model registry exists. Q1 pace remains a proxy for
-  final qualifying order.
+  publication times are not preserved; the 2022/2023 provider boundary may
+  confound this mixed-source comparison; only one cross-provider weekend has
+  been compared. The separate phase experiment is OpenF1-only but begins in
+  2023 because FastF1's schedule was unavailable offline. Neither study has a
+  2026 walk-forward run, probability calibration, feature attribution or model
+  registry. Q1 pace remains a proxy for final qualifying order.
 - **Git:** implementation and this document are in commit
   `9f928361c9c7fdf59a2e685dc2994137cf942e35`, pushed to
   `origin/feat/foundation`; `git ls-remote` returned the same SHA. The

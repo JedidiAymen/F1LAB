@@ -190,3 +190,65 @@ The hint no longer uses that role; the full 9-case run passes. Axis-title
 overlap was fixed after screenshot review. This integration makes no new
 provider request. Details and exact query hashes are in
 `DISTANCE_ALIGNED_TELEMETRY.md`.
+
+## 2026-10-16 — phase-aware qualifying snapshots
+
+| Exact command/check | Result | Evidence class and artifact |
+|---|---|---|
+| `.venv/bin/python -m f1_racelab.models.qualifying_phases --dataset data/processed/qualifying_mixed_2022_2023_2024_2025.parquet` | Exit 0; 1,038 OpenF1 source rows; 52 scheduled weekends per phase | Real cached OpenF1 dataset and schedule cache; no provider request |
+| Source dataset and canonical schedule SHA-256 | `eef5a7277d2f62fdf263e94cadbc7a5f5c38cd6acdbea9dc00549d5caef37fd8`; `af8ce323bb62591d925fded4fdaf696276921a305bb26fbc970573579d82734d` | Real local artifacts; phase manifest `data/processed/qualifying_phases/experiment.json` |
+| `.venv/bin/pytest -q` | 65 passed in 3.99 s; one existing Starlette/httpx deprecation warning | Synthetic phase cutoff, schedule overlap, feature lineage, chronology, projection and tampered-artifact contracts; all existing Python tests |
+| `.venv/bin/ruff check src/f1_racelab tests` | Passed | Static lint |
+| `.venv/bin/mypy src/f1_racelab/models/qualifying_backtest.py src/f1_racelab/models/qualifying_phases.py src/f1_racelab/models/qualifying_phase_lab.py src/f1_racelab/api.py --follow-imports=silent --ignore-missing-imports` | Four source files passed | Static type check |
+| `cd apps/web && npm run test:unit` | 5 passed | Frontend clock, weather and telemetry tests |
+| `cd apps/web && npm run build && npm run lint` | TypeScript/Vite build and ESLint passed | Frontend production verification |
+| `cd apps/web && npm run test:e2e` | 10 Chromium tests passed in 23.8 s | Three real replay packs plus Prediction Lab phase/split/event interactions |
+| `cd apps/web && npm run test:e2e -- --grep 'Prediction Lab'` | Final enhanced scenario passed, 1 test in 8.8 s | Austria FP1 PIA eligible rank 1 / official qualifying P3, separate table columns, and 2024 validation interval label |
+| FastAPI `TestClient`, `/api/v1/predictions/qualifying/phases` | HTTP 200; three phases; 36 validation/test event choices per phase | Real checksum-verified ignored phase artifacts |
+| FastAPI `TestClient`, after-FP1 Abu Dhabi 2025 event | HTTP 200; 11 measured driver rankings; scheduled cutoff `2025-12-05T10:30:00+00:00` | Real cached phase rows; field size is phase-specific, not padded |
+| Prediction Lab screenshot inspection | Phase, scheduled cutoff, retrospective rankings and publication-time caveat are visible | `data/processed/browser_tests/results/replay-Prediction-Lab-labe-7122e-tes-validation-from-holdout-chromium/prediction-lab-holdout.png` |
+
+Verified environment: Python 3.12.13, pandas 2.3.3, NumPy 2.5.3,
+scikit-learn 1.9.1, LightGBM 4.7.0, pytest 9.1.1, Node v22.23.2, npm
+10.9.8. The final browser screenshot was inspected after official
+classification and eligible-cohort columns were separated.
+
+Artifact SHA-256 values: predictions Parquet
+`db7232189404da2f74970d20d1f69d65b082c128252e4b908308651857a79fe1`, summary
+CSV `32a742539764fbfc8f5716956c3a06f8c3b07456fbe7cec5a315b7421602eac6`, event
+metrics CSV `d93edba4d7be17f99a6d867bd98484b1ecf22fddf4a37c9598a9cacb3dcb6fc4`,
+and bootstrap CSV
+`e20dfe797190df48b4b408776d4866a60adb4a4a311e4b026eaf73f7017b6286`.
+
+The first real-data run failed because some drivers lacked FP1 measured best
+times, causing non-finite FP1 baseline predictions. Those rows are now
+excluded from that phase, with separate cohort sizes in the manifest; no pace
+is imputed for the measured comparator. Full interpretation and metric tables
+are in `QUALIFYING_PHASES.md`.
+
+A subsequent audit removed an unintended FP3-best-time requirement in shared
+`prepare_dataset`: eligibility now uses each phase's own measured baseline.
+The real experiment was regenerated after that fix. Eligible train/validation/
+test rows are FP1 275/325/319, FP2 310/333/351 and pre-Q 311/342/354,
+with 16/18/18 events in every phase. The full suite passed with 65 tests in 3.99 s; milestone publication
+remains pending.
+
+Phase rankings are relative to the eligible phase cohort: `predicted_rank`
+and `actual_rank` are consecutive ranks within the retained drivers. The API
+projects raw final classification into a separate `qualifying_position` for
+retrospective scoring and omits raw `q1_gap_pct`/`final_position` field names.
+The UI labels leader-hit and top-three-overlap metrics as eligible-cohort
+metrics. Because phase cohorts differ, their MAEs alone do not establish
+improvement as more weekend information arrives; that comparison requires a
+shared-cohort analysis. Official classification and eligible rank can differ
+when a classified driver lacks the measured practice baseline.
+
+The phase artifact loader now checks per-driver coverage for every model,
+rank permutations, manifest cohort counts, event metrics recomputed from
+rank predictions, summary reconciliation, and bootstrap point estimates,
+event counts and interval-bound validity. Synthetic regressions reject
+a removed model row despite a refreshed checksum, an inconsistent summary
+despite a refreshed checksum, a future-session feature registry, a source/Q
+schedule mismatch and a cohort made too small after target filtering. These
+checks validate artifact consistency; they do not prove provider publication
+times or prediction calibration.

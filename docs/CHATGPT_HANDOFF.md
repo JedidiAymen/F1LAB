@@ -9,8 +9,9 @@ global track signals and as-of tyre stint history. Ten actual Chromium
 browser scenarios pass, and desktop/mobile screenshots were inspected. P1/P2
 remain partial. A real Monza 2025 two-lap telemetry comparison is available
 through the local API and its chart cursor follows the canonical replay state
-time. P3/P4 remain partial; wider telemetry, per-feature prediction timestamps
-and calibration are not done. The overall product goal is far from complete.
+time. P3/P4 remain partial; a three-phase historical qualifying lab is now
+integrated, while exact feature publication timestamps, calibration and wider
+telemetry are not done. The overall product goal is far from complete.
 Telemetry source starts at `89351502ccb6389c25886d18022430f2ce6319f8`, with comparison
 foundation commit `2ac01012c780552f26bd9504f88c9cac87541000` and docs checkpoint
 `10b53fd4905a6a22ad94ac249dc9632ce016845e` pushed and remote-verified. The
@@ -284,13 +285,76 @@ regenerated predictions hash:
 superiority or probability claim. Exact reproduction and tests are in
 `PREDICTION_LAB.md` and `TEST_EVIDENCE.md`.
 
+## Latest milestone — phase-aware qualifying snapshots (partial M5/P4)
+
+Starting source SHA: `d60c36f77295075bd50a1950ccabefc7eb5022b9`.
+Implementation and required documentation are in the current worktree.
+Verification passed; milestone commit and publication are pending. The root
+agent will add the commit SHA after push. It
+adds three retrospective forecast moments to the Prediction Lab: after FP1,
+after FP2 and before qualifying. The API validates phase feature allowlists
+and checksums and returns predicted ranks, actual ranks for scoring, and the
+event's scheduled practice-end cutoff. It makes no provider request.
+
+The experiment filters the 1,418-row mixed-source dataset to its 1,038 OpenF1
+rows from 2023–2025. Dataset SHA-256 is
+`eef5a7277d2f62fdf263e94cadbc7a5f5c38cd6acdbea9dc00549d5caef37fd8`;
+canonical cached schedule SHA-256 is
+`af8ce323bb62591d925fded4fdaf696276921a305bb26fbc970573579d82734d`.
+FastF1's 2022 schedule was unavailable offline, so the phase study keeps one
+provider across all splits: 2023 train, 2024 validation/model selection and
+2025 holdout. This leaves 16 training weekends.
+
+| Phase | Eligible train / validation / test rows | 2025 selected/baseline MAE | Ridge − baseline and 95% event interval |
+|---|---:|---:|---:|
+| After FP1 | 275 / 325 / 319 (16 / 18 / 18 events) | Ridge 3.6736; FP1 3.7245 | −0.0508 [−0.1676,+0.0628] |
+| After FP2 | 310 / 333 / 351 (16 / 18 / 18 events) | Ridge 3.4827; FP2 3.6802 | −0.1975 [−0.4056,+0.0218] |
+| Before qualifying | 311 / 342 / 354 (16 / 18 / 18 events) | FP3 3.3141; Ridge 3.3100 | −0.0041 [−0.2617,+0.2626] |
+
+Ridge is selected on 2024 for FP1 and FP2; FP3 baseline wins pre-Q validation.
+Every reported 2025 Ridge comparison interval crosses zero. Missing measured
+practice baselines are excluded within their phase; no lap pace is imputed.
+An audit removed an unintended shared-preprocessing FP3 requirement from the
+earlier phases; the experiment and metrics above were regenerated using only
+the selected phase baseline for cohort eligibility.
+The cutoff is scheduled practice end, **not** the exact provider publication
+time. This remains offline historical work, not a live prediction claim.
+
+Verification: 65 Python tests passed in 3.99 s (one existing Starlette/httpx warning),
+Ruff and scoped mypy passed, 5 frontend unit tests passed, TypeScript/Vite
+build and ESLint passed, and 10 Chromium tests passed in 23.8 s. The screenshot
+is `data/processed/browser_tests/results/replay-Prediction-Lab-labe-7122e-tes-validation-from-holdout-chromium/prediction-lab-holdout.png`.
+Exact commands, complete metric tables and generated artifact hashes are in
+`QUALIFYING_PHASES.md` and `TEST_EVIDENCE.md`.
+
+Phase rankings are relative to the eligible phase cohort: `predicted_rank`
+and `actual_rank` are consecutive ranks within the retained drivers. The API
+projects raw final classification into a separate `qualifying_position` for
+retrospective scoring and omits raw `q1_gap_pct`/`final_position` field names.
+The UI labels leader-hit and top-three-overlap metrics as eligible-cohort
+metrics. Because phase cohorts differ, their MAEs alone do not establish
+improvement as more weekend information arrives; that comparison requires a
+shared-cohort analysis. Official classification and eligible rank can differ
+when a classified driver lacks the measured practice baseline.
+
+The phase artifact loader now checks per-driver coverage for every model,
+rank permutations, manifest cohort counts, event metrics recomputed from
+rank predictions, summary reconciliation, and bootstrap point estimates,
+event counts and interval-bound validity. Synthetic regressions reject
+a removed model row despite a refreshed checksum, an inconsistent summary
+despite a refreshed checksum, a future-session feature registry, a source/Q
+schedule mismatch and a cohort made too small after target filtering. These
+checks validate artifact consistency; they do not prove provider publication
+times or prediction calibration.
+
 ## Known failure and risk matrix
 
 | Issue | Evidence | Effect / next handling |
 |---|---|---|
 | FastF1 uncached archive access | F1 timing URL HTTP 401 | Use OpenF1 historical data, keep source labels and raw hashes |
 | Mixed provider best-lap definitions | FastF1 lap filter vs OpenF1 `session_result`; 2025 Monza matched exactly on available pairs | Extend overlap audit beyond one event; use common eight fields |
-| Q1 pace proxy vs final Q classification | Pipeline target/label definitions | Report separately; phase-aware model remains future work |
+| Q1 pace proxy vs final Q classification | Pipeline target/label definitions | Report Q1 pace separately from final order; the phase model is retrospective and not a full Q1/Q2/Q3 simulator |
+| Practice result timing | OpenF1 scheduled date_end is available, but per-result publication timestamps are absent | Call the cutoff scheduled practice end; do not claim exact as-of/live availability |
 | Limited uncertainty evidence | 18 held-out events; paired interval crosses zero | Avoid superiority or deployment claims |
 | Team names and driver acronyms as identifiers | Current row schema | Audit transfers, substitutions and renamed constructors before production |
 | Approximate replay geometry | OpenF1 positions have arbitrary origin and unknown unit; trace is VER lap 3 | Show coordinate/quality labels; do not call the trace surveyed or precise |
@@ -305,14 +369,15 @@ superiority or probability claim. Exact reproduction and tests are in
 
 ## Next three actions
 
-1. Add actual FP1/FP2/FP3 session-time provenance and implement separately
-   scored after-FP1/after-FP2 forecasts before any operational prediction use.
-2. Expand telemetry comparisons and cross-provider overlap audits while
-   finishing P2 geometry/performance coverage.
-3. Continue calibrated prediction research, the independent strategy
-   simulator, what-if, live and 3D in the locked dependency order.
+1. Continue P2 with fuller circuit geometry and measured rendering performance.
+2. Expand shared-clock telemetry beyond the Monza reference pair and broaden
+   qualifying provider overlap checks.
+3. Preserve feature publication timestamps and validate phase snapshots with
+   a 2026 walk-forward before calibrated prediction research; then build the
+   independent strategy simulator, what-if, live and 3D phases in locked order.
 
-For tutoring, read `PREDICTION_LAB.md`, `AGENT_WORKLOG.md`, `IMPLEMENTATION_ATLAS.md`,
-`ML_EVALUATION.md`, `TEST_EVIDENCE.md`, `DATA_CONTRACTS.md`, `DECISIONS.md` and
+For tutoring, read `QUALIFYING_PHASES.md`, `PREDICTION_LAB.md`,
+`AGENT_WORKLOG.md`, `IMPLEMENTATION_ATLAS.md`, `ML_EVALUATION.md`,
+`TEST_EVIDENCE.md`, `DATA_CONTRACTS.md`, `DECISIONS.md` and
 `GLOSSARY_FOR_LEARNING.md` after this page. The locked scope remains
 `SOL61_MASTER_EXECUTION.md`; a passing ML benchmark will not finish it.

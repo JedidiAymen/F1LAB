@@ -24,6 +24,9 @@ plus a separate historical Prediction Lab view. The Python API reads generated
 qualifying prediction artifacts locally, verifies their manifest checksum and
 returns per-event rank projections without querying a provider. Predictions
 are historical and retrospective; strategy, live data and 3D are not served.
+The phase-aware extension adds after-FP1/after-FP2/pre-Q snapshots under
+`/api/v1/predictions/qualifying/phases`; scheduled cutoffs and provider
+publication-time limits are carried in the response.
 
 ## Canonical session foundation (P0, partial)
 

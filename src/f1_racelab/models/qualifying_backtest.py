@@ -52,9 +52,9 @@ LABEL = "final_position"
 GROUP = ["year", "round"]
 
 
-def prepare_dataset(raw: pd.DataFrame) -> pd.DataFrame:
+def prepare_dataset(raw: pd.DataFrame, *, baseline_column: str = "fp3_best_seconds") -> pd.DataFrame:
     df = raw.copy()
-    needed = set(FEATURES[:3] + [TARGET, LABEL, "driver", "event", "year", "round", "fp3_best_seconds"])
+    needed = set(FEATURES[:3] + [TARGET, LABEL, "driver", "event", "year", "round", baseline_column])
     missing = needed - set(df.columns)
     if missing:
         raise ValueError(f"Missing required source columns: {sorted(missing)}")
@@ -78,16 +78,17 @@ def prepare_dataset(raw: pd.DataFrame) -> pd.DataFrame:
             df[field] = np.nan
         df[field] = pd.to_numeric(df[field], errors="coerce")
         df[field] = df[field].replace([np.inf, -np.inf], np.nan)
-    for field in [TARGET, LABEL, "fp3_best_seconds"]:
+    for field in [TARGET, LABEL, baseline_column]:
         df[field] = pd.to_numeric(df[field], errors="coerce")
     df["year"] = pd.to_numeric(df["year"], errors="raise").astype(int)
     df["round"] = pd.to_numeric(df["round"], errors="raise").astype(int)
-    # Restrict evaluation to participants with BOTH measured FP3 pace and
-    # Q1 time. Everyone gets the same set of evaluated participants.
-    df = df.dropna(subset=[TARGET, LABEL, "fp3_best_seconds"]).copy()
+    # Restrict evaluation to participants with this run's measured practice
+    # baseline, Q1 target and final classification. Phase runs may have
+    # different eligible fields when earlier/later practice data are missing.
+    df = df.dropna(subset=[TARGET, LABEL, baseline_column]).copy()
     df = df.loc[(df[LABEL] > 0) & (df[TARGET] >= 0)].copy()
     if df.empty:
-        raise ValueError("No driver rows have both FP3 and Q1 times")
+        raise ValueError(f"No driver rows have {baseline_column}, Q1 target and classification")
     return df.sort_values(GROUP + [LABEL], kind="stable").reset_index(drop=True)
 
 
@@ -246,8 +247,9 @@ def paired_event_bootstrap(by_event: pd.DataFrame, *, baseline: str = "fp3",
 
 
 def run_backtest(dataset: pd.DataFrame, train_years=(2022, 2023), val_year=2024,
-                 test_year=2025, feature_cols: list[str] = FEATURES):
-    data = prepare_dataset(dataset)
+                 test_year=2025, feature_cols: list[str] = FEATURES,
+                 baseline_name: str = "fp3", baseline_column: str = "fp3_best_seconds"):
+    data = prepare_dataset(dataset, baseline_column=baseline_column)
     source_counts = dataset.groupby(GROUP, as_index=False).agg(source_rows=("driver", "count"))
     evaluated_counts = data.groupby(GROUP, as_index=False).agg(evaluated_rows=("driver", "count"))
     sample_coverage = source_counts.merge(evaluated_counts, on=GROUP, how="left")
@@ -267,7 +269,9 @@ def run_backtest(dataset: pd.DataFrame, train_years=(2022, 2023), val_year=2024,
         model.fit(train[xcols], train[TARGET])
 
     def predictions(part: pd.DataFrame, suffix: str) -> pd.DataFrame:
-        pieces = [scored_positions(part, part["fp3_best_seconds"].to_numpy(), "fp3")]
+        if baseline_column not in part:
+            raise ValueError(f"Missing {baseline_name} baseline column: {baseline_column}")
+        pieces = [scored_positions(part, part[baseline_column].to_numpy(), baseline_name)]
         for name, model in models.items():
             pieces.append(scored_positions(part, model.predict(part[xcols]), name))
         combined = pd.concat(pieces, ignore_index=True)
@@ -281,7 +285,7 @@ def run_backtest(dataset: pd.DataFrame, train_years=(2022, 2023), val_year=2024,
     val_summary = (val_by_event.groupby("model", as_index=False)
                    .agg(events=("round", "count"), position_mae=("position_mae", "mean"),
                         spearman=("spearman", "mean"), pole_hit_rate=("pole_hit", "mean"), top3_overlap=("top3_overlap", "mean")))
-    # Pick the winner on VALIDATION ONLY, including FP3. Do not look at 2025
+    # Pick the winner on VALIDATION ONLY, including the practice baseline. Do not look at 2025
     # results to decide which model to promote.
     winner = val_summary.sort_values(["position_mae", "model"], kind="stable").iloc[0]["model"]
     test_predictions = predictions(test, "test")
@@ -292,8 +296,8 @@ def run_backtest(dataset: pd.DataFrame, train_years=(2022, 2023), val_year=2024,
     return {"winner": str(winner), "models": models, "validation_summary": val_summary,
             "test_summary": test_summary, "validation_events": val_by_event,
             "test_events": test_by_event, "predictions": pd.concat([val_predictions, test_predictions], ignore_index=True),
-            "validation_bootstrap": paired_event_bootstrap(val_by_event),
-            "test_bootstrap": paired_event_bootstrap(test_by_event),
+            "validation_bootstrap": paired_event_bootstrap(val_by_event, baseline=baseline_name),
+            "test_bootstrap": paired_event_bootstrap(test_by_event, baseline=baseline_name),
             "sample_coverage": sample_coverage,
             "n_training_events": int(train[GROUP].drop_duplicates().shape[0]),
             "n_validation_events": int(validation[GROUP].drop_duplicates().shape[0]),

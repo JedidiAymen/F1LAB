@@ -121,21 +121,27 @@ outside the lap. Formula, API response size, tests and limitations are in
 ## Current follow-up — historical qualifying Prediction Lab
 
 The Replay header opens a separate `PredictionLab` view and provides a return
-to Race Control. It reads `GET /api/v1/predictions/qualifying` and its event
-route from locally generated, ignored backtest artifacts. The backend checks
-the expected 2024 validation / 2025 test and target contract, verifies the
-prediction Parquet SHA-256, and projects only predicted ranks and retrospective
-actual ranks. It sends no request to OpenF1 or FastF1. Missing or tampered
-artifacts are shown unavailable.
+to Race Control. It reads the phase manifest and event routes under
+`/api/v1/predictions/qualifying/phases` from locally generated, ignored
+artifacts. The backend validates 2024 validation / 2025 test, phase allowlists,
+target contract and SHA-256 values, then projects predicted ranks and
+retrospective actual ranks. It sends no request to OpenF1 or FastF1. Missing
+or tampered artifacts are shown unavailable.
 
-The page defaults to 2025 held-out results and allows a 2024 validation view.
-It displays FP3/Ridge/LightGBM ranks, final qualifying rank for retrospective
-comparison, split metrics, the paired event bootstrap interval, and the input
-feature registry. It labels the forecast point as immediately before
-qualifying and explicitly says per-feature timestamps were not retained. The
-model predicts Q1 pace gap; the evaluation label is final qualifying order.
-This is not a 2026 or live forecast, and it shows no calibrated probabilities.
+The page defaults to the pre-qualifying phase and 2025 held-out results. It
+lets the user switch among after-FP1, after-FP2 and before-qualifying, then
+choose validation/holdout and an event. It displays the matching practice
+baseline, Ridge and LightGBM ranks, final qualifying rank for retrospective
+comparison, phase metrics, paired event bootstrap and feature registry. The
+cutoff is labeled as scheduled practice end; result publication time is not
+retained. The model predicts Q1 pace gap; the evaluation label is final
+qualifying order. This is not a live forecast and shows no calibrated
+probabilities.
 
-See `PREDICTION_LAB.md` for source hashes, metrics, commands and the full
+Predicted/actual ranks and leader/top-three metrics use only each phase's
+eligible drivers. The table shows official qualifying position in a separate
+column, so cohort rank 1 is not confused with official pole position.
+
+See `QUALIFYING_PHASES.md` for phase hashes, metrics, commands and the full
 timestamp caveat. The UI browser scenario and inspected screenshot are listed
 in `TEST_EVIDENCE.md`.

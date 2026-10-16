@@ -160,3 +160,16 @@ to the planned race workstation.
     candidate and baseline kept together, to show how the average difference
     varies across the observed weekends. The 2025 interval crosses zero, so it
     does not establish that Ridge is reliably better than FP3.
+33. **Phase-aware forecast snapshot.** A historical input set limited to the
+    practices completed by a chosen point: after FP1, after FP2 or before Q.
+    The current dataset has only session-level fields, so this is not a
+    timestamped live feature stream.
+34. **Scheduled practice-end cutoff.** The schedule's planned end time for
+    the latest practice used in a snapshot. It gives a reproducible session
+    boundary, but it does not show when the provider actually published each
+    practice result. The phase lab exposes this limitation.
+35. **Eligible-cohort rank.** Position after ordering only the drivers with
+    the measured baseline and target required for that research phase. If
+    official P1/P2 are missing, the eligible leader can be official P3. F1LAB
+    shows eligible rank and official qualifying position separately; its
+    current rank-error and leader/top-three metrics use the eligible cohort.

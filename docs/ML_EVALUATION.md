@@ -27,7 +27,12 @@ row. It is not the provider's publication timestamp and the dataset does not
 retain a separate observed-at timestamp for each FP1/FP2/FP3 feature. The
 contract supports an offline pre-qualifying reconstruction from practice
 session lineage; it cannot prove the exact moment each historical provider
-field became visible. It does not yet define after-FP1 or after-FP2 snapshots.
+field became visible. A separate phase-aware study now defines after-FP1,
+after-FP2 and before-qualifying snapshots from cached OpenF1 schedule times.
+Those cutoffs use scheduled practice ends, which still do not establish the
+provider publication time; the study uses OpenF1 2023 training, 2024 selection
+and 2025 holdout. Its exact feature registry, coverage and metrics are in
+`QUALIFYING_PHASES.md`.
 
 The local Prediction Lab reads generated artifacts only. Its API validates the
 experiment split/target contract and the predictions Parquet SHA-256, then
@@ -36,7 +41,7 @@ other target columns from the event response. The UI labels the actual order as
 retrospective scoring, selects Ridge using 2024 only, and keeps 2025 as the
 held-out view. Missing artifacts produce an explicit 503 with the reproduction
 command; no provider requests are made. Implementation and limits are in
-`PREDICTION_LAB.md`.
+`PREDICTION_LAB.md` and `QUALIFYING_PHASES.md`.
 
 ## Metrics and uncertainty
 
@@ -45,8 +50,10 @@ For each event, rank predictions and classifications among eligible drivers.
 measures ordering; pole hit is one if the predicted fastest eligible driver is
 the actual class leader; top-three overlap is intersection size divided by 3.
 Overall metrics are unweighted means over events. A seeded paired bootstrap
-resamples whole event differences relative to FP3 10,000 times and reports the
-2.5th and 97.5th percentiles. A negative MAE delta favors the candidate.
+resamples whole event differences relative to the matching practice baseline
+(FP1, FP2 or FP3) 10,000 times and reports the 2.5th and 97.5th percentiles. A
+negative MAE delta favors the candidate. All 2025 Ridge-versus-phase-baseline
+intervals cross zero, so the phase study does not establish reliable lift.
 
 ## Data state
 

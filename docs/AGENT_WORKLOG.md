@@ -688,3 +688,105 @@ PY
   commit `9f928361c9c7fdf59a2e685dc2994137cf942e35`, pushed normally to
   `origin/feat/foundation`. `git ls-remote` returned this exact SHA. A separate
   docs follow-up records this proof; no force push or coauthor trailer.
+
+## 2026-10-16 UTC — phase-aware qualifying Prediction Lab (partial M5/P4)
+
+- **Starting source SHA:** `d60c36f77295075bd50a1950ccabefc7eb5022b9` on
+  `feat/foundation`; only the two pre-existing user helper files were
+  untracked. They remain untouched.
+- **Scope:** add separate after-FP1, after-FP2 and pre-qualifying historical
+  snapshots; evaluate on event groups with 2023 training, 2024 model selection
+  and 2025 holdout; show the phase and scheduled cutoff in the local Prediction
+  Lab. No live prediction path was added.
+- **Source/algorithm:** cached mixed Parquet filtered to OpenF1 2023–2025
+  (1,038 rows; dataset SHA-256
+  `eef5a7277d2f62fdf263e94cadbc7a5f5c38cd6acdbea9dc00549d5caef37fd8`) plus
+  cached OpenF1 `/sessions` schedule (canonical schedule SHA-256
+  `af8ce323bb62591d925fded4fdaf696276921a305bb26fbc970573579d82734d`).
+  Scheduled practice end labels each phase cutoff and is checked against the
+  next session start. Per-value result publication times are absent, so this
+  is not an exact historical as-of replay. FastF1 2022 schedule was
+  unavailable offline; one provider across all splits was preferred over
+  mixing provider semantics.
+- **Features/baselines:** after FP1 uses FP1 gap/rank and FP1 best lap; after
+  FP2 uses FP1+FP2 gap/rank and FP2 best; pre-Q uses the existing eight common
+  FP1/2/3 gap/rank/improvement features and FP3 best. Rows without that
+  phase's measured baseline are excluded instead of imputing pace. Each phase
+  independently selects among its practice baseline, Ridge and LightGBM from
+  2024 mean event position MAE. Q1 gap is the prediction target; final
+  qualifying classification is the evaluation label.
+- **Coverage:** FP1 has 275/325/319 driver rows over 16/18/18 events for
+  train/validation/test. FP2 has 310/333/351 over 16/18/18. Pre-Q has
+  311/342/354 over 16/18/18. All 52 OpenF1 conventional event schedules have
+  cutoff metadata in each phase.
+- **Held-out results:** FP1-selected Ridge 3.6736 vs FP1 3.7245 MAE; paired
+  delta −0.0508, 95% event bootstrap [−0.1676,+0.0628]. FP2-selected Ridge
+  3.4827 vs FP2 3.6802; delta −0.1975, interval [−0.4056,+0.0218]. Pre-Q
+  selected the FP3 baseline on validation: FP3 3.3141 vs Ridge 3.3100; Ridge
+  delta −0.0041, interval [−0.2617,+0.2626]. All 2025 Ridge intervals cross
+  zero; no reliable improvement or probability claim is made.
+- **Modified source:** `qualifying_backtest.py` generalized its measured
+  practice baseline; new `qualifying_phases.py` builds schedules, features,
+  event-grouped runs and checksummed outputs; new `qualifying_phase_lab.py`
+  validates allowlists, split/model coverage and checksums; `api.py` adds two
+  local routes; `PredictionLab.tsx` switches forecast phase and renders
+  phase-specific rankings/cutoffs. `test_qualifying_phases.py` covers schedule,
+  feature legality, split and API contracts; browser scenario switches FP1
+  and pre-Q.
+- **Artifacts:** ignored local files in
+  `data/processed/qualifying_phases/`. Prediction Parquet SHA-256
+  `db7232189404da2f74970d20d1f69d65b082c128252e4b908308651857a79fe1`;
+  summary CSV `32a742539764fbfc8f5716956c3a06f8c3b07456fbe7cec5a315b7421602eac6`;
+  event metrics CSV `d93edba4d7be17f99a6d867bd98484b1ecf22fddf4a37c9598a9cacb3dcb6fc4`;
+  bootstrap CSV `e20dfe797190df48b4b408776d4866a60adb4a4a311e4b026eaf73f7017b6286`.
+- **Verification:** real cached-data experiment command:
+  `.venv/bin/python -m f1_racelab.models.qualifying_phases --dataset data/processed/qualifying_mixed_2022_2023_2024_2025.parquet`.
+  `.venv/bin/pytest -q`: 65 passed in 3.99 s, one existing Starlette/httpx deprecation
+  warning. `.venv/bin/ruff check src/f1_racelab tests`: pass. Scoped mypy on
+  four model/API modules: pass. `npm run test:unit`: 5 passed; `npm run build`
+  and `npm run lint`: pass; `npm run test:e2e`: 10 Chromium cases passed in 23.8 s,
+  including the phase switch. The first data run found missing FP1 measured
+  baselines; excluding absent baseline rows fixed non-finite baseline ranks.
+  A later audit found that shared `prepare_dataset` still required FP3 best
+  times for every phase. It now filters on the selected phase baseline,
+  removing that unintended future-session cohort requirement. Artifacts and
+  phase metrics above were regenerated after this correction.
+- **Documentation:** milestone detail is in `QUALIFYING_PHASES.md`; roadmap,
+  atlas, experiment register, decisions, glossary, test evidence and
+  `CHATGPT_HANDOFF.md` are updated in this checkpoint.
+- **Source/rights:** cached public OpenF1 API fields; see
+  https://openf1.org/docs/ and the pinned OpenF1 license link in
+  `QUALIFYING_PHASES.md`. No raw provider data or generated predictions are
+  committed.
+- **Unresolved:** exact result publication time, 2022 FastF1 schedule lineage,
+  provider overlap breadth, calibration, 2026 walk-forward and driver/team
+  identity continuity. This remains retrospective research.
+- **Final browser review:** the enhanced Prediction Lab scenario passed
+  separately (1 test, 8.8 s) after the full 10-test suite. It verifies that
+  Austria FP1 PIA is eligible rank 1 but official qualifying P3, and that the
+  validation uncertainty label displays 2024. Two delegated reviews helped
+  identify the classification ambiguity and incomplete artifact-coverage
+  checks; both are corrected and tested in this checkpoint.
+- **Commit/push:** verification passed; milestone commit and publication are
+  pending; the root agent will record the commit SHA and remote verification
+  in `CHATGPT_HANDOFF.md` after push. No assistant coauthor trailer is used.
+
+Phase rankings are relative to the eligible phase cohort: `predicted_rank`
+and `actual_rank` are consecutive ranks within the retained drivers. The API
+projects raw final classification into a separate `qualifying_position` for
+retrospective scoring and omits raw `q1_gap_pct`/`final_position` field names.
+The UI labels leader-hit and top-three-overlap metrics as eligible-cohort
+metrics. Because phase cohorts differ, their MAEs alone do not establish
+improvement as more weekend information arrives; that comparison requires a
+shared-cohort analysis. Official classification and eligible rank can differ
+when a classified driver lacks the measured practice baseline.
+
+The phase artifact loader now checks per-driver coverage for every model,
+rank permutations, manifest cohort counts, event metrics recomputed from
+rank predictions, summary reconciliation, and bootstrap point estimates,
+event counts and interval-bound validity. Synthetic regressions reject
+a removed model row despite a refreshed checksum, an inconsistent summary
+despite a refreshed checksum, a future-session feature registry, a source/Q
+schedule mismatch and a cohort made too small after target filtering. These
+checks validate artifact consistency; they do not prove provider publication
+times or prediction calibration.

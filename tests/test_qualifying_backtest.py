@@ -49,6 +49,15 @@ def test_normalization_is_within_weekend_only():
     assert (processed.fp3_top3_gap_pct == 0).all()
 
 
+def test_phase_baseline_does_not_require_future_fp3_measurement():
+    data = fake_dataset().assign(fp1_best_seconds=80.0)
+    data.loc[data.index[:5], "fp3_best_seconds"] = np.nan
+    fp1 = prepare_dataset(data, baseline_column="fp1_best_seconds")
+    fp3 = prepare_dataset(data)
+    assert len(fp1) == len(data)
+    assert len(fp3) == len(data) - 5
+
+
 def test_positions_rank_within_each_event():
     data = prepare_dataset(fake_dataset())
     sample = data.loc[data.year == 2025]

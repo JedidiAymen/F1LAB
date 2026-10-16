@@ -207,3 +207,23 @@ The feature target is Q1 gap percentage; rank metrics compare predictions with
 final qualifying classification. The selected event’s target columns are not
 included in the API response. `PREDICTION_LAB.md` records the exact split,
 metrics, hashes, reproduction and timestamp caveats.
+
+### Phase-aware extension (partial M5)
+
+| Symbol | Input → algorithm → output | Proof and limit |
+|---|---|---|
+| `qualifying_phases.cached_openf1_sessions` | Ignored cached `/sessions` JSON → local session rows | Does not make provider requests |
+| `qualifying_phases.phase_event_schedule` | OpenF1 meeting keys + Practice 1/2/3 schedule → scheduled practice-end cutoffs, next-session boundary checks and canonical SHA-256 | 52 weekends in each phase; exact result publication time is not present |
+| `qualifying_phases.run_phase_experiment` | OpenF1 2023–2025 driver rows + phase feature allowlist → per-phase eligible participants, train 2023, select on 2024, hold out 2025 → predictions, event metrics and paired bootstrap | 16/18/18 events; phase cohorts exclude rows missing the measured practice baseline |
+| `qualifying_phase_lab.load_phase_prediction_lab` | Local manifest and phase artifacts → split/feature-lineage/checksum validation, per-driver complete models, rank permutations, cohort counts and metric reconciliation | Tests reject future-session features, dropped model rows and inconsistent summaries even with refreshed hashes, plus tampered Parquet |
+| `qualifying_phase_lab.phase_prediction_event` | Phase/year/round/split → predicted and actual eligible ranks, separate official qualifying position and scheduled cutoff | API omits target and raw final-position field names; official classification is projected as `qualifying_position` |
+| `api.create_app` phase routes | Local ignored `qualifying_phases/` → `/api/v1/predictions/qualifying/phases` manifest and `/event` selection | Real cached manifest returns three phases, 36 validation/test event choices per phase; API has no provider calls |
+| `web/components/PredictionLab` phase selector | Phase/split/event → phase-specific feature registry, metric cards and rankings | Ten Chromium cases pass; 2025 intervals cross zero and no probability claims appear |
+
+Each phase selects among a measured same-session practice baseline, Ridge and
+LightGBM using 2024 event mean position MAE. The input scope is 2 / 4 / 8
+features after FP1 / FP2 / before qualifying. Since FastF1 2022 schedules were
+not available offline, this extension uses OpenF1 across all three splits and
+has only 16 training weekends. The API labels practice-end cutoffs as
+scheduled; it does not claim exact provider availability. See
+`QUALIFYING_PHASES.md` for feature units, metrics, hashes and reproduction.

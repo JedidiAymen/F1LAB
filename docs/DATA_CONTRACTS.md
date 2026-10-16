@@ -38,6 +38,20 @@ position never enter `FEATURES` or `COMMON_FEATURES`.
   is used as the pre-Q cutoff; the archive does not expose each feature's
   original publication timestamp here.
 
+### Phase-aware scheduled cutoffs
+
+The phase experiment uses cached OpenF1 session `date_end` for Practice 1,
+Practice 2 and Practice 3 as the respective scheduled cutoff. It validates
+that each practice end is no later than the next session's `date_start`.
+After FP1 accepts only FP1 gap/rank, after FP2 accepts FP1/FP2 gap/rank, and
+pre-Q accepts the existing eight common practice features. The baseline is
+that phase's measured best time, so rows without it are excluded from that
+phase's cohort. The archived schedule proves the planned boundary and
+session ordering, not the publication instant of each `session_result` value.
+This run stays on OpenF1 for train/validation/test (2023/2024/2025); it excludes
+FastF1 2022 because the cached schedule was unavailable offline. See
+`QUALIFYING_PHASES.md` for the phase feature units and coverage.
+
 The two best-lap definitions may differ on deleted or revised laps. A 2025
 Monza overlap audit matched all 20 drivers, with zero classification
 mismatches and zero differences among paired FP1/FP2/FP3/Q1 best times (18/20/

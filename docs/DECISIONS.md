@@ -213,3 +213,31 @@ retained, the audit records legal source-session lineage and plainly states
 that limitation. It does not claim exact historical publication-time replay,
 and after-FP1/after-FP2 snapshots remain future work. Detail and tests are in
 `PREDICTION_LAB.md`.
+
+## D-015 — phase snapshots use scheduled practice ends and one provider, 2026-10-16
+
+The historical qualifying page now supports after-FP1, after-FP2 and
+pre-qualifying snapshots. Each phase has an explicit source-session feature
+allowlist and a measured same-phase practice-lap baseline. The cutoff timestamp
+is the cached OpenF1 scheduled practice end, checked to occur before the next
+scheduled session.
+
+The archive does not retain when each final practice result became available
+through the API. The UI therefore labels these as scheduled cutoffs and keeps
+the provider-publication-time limitation visible. They are offline research
+snapshots, not exact as-of or live forecasts.
+
+FastF1 2022 schedule lookup was unavailable offline. The experiment uses
+OpenF1 2023 as training, 2024 for selection and 2025 as holdout to avoid
+provider changes between splits, accepting a smaller 16-weekend training set.
+Missing measured phase baselines remove that driver from that phase rather than
+imputing a lap. Ridge is selected after FP1/FP2, and FP3 baseline before Q;
+all 2025 Ridge-versus-baseline event intervals cross zero. No superiority or
+probability claim is made. Implementation and metric evidence are in
+`QUALIFYING_PHASES.md`.
+
+Phase ranks and leader/top-three metrics use the eligible subset. Official
+qualifying position is projected separately as `qualifying_position` so an
+eligible-cohort leader is not presented as the official polesitter. Since
+phase cohorts differ, comparing phase MAEs does not by itself establish the
+value of later practice; that requires a shared-cohort experiment.

@@ -15,6 +15,10 @@ from fastapi import FastAPI, HTTPException, Query
 from pydantic import ValidationError
 
 from f1_racelab.models.prediction_lab import load_prediction_lab, prediction_event
+from f1_racelab.models.qualifying_phase_lab import (
+    load_phase_prediction_lab,
+    phase_prediction_event,
+)
 from f1_racelab.session.catalog import DEFAULT_SESSION, SESSIONS
 from f1_racelab.session.contracts import WeatherPayload
 from f1_racelab.session.replay_source import ReplaySource
@@ -24,6 +28,7 @@ from f1_racelab.telemetry.contracts import LapComparison
 DEFAULT_PACK = DEFAULT_SESSION.pack_path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PREDICTION_ARTIFACTS = PROJECT_ROOT / "data/processed/qualifying_backtest"
+DEFAULT_PHASE_PREDICTION_ARTIFACTS = PROJECT_ROOT / "data/processed/qualifying_phases"
 
 
 def _rainfall_changes(replay: ReplaySource) -> list[dict]:
@@ -47,6 +52,7 @@ def create_app(
     pack_paths: dict[str, Path] | None = None,
     telemetry_comparison_paths: dict[str, Path] | None = None,
     qualifying_prediction_path: Path | None = None,
+    qualifying_phase_prediction_path: Path | None = None,
 ) -> FastAPI:
     """Create an API bound to a local replay pack, allowing isolated fixtures."""
     paths = {slug: spec.pack_path for slug, spec in SESSIONS.items()}
@@ -57,6 +63,9 @@ def create_app(
     }
     telemetry_paths.update(telemetry_comparison_paths or {})
     prediction_path = Path(qualifying_prediction_path or DEFAULT_PREDICTION_ARTIFACTS)
+    phase_prediction_path = Path(
+        qualifying_phase_prediction_path or DEFAULT_PHASE_PREDICTION_ARTIFACTS
+    )
     if pack_path or os.environ.get("F1LAB_REPLAY_PACK"):
         paths[DEFAULT_SESSION.slug] = pack_path or Path(os.environ["F1LAB_REPLAY_PACK"])
     app = FastAPI(title="F1LAB local replay API", version="0.1.0")
@@ -217,6 +226,66 @@ def create_app(
             raise HTTPException(status_code=404, detail=str(exc)) from exc
         except ValueError as exc:
             raise HTTPException(status_code=503, detail=f"Invalid Prediction Lab event: {exc}") from exc
+
+    def phase_prediction_artifacts() -> dict:
+        try:
+            return load_phase_prediction_lab(phase_prediction_path)
+        except FileNotFoundError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="Phase-aware qualifying artifacts unavailable. Run python -m "
+                "f1_racelab.models.qualifying_phases --dataset "
+                "data/processed/qualifying_mixed_2022_2023_2024_2025.parquet.",
+            ) from exc
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(status_code=503, detail=f"Invalid phase-aware artifacts: {exc}") from exc
+
+    @app.get("/api/v1/predictions/qualifying/phases")
+    def qualifying_phase_manifest() -> dict:
+        lab = phase_prediction_artifacts()
+        experiment = lab["experiment"]
+        definitions = lab["definitions"]
+        phases = []
+        for key, definition in definitions.items():
+            phases.append({
+                "key": key,
+                **definition,
+                "models": [definition["baseline"], "ridge", "lightgbm"],
+                "summaries": lab["summaries"][key],
+                "uncertainty": lab["uncertainty"][key],
+                "events": lab["events"][key],
+            })
+        return {
+            "task": "historical_phase_aware_qualifying_rank",
+            "source_provider": experiment["source_provider"],
+            "source_years": experiment["source_years"],
+            "source_rows": experiment["source_rows"],
+            "dataset_sha256": experiment["source_dataset_sha256"],
+            "schedule_sha256": experiment["source_schedule_sha256"],
+            "selection_year": experiment["selection_year"],
+            "held_out_year": experiment["held_out_year"],
+            "cutoff_contract": experiment["cutoff_contract"],
+            "feature_observed_at": experiment["feature_observed_at"],
+            "timing_limit": experiment["timing_limit"],
+            "phases": phases,
+        }
+
+    @app.get("/api/v1/predictions/qualifying/phases/event")
+    def qualifying_phase_weekend(
+        phase: str = Query(pattern="^(after_fp1|after_fp2|pre_qualifying)$"),
+        year: int = Query(ge=2023, le=2035),
+        round_no: int = Query(alias="round", ge=1, le=30),
+        split: str = Query(pattern="^(validation|test)$"),
+    ) -> dict:
+        lab = phase_prediction_artifacts()
+        try:
+            return phase_prediction_event(
+                lab, phase=phase, year=year, round_no=round_no, split=split,
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=503, detail=f"Invalid phase prediction event: {exc}") from exc
 
     return app
 
