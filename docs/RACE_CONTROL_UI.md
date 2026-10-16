@@ -99,6 +99,9 @@ motion do not animate. The server and shared panel clock remain sampled at
 
 ## Current follow-up — shared-clock telemetry comparison
 
+Implementation commit `43e12407a7f13e02b0eb6d6a3fc0206442ca5816` is pushed
+to `origin/feat/foundation` and remote-verified.
+
 `TelemetryPanel` displays the generated Monza VER #1 L50 versus NOR #4 L50
 artifact through
 `GET /api/v1/replay/{slug}/telemetry/lap-comparison`. The endpoint reads only

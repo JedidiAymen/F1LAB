@@ -157,6 +157,7 @@ because no frontend/API consumer was changed.
 | `cd apps/web && npm run test:e2e` | 9 passed in 19.0 s | Chromium against three real packs; cursor matches canonical time, advances on normal seek and hides out of reference-lap range |
 | `GET /api/v1/replay/monza-2025/telemetry/lap-comparison` via FastAPI `TestClient` | HTTP 200; 200,119 bytes; 5 projected sample fields plus session and source hashes | Real local comparison artifact; full JSON is 847,619 bytes and remains ignored |
 | Screenshot inspection | Cursor at estimated 0 m on lap start; speed and delta axes readable, no tick/title overlap | `data/processed/browser_tests/results/replay-telemetry-crosshair-176f6--clock-on-its-reference-lap-chromium/telemetry-cursor.png` |
+| `git push origin feat/foundation`; `git ls-remote origin refs/heads/feat/foundation` | Exit 0; implementation SHA `43e12407a7f13e02b0eb6d6a3fc0206442ca5816` matches remote | Published API/UI and documentation milestone under repository identity, no coauthor trailer |
 
 First browser run had 8/9 passing because the existing generic status-role
 selector matched both the Monaco coverage notice and a static telemetry hint.

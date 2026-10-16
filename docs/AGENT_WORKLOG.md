@@ -544,10 +544,11 @@ PY
 ## 2026-10-16 UTC — shared-clock telemetry comparison panel (partial P3)
 
 - **Starting source SHA:** `10b53fd4905a6a22ad94ac249dc9632ce016845e` on
-  `feat/foundation`, synchronized with `origin/feat/foundation`. The current
-  API/UI implementation will be committed and pushed under Aymen Jedidi's
-  configured repository identity with no assistant coauthor trailer. The two
-  unrelated untracked user helpers under `ml/features/` remain untouched.
+  `feat/foundation`, synchronized with `origin/feat/foundation`. Implementation
+  commit `43e12407a7f13e02b0eb6d6a3fc0206442ca5816` was pushed normally and
+  verified with `git ls-remote` at the same SHA. The two unrelated untracked
+  user helpers under `ml/features/` remain untouched. Commit author is Aymen
+  Jedidi; no assistant coauthor trailer was added.
 - **Changed source paths and symbols:** `src/f1_racelab/telemetry/artifacts.py`
   shares the ignored artifact root; `api.py:create_app` advertises local
   comparisons and `/api/v1/replay/{slug}/telemetry/lap-comparison` validates
@@ -604,5 +605,6 @@ PY
   no channel selectors, brake/gear/DRS plots, GPS distance, sector alignment,
   calibrated uncertainty, prediction, strategy or live telemetry exist. Other
   sessions display a build-artifact hint. Next widen real comparison coverage,
-  then add historical-as-of prediction outputs. P3/P4 remain partial. The
-  commit and remote SHA are recorded in the immediate follow-up checkpoint.
+  then add historical-as-of prediction outputs. P3/P4 remain partial. Remote
+  branch `feat/foundation` returned exact implementation SHA
+  `43e12407a7f13e02b0eb6d6a3fc0206442ca5816`.

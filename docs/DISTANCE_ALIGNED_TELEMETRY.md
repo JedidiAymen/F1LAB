@@ -9,9 +9,10 @@ The comparison foundation started at source SHA
 `89351502ccb6389c25886d18022430f2ce6319f8`; implementation commit
 `2ac01012c780552f26bd9504f88c9cac87541000` is pushed to
 `origin/feat/foundation`. The shared-clock API/UI integration starts at
-`10b53fd4905a6a22ad94ac249dc9632ce016845e`; its implementation commit and
-remote verification will be recorded in the latest worklog entry. Both source
-milestones use the repository identity without an assistant coauthor trailer.
+`10b53fd4905a6a22ad94ac249dc9632ce016845e`; implementation commit
+`43e12407a7f13e02b0eb6d6a3fc0206442ca5816` is pushed to the same branch and
+remote-verified. Both source milestones use the repository identity without
+an assistant coauthor trailer.
 
 ## Source and coverage
 

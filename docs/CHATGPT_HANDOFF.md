@@ -13,10 +13,11 @@ are not done. The overall product goal is far from complete. Telemetry source
 starts at `89351502ccb6389c25886d18022430f2ce6319f8`, with comparison
 foundation commit `2ac01012c780552f26bd9504f88c9cac87541000` and docs checkpoint
 `10b53fd4905a6a22ad94ac249dc9632ce016845e` pushed and remote-verified. The
-current UI integration starts from that checkpoint; its implementation SHA
-will be recorded after push. Git uses the repository's Aymen Jedidi identity
-and no assistant coauthor trailers. Two unrelated untracked `ml/features/`
-helpers remain untouched.
+current UI integration starts from that checkpoint; commit
+`43e12407a7f13e02b0eb6d6a3fc0206442ca5816` is pushed to
+`origin/feat/foundation` and remote-verified. Git uses the repository's Aymen
+Jedidi identity and no assistant coauthor trailers. Two unrelated untracked
+`ml/features/` helpers remain untouched.
 
 ## What exists and what does not
 
@@ -223,10 +224,10 @@ claim is made.
 The comparison foundation starts at source SHA
 `89351502ccb6389c25886d18022430f2ce6319f8`; commit
 `2ac01012c780552f26bd9504f88c9cac87541000` is pushed. The UI/API integration
-starts from docs checkpoint `10b53fd4905a6a22ad94ac249dc9632ce016845e`; its
-implementation commit and remote verification will be recorded in the current
-worklog entry after push. Every commit uses the Aymen Jedidi repository identity
-and has no assistant coauthor trailer.
+starts from docs checkpoint `10b53fd4905a6a22ad94ac249dc9632ce016845e`;
+implementation commit `43e12407a7f13e02b0eb6d6a3fc0206442ca5816` is pushed and
+remote-verified. Every commit uses the Aymen Jedidi repository identity and
+has no assistant coauthor trailer.
 
 OpenF1 session 9912 VER #1 L50 and NOR #4 L50 contain 318 and 309 in-lap
 samples, bounded to 320 and 311 points. Trapezoidal speed integration yields

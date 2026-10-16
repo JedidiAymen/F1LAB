@@ -190,7 +190,8 @@
 
 - Starting source SHA `10b53fd4905a6a22ad94ac249dc9632ce016845e`; this builds on
   R-007's pushed comparison artifact and source hashes. Implementation SHA
-  and remote publication are recorded in the current worklog after push.
+  `43e12407a7f13e02b0eb6d6a3fc0206442ca5816` is pushed to
+  `origin/feat/foundation` and remote-verified at the same SHA.
 - `GET /api/v1/replay/{slug}/telemetry/lap-comparison` reads only the expected
   ignored JSON artifact, validates its session/meeting, returns unavailable
   when absent and never calls OpenF1. The current full artifact is 847,619
