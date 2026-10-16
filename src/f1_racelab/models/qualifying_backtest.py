@@ -7,6 +7,7 @@ This is deliberately NOT yet a full Q1/Q2/Q3 simulator.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -88,6 +89,72 @@ def prepare_dataset(raw: pd.DataFrame) -> pd.DataFrame:
     if df.empty:
         raise ValueError("No driver rows have both FP3 and Q1 times")
     return df.sort_values(GROUP + [LABEL], kind="stable").reset_index(drop=True)
+
+
+def audit_prequalifying_cutoff(raw: pd.DataFrame, feature_cols: list[str]) -> dict:
+    """Describe and validate the inputs available to the pre-qualifying model.
+
+    The row-level ``available_at`` field is the scheduled qualifying start,
+    not the provider's API publication time and not an individual timestamp
+    for each practice feature. Feature legality therefore comes from the
+    explicit practice-only allowlist and source-session lineage below.
+    """
+    if not feature_cols or not set(feature_cols).issubset(FEATURES):
+        raise ValueError("feature_cols must be a non-empty subset of legal practice features")
+    registry_by_name = {}
+    for prefix, session in (("fp1", "FP1"), ("fp2", "FP2"), ("fp3", "FP3")):
+        fields = {
+            "gap_pct": f"percent gap to event {session} best",
+            "rank": f"rank within {session}",
+            "representative_laps": "laps",
+            "best_vs_theoretical": "seconds difference to theoretical best",
+            "best_tyre_life": "laps",
+            "best_speed_trap": "km/h",
+            "top3_gap_pct": f"percent gap of event {session} top-three median to best",
+            "soft_gap_pct": f"percent gap of event {session} soft best to best",
+            "theoretical_gap_pct": f"percent gap of event {session} theoretical best to best",
+        }
+        for suffix, unit in fields.items():
+            registry_by_name[f"{prefix}_{suffix}"] = {"unit": unit, "source_sessions": [session]}
+    registry_by_name.update({
+        "fp1_to_fp3_improvement_pct": {
+            "unit": "FP1 gap percent minus FP3 gap percent", "source_sessions": ["FP1", "FP3"]},
+        "fp2_to_fp3_improvement_pct": {
+            "unit": "FP2 gap percent minus FP3 gap percent", "source_sessions": ["FP2", "FP3"]},
+    })
+    if not set(feature_cols).issubset(registry_by_name):
+        raise ValueError("No as-of registry entry exists for one or more model features")
+    registry = [{"name": name, **registry_by_name[name]} for name in feature_cols]
+    forbidden = [TARGET, LABEL, "q1_seconds", "q2_seconds", "q3_seconds"]
+    timestamp_audit = {"status": "not_recorded", "rows": 0, "minimum_utc": None,
+                       "maximum_utc": None}
+    if "available_at" in raw:
+        if "session" not in raw:
+            raise ValueError("available_at cutoff requires the source session marker")
+        timestamps = pd.to_datetime(raw["available_at"], utc=True, errors="coerce")
+        if timestamps.isna().any():
+            raise ValueError("available_at contains missing or invalid timestamps")
+        if not raw["session"].astype(str).eq("Qualifying").all():
+            raise ValueError("available_at must identify the qualifying cutoff session")
+        timestamp_audit = {
+            "status": "scheduled_qualifying_start",
+            "rows": len(timestamps),
+            "minimum_utc": timestamps.min().isoformat(),
+            "maximum_utc": timestamps.max().isoformat(),
+        }
+    return {
+        "prediction_cutoff": "immediately_before_qualifying",
+        "features": registry,
+        "feature_allowlist_passed": True,
+        "forbidden_target_fields": forbidden,
+        "forbidden_target_fields_in_features": sorted(set(feature_cols) & set(forbidden)),
+        "source_timestamp": timestamp_audit,
+        "feature_observed_at": "not_recorded_individually",
+        "timestamp_limit": (
+            "available_at records scheduled qualifying start; it does not prove provider publication time "
+            "or retain separate FP1/FP2/FP3 observation timestamps"
+        ),
+    }
 
 
 def model_pipelines(feature_cols: list[str] = FEATURES) -> dict[str, Pipeline]:
@@ -244,17 +311,36 @@ def main():
     if not args.dataset.exists():
         parser.error(f"Missing {args.dataset}. Run python -m f1_racelab.data.qualifying_dataset first.")
     features = COMMON_FEATURES if args.feature_set == "common" else FEATURES
-    out = run_backtest(pd.read_parquet(args.dataset), feature_cols=features)
+    raw = pd.read_parquet(args.dataset)
+    out = run_backtest(raw, feature_cols=features)
     args.out.mkdir(parents=True, exist_ok=True)
     for key in ["validation_summary", "test_summary", "validation_events", "test_events",
                 "validation_bootstrap", "test_bootstrap", "sample_coverage"]:
         out[key].to_csv(args.out / f"{key}.csv", index=False)
-    out["predictions"].to_parquet(args.out / "predictions.parquet", index=False)
+    predictions_path = args.out / "predictions.parquet"
+    out["predictions"].to_parquet(predictions_path, index=False)
+    predictions_sha256 = hashlib.sha256(predictions_path.read_bytes()).hexdigest()
+    dataset_sha256 = hashlib.sha256(args.dataset.read_bytes()).hexdigest()
+    cutoff_audit = audit_prequalifying_cutoff(raw, features)
+    report_artifacts = [
+        "predictions.parquet", "validation_summary.csv", "test_summary.csv",
+        "validation_bootstrap.csv", "test_bootstrap.csv",
+        "validation_events.csv", "test_events.csv",
+    ]
+    artifact_sha256 = {
+        name: hashlib.sha256((args.out / name).read_bytes()).hexdigest()
+        for name in report_artifacts
+    }
     with (args.out / "experiment.json").open("w") as fp:
         json.dump({**{k: out[k] for k in ["winner", "n_training_events", "n_validation_events", "n_test_events",
                                                "n_training_rows", "n_validation_rows", "n_test_rows"]},
                    "feature_set": args.feature_set, "features": features,
-                   "dataset": str(args.dataset)}, fp, indent=2)
+                   "selection_year": 2024, "held_out_year": 2025,
+                   "target": TARGET, "evaluation_label": LABEL,
+                   "dataset": str(args.dataset), "dataset_sha256": dataset_sha256,
+                   "predictions_sha256": predictions_sha256,
+                   "artifact_sha256": artifact_sha256,
+                   "cutoff_audit": cutoff_audit}, fp, indent=2)
     print("\n=== VALIDATION (2024) ===")
     print(out["validation_summary"].sort_values("position_mae").to_string(index=False))
     print("\nWinner selected using 2024 ONLY:", out["winner"])

@@ -133,6 +133,31 @@ test('telemetry crosshair follows the canonical replay clock on its reference la
   await expectSynchronized(page)
 })
 
+test('Prediction Lab labels retrospective forecasts and separates validation from holdout', async ({
+  page,
+}, testInfo) => {
+  await page.getByRole('button', { name: /Prediction Lab/ }).click()
+  await expect(page.getByRole('heading', { name: 'Prediction Lab' })).toBeVisible()
+  await expect(page.getByText('OFFLINE · HISTORICAL')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Prediction cutoff contract' }))
+    .toContainText('Immediately before qualifying')
+  await expect(page.getByRole('region', { name: 'Prediction cutoff contract' }))
+    .toContainText('retrospective scoring')
+
+  const rankings = page.getByRole('region', { name: 'Weekend prediction rankings' })
+  await expect(rankings.getByRole('row')).toHaveCount(21)
+  await expect(rankings).toContainText('UNTOUCHED HOLDOUT')
+  await expect(page.getByText(/95% event bootstrap/)).toBeVisible()
+  await expect(page.getByText(/FEATURE TIMESTAMPS NOT RETAINED/)).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('prediction-lab-holdout.png'), fullPage: true })
+
+  await page.getByRole('button', { name: /2024 · MODEL SELECTION/ }).click()
+  await expect(rankings).toContainText('VALIDATION SET')
+  await expect(page.getByRole('region', { name: 'validation model metrics' })).toContainText('SELECTED ON 2024')
+  await page.getByRole('button', { name: 'Race Control' }).click()
+  await expect(page.getByRole('region', { name: 'Timing tower' })).toBeVisible()
+})
+
 test('play, speed change, pause and exact message seek use the central clock', async ({
   page,
 }) => {

@@ -19,10 +19,11 @@ flowchart LR
 
 Each event is a prediction group. Training is 2022–2023, validation 2024,
 test 2025. The row schema and timestamp policy are in `DATA_CONTRACTS.md`.
-The React/Vite app now integrates the local replay API and its canonical
-session clock. It does not yet serve predictions, strategy, live data or 3D.
-The local Python API serves replay state and reads a generated telemetry
-comparison artifact without requesting provider data.
+The React/Vite app integrates the local replay API and canonical session clock,
+plus a separate historical Prediction Lab view. The Python API reads generated
+qualifying prediction artifacts locally, verifies their manifest checksum and
+returns per-event rank projections without querying a provider. Predictions
+are historical and retrospective; strategy, live data and 3D are not served.
 
 ## Canonical session foundation (P0, partial)
 

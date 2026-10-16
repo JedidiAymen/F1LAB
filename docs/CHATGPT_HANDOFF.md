@@ -1,16 +1,17 @@
 # F1LAB handoff for the next ChatGPT session
 
-**Status at 2026-10-16 UTC:** qualifying research benchmark complete; three
-real historical race packs build, reconcile and play through one local API/UI:
+**Status at 2026-10-16 UTC:** qualifying research benchmark complete; a
+historical Prediction Lab is now integrated; three real historical race packs
+build, reconcile and play through one local API/UI:
 Monza 2025, Monaco 2023 and Brazil 2024. Stored packs/events are schema 2;
 current `RaceState` output is schema 3 with source-time weather, conservative
-global track signals and as-of tyre stint history. Nine actual Chromium
-browser tests pass, and desktop/mobile screenshots were inspected. P1/P2
+global track signals and as-of tyre stint history. Ten actual Chromium
+browser scenarios pass, and desktop/mobile screenshots were inspected. P1/P2
 remain partial. A real Monza 2025 two-lap telemetry comparison is available
 through the local API and its chart cursor follows the canonical replay state
-time. P3/P4 remain partial; multi-session coverage, prediction and calibration
-are not done. The overall product goal is far from complete. Telemetry source
-starts at `89351502ccb6389c25886d18022430f2ce6319f8`, with comparison
+time. P3/P4 remain partial; wider telemetry, per-feature prediction timestamps
+and calibration are not done. The overall product goal is far from complete.
+Telemetry source starts at `89351502ccb6389c25886d18022430f2ce6319f8`, with comparison
 foundation commit `2ac01012c780552f26bd9504f88c9cac87541000` and docs checkpoint
 `10b53fd4905a6a22ad94ac249dc9632ce016845e` pushed and remote-verified. The
 current UI integration starts from that checkpoint; commit
@@ -66,10 +67,10 @@ Jedidi identity and no assistant coauthor trailers. Two unrelated untracked
   `RaceState.session_time_seconds`; the UI has no independent telemetry clock.
   Distance is speed-integrated and estimated, not GPS/surveyed, and current
   coverage is only one two-driver lap pair.
-- **Not done:** production ML timestamp/probability audit and prediction
-  serving; surveyed/full geometry and measured rendering performance;
-  retirement-time handling; wider telemetry/lap/channel coverage and
-  prediction calibration; strategy, what-if, live/radio, 3D, CI and
+- **Not done:** after-FP1/after-FP2 forecasts, per-feature observation-time
+  lineage and probability calibration; surveyed/full geometry and measured
+  rendering performance; retirement-time handling; wider telemetry/lap/channel
+  coverage; strategy, what-if, live/radio, 3D, CI and
   storage/schema-export hardening. The full product goal remains active.
 
 ## Why the provider changed
@@ -248,6 +249,35 @@ visually inspected at the reference lap start. Reproduction commands, source
 links, formulas, failure/fix history and artifact hashes are in
 `DISTANCE_ALIGNED_TELEMETRY.md` and `TEST_EVIDENCE.md`.
 
+## Latest milestone — historical qualifying Prediction Lab (partial P4)
+
+Starting source SHA is `bd67b199a189fed6adc604a5130638b9c34b18c6` on the
+cleanly synchronized `feat/foundation` branch, apart from the two preserved
+untracked user helpers. This milestone adds a source-session feature registry
+and cutoff audit, a SHA-verified local artifact API, an integrated historical
+Prediction Lab page, API/UI tests, and the full documentation set. Implementation
+and required docs are committed together; the exact source commit and push proof
+will be recorded in `AGENT_WORKLOG.md` after publication.
+
+The page is historical, not live. It reads the existing 71-event mixed-source
+dataset benchmark artifacts. Inputs are eight FP1/FP2/FP3 pace features; Ridge
+is selected with 2024 validation and 2025 remains the held-out set. The API
+returns each model's predicted rank and actual rank for retrospective
+evaluation, while omitting Q1 target values and raw classification fields.
+The actual score is labeled retrospective in the UI.
+
+The audit records 1,418 scheduled qualifying-start rows and the allowed source
+sessions/units. Individual practice feature timestamps and provider
+publication times are absent, so this cannot establish their exact
+availability instant. The UI states this directly. Dataset hash:
+`eef5a7277d2f62fdf263e94cadbc7a5f5c38cd6acdbea9dc00549d5caef37fd8`;
+regenerated predictions hash:
+`88195b26ef5f3f5ab86d7b8a906233e7b0c6ef1af05401fc9f74d3afe91d011b`.
+2025 Ridge MAE is 3.2433 versus FP3 at 3.3141; paired delta is −0.0708 with
+95% interval [−0.2934,+0.1587], which crosses zero. There is no reliable
+superiority or probability claim. Exact reproduction and tests are in
+`PREDICTION_LAB.md` and `TEST_EVIDENCE.md`.
+
 ## Known failure and risk matrix
 
 | Issue | Evidence | Effect / next handling |
@@ -269,15 +299,14 @@ links, formulas, failure/fix history and artifact hashes are in
 
 ## Next three actions
 
-1. Expand telemetry to more driver/lap pairs and chart channels, then add
-   as-of Prediction Lab outputs while continuing P2 geometry and
-   rendering/performance coverage.
-2. Expand cross-provider overlap and as-of timestamp audits before promoting
-   a qualifying model toward production use.
-3. Continue Prediction Lab, independent strategy simulator, what-if, live
-   and 3D in the locked dependency order. Keep all modes on canonical state.
+1. Add actual FP1/FP2/FP3 session-time provenance and implement separately
+   scored after-FP1/after-FP2 forecasts before any operational prediction use.
+2. Expand telemetry comparisons and cross-provider overlap audits while
+   finishing P2 geometry/performance coverage.
+3. Continue calibrated prediction research, the independent strategy
+   simulator, what-if, live and 3D in the locked dependency order.
 
-For tutoring, read `AGENT_WORKLOG.md`, `IMPLEMENTATION_ATLAS.md`,
+For tutoring, read `PREDICTION_LAB.md`, `AGENT_WORKLOG.md`, `IMPLEMENTATION_ATLAS.md`,
 `ML_EVALUATION.md`, `TEST_EVIDENCE.md`, `DATA_CONTRACTS.md`, `DECISIONS.md` and
 `GLOSSARY_FOR_LEARNING.md` after this page. The locked scope remains
 `SOL61_MASTER_EXECUTION.md`; a passing ML benchmark will not finish it.

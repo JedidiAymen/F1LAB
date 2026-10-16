@@ -191,3 +191,25 @@ supports the default #1 L50 vs #4 L50 artifact naming across the catalog, but
 only Monza has a generated artifact. Driver/lap selection and broader event
 coverage remain future work. Full browser/API evidence is in
 `DISTANCE_ALIGNED_TELEMETRY.md`.
+
+## D-014 — historical predictions are local, checksum-verified and explicit about cutoff limits, 2026-10-16
+
+The first Prediction Lab consumes the completed, event-grouped backtest
+artifact instead of fitting or requesting data on page load. It reads only
+ignored local output, validates the selected-model/split/target contract, and
+checks SHA-256 for the prediction Parquet, split summaries, event metrics and
+bootstrap reports. A missing or modified artifact returns unavailable. This keeps the browser view
+reproducible and avoids provider traffic.
+
+The model inputs are restricted to the eight shared FP1/FP2/FP3 practice
+features; Q1 gap, Q phase times and current final position remain target/label
+fields. The UI calls the result historical and displays actual rank only for
+retrospective scoring. It reports the existing 2024 selection and 2025 held-out
+metrics without claiming model superiority or calibrated probability.
+
+`available_at` is a scheduled qualifying-start label. Since individual
+practice-field observation and provider publication timestamps were not
+retained, the audit records legal source-session lineage and plainly states
+that limitation. It does not claim exact historical publication-time replay,
+and after-FP1/after-FP2 snapshots remain future work. Detail and tests are in
+`PREDICTION_LAB.md`.

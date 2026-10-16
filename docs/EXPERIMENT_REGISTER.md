@@ -37,6 +37,32 @@
   One weekend cannot establish cross-season equivalence. The provider boundary
   and Q1 pace versus final classification remain the main interpretation risks.
 
+## Q-003 — historical Prediction Lab artifact and cutoff audit
+
+- Status: implemented on 2026-10-16 from the existing local Q-002 dataset; no
+  new provider request. This exposes historical artifacts in the web app and
+  does not create a live/2026 forecast.
+- Source Parquet SHA-256:
+  `eef5a7277d2f62fdf263e94cadbc7a5f5c38cd6acdbea9dc00549d5caef37fd8`.
+  Regenerated predictions Parquet SHA-256:
+  `88195b26ef5f3f5ab86d7b8a906233e7b0c6ef1af05401fc9f74d3afe91d011b`.
+- Feature cutoff: immediately before qualifying, using only the eight
+  `COMMON_FEATURES` sourced from FP1/FP2/FP3. The row-level `available_at`
+  label means scheduled qualifying start; it does not prove each provider
+  field's publication time or individual feature observation time.
+- The manifest contains the feature/session/unit registry, cutoff metadata,
+  forbidden target list, selected model, split counts, and dataset/prediction
+  hashes. API validates the split/target contract and prediction hash before
+  returning only predicted ranks and retrospective actual ranks.
+- Model selection and metrics exactly reproduce Q-002: Ridge selected on
+  2024 with MAE 2.8362; 2025 Ridge MAE 3.2433 vs FP3 3.3141. Paired delta
+  −0.0708 positions, seeded 10,000-event bootstrap interval
+  [−0.2934, +0.1587], crossing zero. No reliable gain or calibrated
+  probability claim.
+- Artifacts remain ignored under `data/processed/qualifying_backtest/`.
+  Reproduction, API routes, local UI and known limits are in
+  `PREDICTION_LAB.md`.
+
 ## R-001 — 2025 Italian GP replay-pack QA
 
 - Real source: OpenF1 v1 session 9912, meeting 1268. URL schema and historical

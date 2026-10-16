@@ -14,7 +14,7 @@ meetings, even when Sprint weekends are omitted from this experiment.
 | `q1_gap_pct` | `100 × (driver Q1 / event best Q1 − 1)` | Target, after Q1 |
 | `final_position` | Qualifying classification | Label, after qualifying |
 | `team` | Constructor name at this event | Known before qualifying |
-| `available_at` | Qualifying start UTC; prediction cutoff label | Pre-Q cutoff |
+| `available_at` | Scheduled qualifying start UTC; prediction cutoff label | Pre-Q cutoff metadata; not a provider publication time |
 | `provider`, `provider_version`, `source_*` | Lineage and quality metadata | Audit only |
 
 `final_position` is qualifying classification, **not** the penalty-adjusted race
@@ -44,6 +44,16 @@ mismatches and zero differences among paired FP1/FP2/FP3/Q1 best times (18/20/
 20/20 pairs). This checks one weekend only; a broader cross-provider audit is
 required before treating the mixed-year comparison as a purely sporting
 effect. Missing values stay missing until the training-only imputer runs.
+
+The common-feature experiment records source-session lineage (FP1, FP2, FP3)
+and rejects inputs outside its explicit allowlist. Individual practice field
+observation timestamps are not retained, so this is an offline pre-Q
+reconstruction based on session lineage, not a proven replay of the exact data
+availability instant. `GET /api/v1/predictions/qualifying` exposes the
+checksum-verified local experiment summary; the `/event` route returns predicted
+model ranks and the retrospective actual rank without returning Q1 target
+values. Missing or altered artifacts return 503. See `PREDICTION_LAB.md` for
+the response contract and evidence.
 
 Source: [OpenF1 API documentation](https://openf1.org/docs/). Public historical
 access is rate limited; `OpenF1Client` requests at least 2.1 seconds apart and

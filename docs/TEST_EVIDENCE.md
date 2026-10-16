@@ -144,6 +144,30 @@ Full input hashes, formulas, output hashes and caveats are in
 `DISTANCE_ALIGNED_TELEMETRY.md`. This milestone does not include web tests
 because no frontend/API consumer was changed.
 
+## 2026-10-16 — historical qualifying Prediction Lab
+
+| Exact command/check | Result | Evidence class and artifact |
+|---|---|---|
+| `.venv/bin/python -m f1_racelab.models.qualifying_backtest --dataset data/processed/qualifying_mixed_2022_2023_2024_2025.parquet --feature-set common` | Exit 0; Ridge selected on 2024; 2025 metrics reproduced | Real cached dataset, 71 events / 1,418 source rows; predictions SHA-256 `88195b26ef5f3f5ab86d7b8a906233e7b0c6ef1af05401fc9f74d3afe91d011b` |
+| `.venv/bin/pytest -q tests/test_prediction_lab.py tests/test_qualifying_backtest.py tests/test_replay_api.py` | 16 passed, one existing Starlette/httpx deprecation warning | Synthetic cutoff, missing/tampered artifact, response projection and replay API contracts |
+| `.venv/bin/pytest -q` | 61 passed, one existing Starlette/httpx deprecation warning | Full Python suite |
+| `.venv/bin/ruff check src tests scripts` | Passed | Repository source/test/script static checks |
+| `.venv/bin/mypy src/f1_racelab/session src/f1_racelab/telemetry src/f1_racelab/api.py src/f1_racelab/models/qualifying_backtest.py src/f1_racelab/models/prediction_lab.py --follow-imports=silent --ignore-missing-imports` | 20 source files passed | Static type check with the repo's missing-third-party-stub policy |
+| `cd apps/web && npm run test:unit` | 5 passed | Existing clock/context/telemetry unit suite |
+| `cd apps/web && npm run lint` | Passed | ESLint |
+| `cd apps/web && npm run build` | Passed; JS 431.12 KB (141.19 KB gzip), CSS 78.22 KB (15.43 KB gzip) | TypeScript/Vite production build |
+| `cd apps/web && npm run test:e2e` | 10 Chromium tests passed in 21.8 s | Three real replay packs plus Prediction Lab split switch, artifact rendering and return navigation |
+| Real-artifact API via FastAPI `TestClient` | Manifest HTTP 200 / 6,337 bytes; 36 events, eight features, 1,418 cutoff rows; Abu Dhabi 2025 test event HTTP 200 / 20 drivers | Local regenerated artifact; no provider request |
+| Screenshot inspection | Desktop page shows the selected model, holdout metrics, retrospective actual rank, interval crossing zero and timestamp caveat | `data/processed/browser_tests/results/replay-Prediction-Lab-labe-7122e-tes-validation-from-holdout-chromium/prediction-lab-holdout.png` |
+| `.venv/bin/ruff check` (whole repository) | 17 pre-existing findings | Three findings are in the two preserved untracked `ml/features/` user files; the rest are notebook/interactive-cell lint findings. No unrelated files were edited; scoped `src tests scripts` check passes |
+| Direct mypy without repository flags | Failed on missing pandas/scipy/scikit-learn stubs and an inferred dictionary key type | No dependency changes were made; supported scoped command above passes after explicit response typing |
+| Initial `npm run lint` for this page | Failed on synchronous state reset in the event-fetch effect | Loading state is now derived from selected event/result; final ESLint passes |
+
+The exact feature cutoff is based on scheduled qualifying session start and
+FP1/FP2/FP3 lineage. Individual feature observation/publication times remain
+unrecorded. The run is historical and retrospective, not a live forecast; see
+`PREDICTION_LAB.md` for the model metrics, hashes, API, reproduction and limits.
+
 ## 2026-10-16 — shared-clock telemetry panel and local API artifact route
 
 | Exact command/check | Result | Evidence class and artifact |

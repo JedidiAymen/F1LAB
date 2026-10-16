@@ -117,3 +117,25 @@ same `PlaybackClock.seek()` used by every panel. E2E verifies the cursor is
 aligned at the reference start, advances on the normal transport and hides
 outside the lap. Formula, API response size, tests and limitations are in
 `DISTANCE_ALIGNED_TELEMETRY.md`.
+
+## Current follow-up — historical qualifying Prediction Lab
+
+The Replay header opens a separate `PredictionLab` view and provides a return
+to Race Control. It reads `GET /api/v1/predictions/qualifying` and its event
+route from locally generated, ignored backtest artifacts. The backend checks
+the expected 2024 validation / 2025 test and target contract, verifies the
+prediction Parquet SHA-256, and projects only predicted ranks and retrospective
+actual ranks. It sends no request to OpenF1 or FastF1. Missing or tampered
+artifacts are shown unavailable.
+
+The page defaults to 2025 held-out results and allows a 2024 validation view.
+It displays FP3/Ridge/LightGBM ranks, final qualifying rank for retrospective
+comparison, split metrics, the paired event bootstrap interval, and the input
+feature registry. It labels the forecast point as immediately before
+qualifying and explicitly says per-feature timestamps were not retained. The
+model predicts Q1 pace gap; the evaluation label is final qualifying order.
+This is not a 2026 or live forecast, and it shows no calibrated probabilities.
+
+See `PREDICTION_LAB.md` for source hashes, metrics, commands and the full
+timestamp caveat. The UI browser scenario and inspected screenshot are listed
+in `TEST_EVIDENCE.md`.

@@ -14,6 +14,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import ValidationError
 
+from f1_racelab.models.prediction_lab import load_prediction_lab, prediction_event
 from f1_racelab.session.catalog import DEFAULT_SESSION, SESSIONS
 from f1_racelab.session.contracts import WeatherPayload
 from f1_racelab.session.replay_source import ReplaySource
@@ -21,6 +22,8 @@ from f1_racelab.telemetry.artifacts import COMPARISON_ROOT
 from f1_racelab.telemetry.contracts import LapComparison
 
 DEFAULT_PACK = DEFAULT_SESSION.pack_path
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_PREDICTION_ARTIFACTS = PROJECT_ROOT / "data/processed/qualifying_backtest"
 
 
 def _rainfall_changes(replay: ReplaySource) -> list[dict]:
@@ -43,6 +46,7 @@ def create_app(
     *,
     pack_paths: dict[str, Path] | None = None,
     telemetry_comparison_paths: dict[str, Path] | None = None,
+    qualifying_prediction_path: Path | None = None,
 ) -> FastAPI:
     """Create an API bound to a local replay pack, allowing isolated fixtures."""
     paths = {slug: spec.pack_path for slug, spec in SESSIONS.items()}
@@ -52,6 +56,7 @@ def create_app(
         for slug in SESSIONS
     }
     telemetry_paths.update(telemetry_comparison_paths or {})
+    prediction_path = Path(qualifying_prediction_path or DEFAULT_PREDICTION_ARTIFACTS)
     if pack_path or os.environ.get("F1LAB_REPLAY_PACK"):
         paths[DEFAULT_SESSION.slug] = pack_path or Path(os.environ["F1LAB_REPLAY_PACK"])
     app = FastAPI(title="F1LAB local replay API", version="0.1.0")
@@ -164,6 +169,54 @@ def create_app(
                 },
             },
         )
+
+    def prediction_artifacts() -> dict:
+        try:
+            return load_prediction_lab(prediction_path)
+        except FileNotFoundError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="Qualifying Prediction Lab artifacts unavailable. Run python -m "
+                "f1_racelab.models.qualifying_backtest --dataset "
+                "data/processed/qualifying_mixed_2022_2023_2024_2025.parquet --feature-set common.",
+            ) from exc
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(status_code=503, detail=f"Invalid Prediction Lab artifacts: {exc}") from exc
+
+    @app.get("/api/v1/predictions/qualifying")
+    def qualifying_prediction_manifest() -> dict:
+        lab = prediction_artifacts()
+        experiment = lab["experiment"]
+        return {
+            "task": "historical_pre_qualifying_rank",
+            "selected_model": experiment["winner"],
+            "feature_set": experiment["feature_set"],
+            "features": experiment["features"],
+            "cutoff_audit": experiment["cutoff_audit"],
+            "dataset_sha256": experiment["dataset_sha256"],
+            "predictions_sha256": experiment["predictions_sha256"],
+            "training": {key: experiment[key] for key in (
+                "n_training_events", "n_training_rows", "n_validation_events",
+                "n_validation_rows", "n_test_events", "n_test_rows",
+            )},
+            "summaries": lab["summaries"],
+            "uncertainty": lab["uncertainty"],
+            "events": lab["events"],
+        }
+
+    @app.get("/api/v1/predictions/qualifying/event")
+    def qualifying_prediction_weekend(
+        year: int = Query(ge=2022, le=2035),
+        round_no: int = Query(alias="round", ge=1, le=30),
+        split: str = Query(pattern="^(validation|test)$"),
+    ) -> dict:
+        lab = prediction_artifacts()
+        try:
+            return prediction_event(lab, year=year, round_no=round_no, split=split)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=503, detail=f"Invalid Prediction Lab event: {exc}") from exc
 
     return app
 

@@ -3,6 +3,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleAlert,
+  FlaskConical,
   FlagTriangleRight,
   MapPin,
   Pause,
@@ -23,6 +24,7 @@ import { PlaybackClock } from '@/lib/playback-clock'
 import { WeatherPanel } from '@/components/WeatherPanel'
 import { StintPanel } from '@/components/StintPanel'
 import { TelemetryPanel } from '@/components/TelemetryPanel'
+import { PredictionLab } from '@/components/PredictionLab'
 import type { LapComparison } from '@/lib/telemetry-comparison'
 import {
   formatSessionTime as secondsLabel,
@@ -316,10 +318,12 @@ function ReplayWorkspace({
   slug,
   sessions,
   onSessionChange,
+  onOpenPrediction,
 }: {
   slug: string
   sessions: CatalogEntry[]
   onSessionChange: (slug: string) => void
+  onOpenPrediction: () => void
 }) {
   const base = `/api/v1/replay/${slug}`
   const [manifest, setManifest] = useState<Manifest | null>(null)
@@ -511,6 +515,9 @@ function ReplayWorkspace({
               </SelectGroup>
             </SelectContent>
           </Select>
+          <button className="prediction-nav-button" type="button" onClick={onOpenPrediction}>
+            <FlaskConical size={13} /> Prediction Lab
+          </button>
         </div>
         <div className="top-right">
           <span>OPENF1 · PUBLIC HISTORICAL</span>
@@ -918,6 +925,7 @@ function ReplayWorkspace({
 function App() {
   const [sessions, setSessions] = useState<CatalogEntry[]>([])
   const [slug, setSlug] = useState('monza-2025')
+  const [workspace, setWorkspace] = useState<'replay' | 'prediction'>('replay')
   useEffect(() => {
     const controller = new AbortController()
     fetch('/api/v1/replays', { signal: controller.signal })
@@ -929,14 +937,14 @@ function App() {
       .catch(() => {})
     return () => controller.abort()
   }, [])
-  return (
-    <ReplayWorkspace
-      key={slug}
-      slug={slug}
-      sessions={sessions}
-      onSessionChange={setSlug}
-    />
-  )
+  if (workspace === 'prediction') return <PredictionLab onBack={() => setWorkspace('replay')} />
+  return <ReplayWorkspace
+    key={slug}
+    slug={slug}
+    sessions={sessions}
+    onSessionChange={setSlug}
+    onOpenPrediction={() => setWorkspace('prediction')}
+  />
 }
 
 export default App

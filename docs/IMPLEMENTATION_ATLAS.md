@@ -191,3 +191,19 @@ The full hashed JSON artifact retains all source channels. The API projects the
 fields needed by this chart, reducing the current response from 847,619 to
 200,119 bytes. The chart labels the axis as estimated and displays the exact
 session-time basis for its cursor.
+
+## Historical qualifying Prediction Lab (partial P4)
+
+| Symbol | Input → algorithm → output | Proof and limit |
+|---|---|---|
+| `qualifying_backtest.audit_prequalifying_cutoff` | Common/full legal feature list + source rows → target-field allowlist check, FP1/FP2/FP3 lineage registry and scheduled-cutoff audit → manifest data | 1,418 qualifying cutoff rows; feature-level observed-at timestamps are absent, so it documents rather than overclaims the cutoff |
+| `qualifying_backtest.main` | Cached mixed Parquet → event-grouped training/selection/test → CSV, Parquet and SHA-256 experiment manifest | Ridge remains selected using 2024 only; 2025 remains held out; source hash `eef5a727…37fd8` |
+| `models.prediction_lab.load_prediction_lab` | Local experiment JSON, summary CSVs and predictions Parquet → schema/split/allowlist/checksum checks → in-memory report | Test fixtures verify successful projection, absent artifact, and changed prediction/summary bytes; API performs no provider requests |
+| `models.prediction_lab.prediction_event` | Year/round/split → pivot the three model rank outputs by driver → retrospective rank table and event metrics | API output omits Q1 pace target and raw `final_position`; it exposes actual rank only for evaluation |
+| `api.create_app` Prediction Lab routes | Local ignored `data/processed/qualifying_backtest/` → `/api/v1/predictions/qualifying` manifest or `/event` selection → JSON | Real local manifest returns 36 validation/test event choices and eight features; absent or altered artifacts return 503 |
+| `web/components/PredictionLab` | Manifest + selected historical split/event → validation/holdout metrics, baseline/model ranks, actual order and limitations | Ten Chromium scenarios pass across the app; screenshot is in `data/processed/browser_tests/results/`; this is not live prediction serving |
+
+The feature target is Q1 gap percentage; rank metrics compare predictions with
+final qualifying classification. The selected event’s target columns are not
+included in the API response. `PREDICTION_LAB.md` records the exact split,
+metrics, hashes, reproduction and timestamp caveats.

@@ -18,6 +18,26 @@ penalties are outside the label.
   FP1→FP3, FP2→FP3 gap changes. Median imputation, standardization and category
   encoding fit on training rows only.
 
+## Prediction cutoff and user-facing lab
+
+`audit_prequalifying_cutoff` rejects features outside the practice-only
+allowlist and records the feature registry, units and source sessions. The
+mixed dataset's `available_at` is the **scheduled qualifying start** on each
+row. It is not the provider's publication timestamp and the dataset does not
+retain a separate observed-at timestamp for each FP1/FP2/FP3 feature. The
+contract supports an offline pre-qualifying reconstruction from practice
+session lineage; it cannot prove the exact moment each historical provider
+field became visible. It does not yet define after-FP1 or after-FP2 snapshots.
+
+The local Prediction Lab reads generated artifacts only. Its API validates the
+experiment split/target contract and the predictions Parquet SHA-256, then
+projects per-event model ranks and actual finishing rank. It omits Q1 pace and
+other target columns from the event response. The UI labels the actual order as
+retrospective scoring, selects Ridge using 2024 only, and keeps 2025 as the
+held-out view. Missing artifacts produce an explicit 503 with the reproduction
+command; no provider requests are made. Implementation and limits are in
+`PREDICTION_LAB.md`.
+
 ## Metrics and uncertainty
 
 For each event, rank predictions and classifications among eligible drivers.

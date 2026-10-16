@@ -608,3 +608,82 @@ PY
   then add historical-as-of prediction outputs. P3/P4 remain partial. Remote
   branch `feat/foundation` returned exact implementation SHA
   `43e12407a7f13e02b0eb6d6a3fc0206442ca5816`.
+
+## 2026-10-16 UTC — historical qualifying Prediction Lab (partial P4)
+
+- **Starting source SHA:** `bd67b199a189fed6adc604a5130638b9c34b18c6` on
+  `feat/foundation`, synchronized with `origin/feat/foundation`. The two
+  pre-existing user-owned untracked files under `ml/features/` were not
+  modified or staged.
+- **Modified implementation paths:** `src/f1_racelab/models/qualifying_backtest.py`
+  adds `audit_prequalifying_cutoff` and writes cutoff/target/split metadata plus
+  source and report-artifact SHA-256 values into `experiment.json`; new
+  `src/f1_racelab/models/prediction_lab.py` validates local artifacts and
+  projects per-weekend ranks; `src/f1_racelab/api.py:create_app` adds local
+  manifest and event routes; `apps/web/src/App.tsx` adds navigation;
+  `apps/web/src/components/PredictionLab.tsx` and its CSS implement the page;
+  `apps/web/e2e/replay.spec.ts` adds a historic holdout/validation workflow;
+  new `tests/test_prediction_lab.py` covers audit and API contracts.
+- **Inputs, formulas and outputs:** reuse the local mixed-source qualifying
+  Parquet with 71 conventional weekends/1,418 rows; no new provider request.
+  The eight model inputs are FP1/2/3 percent gaps/ranks and the FP1→FP3 and
+  FP2→FP3 gap changes. Prediction target is Q1 gap percent. Predicted pace is
+  ranked inside an event; evaluation target is actual final qualifying rank.
+  `position_mae` is mean absolute difference in rank places; event metrics are
+  equally weighted. The audit checks an explicit practice-only allowlist,
+  source-session/unit metadata, qualifying session marker and parseable UTC
+  scheduled cutoff. It clearly records that this is not a per-feature
+  observation/publication timestamp.
+- **Why:** the current benchmark can responsibly support a historical
+  retrospective lab from existing model outputs, but not a live or earlier
+  session forecast. The local API checks the 2024-selection/2025-holdout and
+  target contract, checks all served report artifact SHA-256 values, returns only rank output
+  and actual rank, and performs no provider calls. UI explicitly says actual
+  classification is retrospective and labels timestamp limits.
+- **Real experiment evidence:** source dataset SHA-256
+  `eef5a7277d2f62fdf263e94cadbc7a5f5c38cd6acdbea9dc00549d5caef37fd8`;
+  regenerated prediction artifact SHA-256
+  `88195b26ef5f3f5ab86d7b8a906233e7b0c6ef1af05401fc9f74d3afe91d011b`.
+  Training coverage 684 rows/35 events; validation 342/18; test 354/18.
+  Ridge remains the 2024 selection (MAE 2.8362 vs FP3 2.8975). On 2025,
+  Ridge MAE 3.2433, Spearman .7095, pole-hit .2778, top-three overlap .6667;
+  FP3 MAE 3.3141, Spearman .6848, pole-hit .2222, top-three .6296. Paired
+  Ridge−FP3 MAE delta −.0708, 95% seeded 10,000-event bootstrap interval
+  [−.2934,+.1587]. The interval crosses zero; no reliable superiority or
+  probability claim is made. Full metrics and caveat are in `PREDICTION_LAB.md`.
+- **Source URL/license:** no data fetched in this milestone. Existing source
+  adapters/data lineage are documented in `DATA_CONTRACTS.md`; links include
+  OpenF1 API docs and its pinned CC BY-NC-SA 4.0 license, plus FastF1 docs and
+  package MIT license. Software package license is not treated as a license
+  for upstream timing data. No third-party code was copied; raw data and model
+  artifacts remain Git-ignored.
+- **Commands/evidence:** backtest reproduction command recorded in
+  `PREDICTION_LAB.md`; exit 0. `.venv/bin/pytest -q`: 61 passed, one existing
+  Starlette/httpx deprecation. `.venv/bin/ruff check src tests scripts` passed.
+  Scoped mypy command passed 20 source files. Web: 5 unit tests, ESLint and
+  TypeScript/Vite build passed (JS 431.12 KB/141.19 gzip; CSS
+  78.22 KB/15.43 gzip); 10 Chromium cases passed in 21.8 s. API real artifact
+  manifest returned HTTP 200/6,337 bytes and 36 events; Abu Dhabi 2025 event
+  returned 20 drivers. Screenshot reviewed at the path in `PREDICTION_LAB.md`.
+- **Bug/failure notes:** first ESLint run objected to synchronous result/loading
+  state resets in an effect; the page now derives loading from the selected
+  event and current result, then final ESLint passes. Whole-repo `ruff check`
+  finds 17 pre-existing notebook/interactive-cell findings, including three
+  style findings in the two preserved user-owned untracked helper files; no
+  unrelated cleanup was made. Direct mypy without repo flags found missing
+  third-party stubs and one inferred key type; the supported scoped command
+  with `--follow-imports=silent --ignore-missing-imports` and explicit typing
+  passes.
+- **Unresolved:** no individual feature observation or provider publication
+  timestamps; no after-FP1/after-FP2 forecast snapshots, 2026 walk-forward,
+  probability calibration, model attribution or production model registry;
+  source-provider boundary and Q1 pace versus final classification still limit
+  interpretation. This is one historical UI backed by the existing dataset.
+- **Documentation changed in the same milestone:** `PREDICTION_LAB.md`,
+  `ROADMAP.md`, `AGENT_WORKLOG.md`, `IMPLEMENTATION_ATLAS.md`,
+  `TEST_EVIDENCE.md`, `EXPERIMENT_REGISTER.md`, `DECISIONS.md`,
+  `GLOSSARY_FOR_LEARNING.md`, `CHATGPT_HANDOFF.md`, `ML_EVALUATION.md`,
+  `DATA_CONTRACTS.md`, `ARCHITECTURE.md`, and `RACE_CONTROL_UI.md`.
+- **Commit/push:** implementation and required notes are committed together;
+  a documentation follow-up records the final source commit SHA and verifies
+  `origin/feat/foundation`.

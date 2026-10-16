@@ -145,3 +145,18 @@ to the planned race workstation.
     `elapsed_B - elapsed_A` in seconds; a negative value means B reached that
     estimated point earlier. This comparison coordinate does not itself
     advance or replace the canonical replay clock.
+29. **Prediction cutoff.** The time at which a forecast is intended to be
+    made. This qualifying experiment uses FP1/FP2/FP3 and is labeled
+    immediately before qualifying. Its stored `available_at` is scheduled Q
+    start, not the exact time every provider field was published.
+30. **Feature registry.** A record of each model input's unit and source
+    session. It helps reviewers check that a feature could exist by the stated
+    cutoff. It is not a substitute for per-value observation timestamps.
+31. **Validation versus holdout.** Validation data may select among candidate
+    models; the 2024 weekends serve that role. The 2025 holdout measures the
+    already selected model and should not drive tuning. Looking at its result
+    repeatedly would weaken the independence of the estimate.
+32. **Paired event bootstrap.** Re-sample whole Grand Prix event errors, with
+    candidate and baseline kept together, to show how the average difference
+    varies across the observed weekends. The 2025 interval crosses zero, so it
+    does not establish that Ridge is reliably better than FP3.
