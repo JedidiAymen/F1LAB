@@ -157,6 +157,7 @@ because no frontend/API consumer was changed.
 | `cd apps/web && npm run lint` | Passed | ESLint |
 | `cd apps/web && npm run build` | Passed; JS 431.12 KB (141.19 KB gzip), CSS 78.22 KB (15.43 KB gzip) | TypeScript/Vite production build |
 | `cd apps/web && npm run test:e2e` | 10 Chromium tests passed in 21.8 s | Three real replay packs plus Prediction Lab split switch, artifact rendering and return navigation |
+| `git push origin feat/foundation`; `git ls-remote origin refs/heads/feat/foundation` | Exit 0; implementation SHA `9f928361c9c7fdf59a2e685dc2994137cf942e35` matches remote | Published from `feat/foundation` with repository owner identity and no coauthor trailer |
 | Real-artifact API via FastAPI `TestClient` | Manifest HTTP 200 / 6,337 bytes; 36 events, eight features, 1,418 cutoff rows; Abu Dhabi 2025 test event HTTP 200 / 20 drivers | Local regenerated artifact; no provider request |
 | Screenshot inspection | Desktop page shows the selected model, holdout metrics, retrospective actual rank, interval crossing zero and timestamp caveat | `data/processed/browser_tests/results/replay-Prediction-Lab-labe-7122e-tes-validation-from-holdout-chromium/prediction-lab-holdout.png` |
 | `.venv/bin/ruff check` (whole repository) | 17 pre-existing findings | Three findings are in the two preserved untracked `ml/features/` user files; the rest are notebook/interactive-cell lint findings. No unrelated files were edited; scoped `src tests scripts` check passes |

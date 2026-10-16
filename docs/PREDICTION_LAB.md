@@ -129,6 +129,8 @@ on the 2025 outputs.
   no per-phase forecast, 2026 walk-forward run, probability calibration,
   feature attribution or model registry exists. Q1 pace remains a proxy for
   final qualifying order.
-- **Git:** this document is committed with the milestone; the resulting code
-  commit and remote state are recorded in `AGENT_WORKLOG.md` and
-  `CHATGPT_HANDOFF.md` after publication.
+- **Git:** implementation and this document are in commit
+  `9f928361c9c7fdf59a2e685dc2994137cf942e35`, pushed to
+  `origin/feat/foundation`; `git ls-remote` returned the same SHA. The
+  documentation follow-up recording publication is in `AGENT_WORKLOG.md` and
+  `CHATGPT_HANDOFF.md`.

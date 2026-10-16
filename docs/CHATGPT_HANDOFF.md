@@ -20,6 +20,10 @@ current UI integration starts from that checkpoint; commit
 Jedidi identity and no assistant coauthor trailers. Two unrelated untracked
 `ml/features/` helpers remain untouched.
 
+The latest Prediction Lab implementation is commit
+`9f928361c9c7fdf59a2e685dc2994137cf942e35`, pushed and remote-verified on
+`origin/feat/foundation`; the owner's identity is the author.
+
 ## What exists and what does not
 
 - **Done before this run:** Monza 2025 practice/qualifying exploration; Sprint 2
@@ -256,8 +260,10 @@ cleanly synchronized `feat/foundation` branch, apart from the two preserved
 untracked user helpers. This milestone adds a source-session feature registry
 and cutoff audit, a SHA-verified local artifact API, an integrated historical
 Prediction Lab page, API/UI tests, and the full documentation set. Implementation
-and required docs are committed together; the exact source commit and push proof
-will be recorded in `AGENT_WORKLOG.md` after publication.
+and required docs are committed together in `9f928361c9c7fdf59a2e685dc2994137cf942e35`.
+It is pushed to `origin/feat/foundation`; `git ls-remote` returned the exact
+same SHA. A follow-up documentation commit records the verification. The
+repository owner is the commit author; there is no assistant coauthor trailer.
 
 The page is historical, not live. It reads the existing 71-event mixed-source
 dataset benchmark artifacts. Inputs are eight FP1/FP2/FP3 pace features; Ridge

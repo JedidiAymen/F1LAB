@@ -684,6 +684,7 @@ PY
   `TEST_EVIDENCE.md`, `EXPERIMENT_REGISTER.md`, `DECISIONS.md`,
   `GLOSSARY_FOR_LEARNING.md`, `CHATGPT_HANDOFF.md`, `ML_EVALUATION.md`,
   `DATA_CONTRACTS.md`, `ARCHITECTURE.md`, and `RACE_CONTROL_UI.md`.
-- **Commit/push:** implementation and required notes are committed together;
-  a documentation follow-up records the final source commit SHA and verifies
-  `origin/feat/foundation`.
+- **Commit/push:** source and required milestone notes are in implementation
+  commit `9f928361c9c7fdf59a2e685dc2994137cf942e35`, pushed normally to
+  `origin/feat/foundation`. `git ls-remote` returned this exact SHA. A separate
+  docs follow-up records this proof; no force push or coauthor trailer.
