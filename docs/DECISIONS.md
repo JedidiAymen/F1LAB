@@ -47,3 +47,17 @@ events. OpenF1 race-control records are preserved as message events, not
 translated into global flag state: sector/driver flags and pit-exit messages
 cannot safely imply a session-wide flag. The 2025 Monza sample proves that
 real messages can be normalized and replayed, but not car movement or timing.
+
+## D-005 — sparse events and indexed measured sidecars, 2026-10-15
+
+The full 2025 Monza pack holds low-frequency position/lap/pit/stint/control
+changes as `SessionEvent`s and keeps approximate 2 Hz car coordinates plus
+interval samples in indexed sidecars. This avoids pushing about 200,000 car
+points through a reducer that retains an audit log, while `RaceSource.state_at`
+still exposes one canonical state at any time. A checkpoint is stored every 64
+events. Source coordinate points are measured as provider observations;
+intermediate movement is estimated and limited to short, plausible brackets.
+Lap completion is derived from approximate start + duration and marked
+estimated. `session_result` is reserved for end-state QA to avoid showing final
+classification at earlier replay times. The ~1.8 MB compressed pack is local
+and ignored, respecting uncertain redistribution rights.

@@ -87,7 +87,16 @@ symbol does. It does not claim the later replay or strategy modules exist.
 | `session.reducer.reduce_event` | Current state + next ordered event → copied next state; duplicate ID returns same state | Tests cover order, time and session rejection; late packets need a source reorder buffer |
 | `session.reducer.seek_state` | Events + cutoff seconds → sort and reduce from start → deterministic state | Test compares forward reduction with arbitrary seek; checkpoints are future work |
 | `session.openf1_sample.build_sample` | Cached OpenF1 2025 Monza race-control records → 53 post-start message events and local ignored JSON | Real source SHA in `DATA_CONTRACTS.md`; message timeline only, no positions/laps |
+| `session.openf1_replay._timed_events` | OpenF1 position/lap/pit/stint/control rows → source-labelled, UTC-sorted events with unique sequence | 1,506 real Monza events; 974 dated positive-duration laps, 2 unusable counted; lap completion is estimated start + duration |
+| `session.openf1_replay._location_samples` | One driver's raw location rows → actual nonzero points at most 2 Hz, with filter counts | 9,915 points retained per driver, 198,300 overall; no interpolated point is stored in the pack |
+| `session.openf1_replay._interval_samples` | Gap/interval rows → per-driver time-indexed numeric values and `+N LAP` text | 20,226 raw interval rows; latest values older than 10 seconds are hidden at seek |
+| `session.openf1_replay._geometry` | VER race lap 3 source points → approximate 166-point circuit trace | OpenF1 coordinates have arbitrary origin and unknown units; not surveyed geometry |
+| `session.openf1_replay.build_replay_pack` | Cached OpenF1 resources → compressed ignored JSON pack, source hashes, coverage and final-result QA | 20 drivers, 18/18 classified position and 20/20 lap-total match; no post-race result injected into earlier events |
+| `session.replay_source.ReplaySource` | Replay pack → 64-event checkpoints + binary-searched sidecars → one `RaceState(t)` | 131 real seek times agreed with full reduction; measured coordinates preserved, interpolated positions marked estimated |
+| `session.validate_replay.validate` | Local pack → event/checkpoint/driver comparison and latency report | Median 1.123 ms, p95 2.329 ms on this machine; no browser FPS claim |
 
-`RaceSource`, `CircuitGeometry`, replay packs and the shared frontend clock are
-specified in `SOL61_MASTER_EXECUTION.md` but not implemented. No full
-replay/live/simulation result is claimed from these contracts.
+`RaceSource` now exists as a mode-independent Python protocol, and one
+approximate geometry trace and one offline replay pack exist. The full
+`CircuitGeometry` contract, more golden sessions, live/simulation adapters and
+shared frontend clock remain. See `REPLAY_2025_MONZA.md` for field-level
+semantics, commands and limits.

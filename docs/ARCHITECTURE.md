@@ -33,11 +33,13 @@ state at a requested session time with `seek_state`. Duplicate event IDs are
 idempotent; backward time, repeated sequence with a new ID and foreign
 sessions are rejected. A late live packet must be ordered before reduction.
 
-`openf1_sample.py` normalizes 53 real 2025 Monza race-control messages from
-OpenF1 session 9912 after scheduled race start into this contract. It validates
-them through the reducer and writes an ignored local JSON sample. It provides
-only `race_control_messages`: car positions, lap timing and weather are absent,
-and provider messages do not automatically mutate a global flag.
+`openf1_sample.py` remains a 53-message contract smoke sample. The new
+`openf1_replay.py` builds a local replay pack from the same race with measured
+position changes, laps, pit stops, stints and indexed approximate locations.
+`ReplaySource.state_at(t)` reads sparse events through reducer checkpoints,
+then samples location and intervals at the same `t` into one `RaceState`.
+`validate_replay.py` compares indexed seek to full reduction at 131 times.
+The pack has one provider session, not a live source or a multi-session player.
 
 ## Locked temporal architecture to extend
 
@@ -62,6 +64,8 @@ current Python reducer is not wired to the frontend or a replay pack yet.
 - `src/f1_racelab/data`: provider adapters and local Parquet/JSON lineage.
 - `src/f1_racelab/features`: practice and strictly past qualifying features.
 - `src/f1_racelab/models`: event grouped evaluation and model ablations.
+- `src/f1_racelab/session`: typed event/state contracts, reducer, offline
+  `RaceSource`, OpenF1 pack builder and replay QA.
 - `apps/web`: React/Vite interface, currently starter UI.
 - `apps/api`, `services/session-engine`, `packages/*`: future typed API, reducer
   and shared contracts; current contents are mostly empty scaffolding.

@@ -36,3 +36,22 @@
   zero best-time differences on all available paired FP1/FP2/FP3/Q1 values.
   One weekend cannot establish cross-season equivalence. The provider boundary
   and Q1 pace versus final classification remain the main interpretation risks.
+
+## R-001 — 2025 Italian GP replay-pack QA
+
+- Real source: OpenF1 v1 session 9912, meeting 1268. URL schema and historical
+  access: [OpenF1 API](https://openf1.org/docs/). Code is independently
+  implemented; raw and compressed packs remain local ignored artifacts.
+- Local artifact: `data/processed/replay_packs/monza_2025_race.json.gz` with
+  manifest and QA JSON alongside it. Exact artifact/source hashes are in the
+  manifest; regeneration changes the pack hash because ingest times change.
+- Coverage: 20 drivers, 1,506 sparse events, 198,300 retained source location
+  points, 24 event checkpoints. One 2025 race only.
+- Checks: 18/18 classified end positions and 20/20 completed-lap totals agree
+  with the provider's post-session result; 131 indexed seek times match full
+  reduction on discrete state fields. Median indexed seek 1.123 ms, p95
+  2.329 ms on this machine. These are implementation QA, not sporting model
+  metrics or browser performance.
+- Limits: approximate coordinates, unknown coordinate unit, one-lap derived
+  circuit trace, estimated lap completion times, no full telemetry, no live
+  service, no UI player. See `REPLAY_2025_MONZA.md`.

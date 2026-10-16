@@ -1,8 +1,9 @@
 # Visual pipeline contract (planned)
 
 No circuit renderer or synchronized Race Control UI is implemented. The Python
-`SessionEvent`/`RaceState` foundation and the real race-control message sample
-are the current inputs to a future replay pack.
+`SessionEvent`/`RaceState` foundation now has a real one-race offline pack.
+`REPLAY_2025_MONZA.md` details its 166-point approximate trace, indexed
+2 Hz retained source locations and interpolation quality rules.
 
 One session clock will select a canonical `RaceState(t)` for timing, race
 control, telemetry, 2D and 3D views. Playback speed changes clock advancement;

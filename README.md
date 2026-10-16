@@ -50,3 +50,16 @@ be built from the local OpenF1 cache:
 It writes an ignored JSON artifact under `data/processed/replay_samples/`.
 The sample contains messages only; positions, lap timing and the interactive
 Race Control view are not implemented yet.
+
+A richer **local offline replay pack** is now available for the 2025 Italian
+GP race. It contains 20 drivers, 1,506 discrete events and 198,300 retained
+approximate location points. Build and validate it with:
+
+```bash
+.venv/bin/python -m f1_racelab.session.openf1_replay
+.venv/bin/python -m f1_racelab.session.validate_replay
+```
+
+The pack is ignored by Git and no browser player is wired yet. See
+[the replay evidence](docs/REPLAY_2025_MONZA.md) for source coverage, clock
+semantics and limitations.

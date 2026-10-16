@@ -33,14 +33,32 @@ class DriverState(BaseModel):
 
     driver_id: str
     position: int | None = Field(default=None, ge=1)
+    position_quality: Quality | None = None
+    position_observed_at: datetime | None = None
     lap: int | None = Field(default=None, ge=0)
+    last_lap_seconds: float | None = Field(default=None, gt=0)
+    best_lap_seconds: float | None = Field(default=None, gt=0)
     gap_to_leader_seconds: float | None = Field(default=None, ge=0)
+    gap_to_leader_text: str | None = None
+    interval_ahead_seconds: float | None = Field(default=None, ge=0)
+    interval_ahead_text: str | None = None
+    interval_observed_at: datetime | None = None
     tyre_compound: str | None = None
     tyre_age_laps: int | None = Field(default=None, ge=0)
+    stint_number: int | None = Field(default=None, ge=1)
+    stint_lap_start: int | None = Field(default=None, ge=1)
+    tyre_age_at_stint_start: int | None = Field(default=None, ge=0)
+    pit_count: int = Field(default=0, ge=0)
+    last_pit_lane_seconds: float | None = Field(default=None, gt=0)
+    last_pit_stop_seconds: float | None = Field(default=None, gt=0)
     in_pit: bool = False
     retired: bool = False
     quality: Quality | None = None
     observed_at: datetime | None = None
+    track_x: float | None = None
+    track_y: float | None = None
+    location_quality: Quality | None = None
+    location_observed_at: datetime | None = None
 
 
 class PositionPayload(BaseModel):
@@ -57,6 +75,30 @@ class PitPayload(BaseModel):
     in_pit: bool
     tyre_compound: str | None = None
     tyre_age_laps: int | None = Field(default=None, ge=0)
+
+
+class LapPayload(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+    driver_id: str
+    lap_number: int = Field(ge=1)
+    lap_duration_seconds: float | None = Field(default=None, gt=0)
+
+
+class PitStopPayload(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+    driver_id: str
+    lap_number: int = Field(ge=1)
+    lane_duration_seconds: float | None = Field(default=None, gt=0)
+    stop_duration_seconds: float | None = Field(default=None, gt=0)
+
+
+class StintPayload(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+    driver_id: str
+    stint_number: int = Field(ge=1)
+    lap_start: int = Field(ge=1)
+    compound: str
+    tyre_age_at_start: int | None = Field(default=None, ge=0)
 
 
 class FlagPayload(BaseModel):
@@ -85,7 +127,7 @@ class SessionEvent(BaseModel):
     schema_version: Literal[1] = 1
     session: SessionId
     event_id: str = Field(min_length=1)
-    type: Literal["position", "pit", "flag", "retirement", "race_control"]
+    type: Literal["position", "pit", "lap", "pit_stop", "stint", "flag", "retirement", "race_control"]
     source: str = Field(min_length=1)
     source_timestamp: datetime
     observed_at: datetime
@@ -94,11 +136,13 @@ class SessionEvent(BaseModel):
     sequence: int = Field(ge=0)
     applicable_lap: int | None = Field(default=None, ge=0)
     quality: Quality
-    payload: PositionPayload | PitPayload | FlagPayload | RetirementPayload | RaceControlPayload
+    payload: (PositionPayload | PitPayload | LapPayload | PitStopPayload | StintPayload
+              | FlagPayload | RetirementPayload | RaceControlPayload)
 
     @model_validator(mode="after")
     def validate_payload(self) -> SessionEvent:
         expected = {"position": PositionPayload, "pit": PitPayload,
+                    "lap": LapPayload, "pit_stop": PitStopPayload, "stint": StintPayload,
                     "flag": FlagPayload, "retirement": RetirementPayload,
                     "race_control": RaceControlPayload}
         if not isinstance(self.payload, expected[self.type]):
@@ -121,5 +165,6 @@ class RaceState(BaseModel):
     drivers: dict[str, DriverState] = Field(default_factory=dict)
     last_sequence: int = -1
     applied_event_ids: frozenset[str] = frozenset()
+    applied_event_hashes: dict[str, str] = Field(default_factory=dict)
     event_log: tuple[str, ...] = ()
     race_control_messages: tuple[RaceControlPayload, ...] = ()

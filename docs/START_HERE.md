@@ -32,3 +32,8 @@ The full locked product scope remains `SOL61_MASTER_EXECUTION.md`.
 The partial session foundation is described in `ARCHITECTURE.md`; its limited
 real race-control sample is reproducible with
 `.venv/bin/python -m f1_racelab.session.openf1_sample`.
+For the richer offline Monza race pack, run
+`.venv/bin/python -m f1_racelab.session.openf1_replay` followed by
+`.venv/bin/python -m f1_racelab.session.validate_replay` and read
+`REPLAY_2025_MONZA.md`. The pack is local and ignored; no browser player is
+available yet.

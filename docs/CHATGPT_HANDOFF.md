@@ -1,10 +1,11 @@
 # F1LAB handoff for the next ChatGPT session
 
-**Status at 2026-10-15 UTC:** qualifying research benchmark complete, first
-canonical session contract/reducer in progress. Branch `feat/foundation`;
-research checkpoint `b6835e7` was pushed to `origin/feat/foundation`. Check
-`git log -1`, `git status` and `git ls-remote origin feat/foundation` for any
-later checkpoint.
+**Status at 2026-10-15 UTC:** qualifying research benchmark complete; one
+real 2025 Monza offline race replay pack now builds and seeks deterministically.
+Branch `feat/foundation`; checkpoints `b6835e7` and `4c5bd37` were pushed to
+`origin/feat/foundation`. This pack milestone is being prepared as the next
+commit; check `git log -1`, `git status` and `git ls-remote origin
+refs/heads/feat/foundation` for the exact later SHA and push state.
 
 ## What exists and what does not
 
@@ -21,12 +22,15 @@ later checkpoint.
   form ablation, one-event provider overlap audit, one manual historical-form
   trace, and executed notebook chart. See `EXPERIMENT_REGISTER.md`.
 - **Now implemented in part:** Python Pydantic `SessionEvent`/`RaceState`, pure
-  ordered reducer and deterministic seek. A real OpenF1 2025 Monza sample
-  normalizes 53 post-start race-control messages. It has no positions or lap
-  timing; it is not a complete replay.
+  ordered reducer, `RaceSource` protocol and indexed `ReplaySource`. A real
+  OpenF1 2025 Monza pack has 20 drivers, 1,506 discrete events, 198,300
+  retained approximate location points, laps, position changes, pit records,
+  stints, intervals and race-control messages. It includes a 166-point
+  approximate one-lap circuit trace. Read `REPLAY_2025_MONZA.md` for exact
+  source/time/quality contract and QA. The older 53-message smoke sample remains.
 - **Not done:** calibrated probabilities, prediction serving, full historical
-  replay, 2D
-  or 3D visualization, telemetry comparison, strategy, what-if, live and radio.
+  replay across three representative sessions, 2D or 3D visualization,
+  telemetry comparison, strategy, what-if, live and radio.
   The React frontend still renders the Vite starter screen.
 
 ## Why the provider changed
@@ -52,8 +56,11 @@ the original dataset and build a separate source-labelled one. See
 evaluate five candidate rankings. `IMPLEMENTATION_ATLAS.md` describes inputs,
 outputs, formulas, tests and caveats per function. `ARCHITECTURE.md` diagrams
 the actual data flow and partial unified replay architecture. The new
-`session/contracts.py`, `session/reducer.py` and `session/openf1_sample.py`
-provide the first canonical event/state path.
+`session/contracts.py`, `session/reducer.py`, `session/source.py`,
+`session/openf1_replay.py`, `session/replay_source.py` and
+`session/validate_replay.py` provide the first canonical, real-data replay
+path. The compressed pack, manifest and QA report are local ignored artifacts
+under `data/processed/replay_packs/`.
 
 ## Reproduction and evidence
 
@@ -65,9 +72,12 @@ uv sync --dev
 .venv/bin/python -m f1_racelab.models.qualifying_backtest --dataset data/processed/qualifying_mixed_2022_2023_2024_2025.parquet --feature-set common
 .venv/bin/python -m f1_racelab.models.qualifying_ablation --dataset data/processed/qualifying_mixed_2022_2023_2024_2025.parquet --feature-set common
 .venv/bin/python -m f1_racelab.session.openf1_sample
+.venv/bin/python -m f1_racelab.session.openf1_replay
+.venv/bin/python -m f1_racelab.session.validate_replay
 ```
 
-The latest full test run passed **19/19** and Ruff passed; exact commands are
+The latest full test run passed **24/24**, Ruff passed, and mypy passed for all
+eight session source files; exact commands are
 in `TEST_EVIDENCE.md`. Fixture tests are separate from the real provider data
 and model experiment. Generated
 datasets and metrics are under ignored `data/processed/`; inspect
@@ -81,6 +91,15 @@ Ridge won on 2024 MAE (2.8362 vs FP3 2.8975). Its held-out 2025 MAE was
 interval [-0.2934, +0.1587]. The interval crosses zero, so no reliable
 improvement is claimed. The UI remains the Vite starter; no replay demo exists.
 
+The replay builder checked 18/18 classified end positions and 20/20 completed
+lap totals against OpenF1 `session_result` without leaking that final table
+into earlier replay events. The validator compared 131 arbitrary/event-boundary
+seeks with full reduction and found no discrete-state differences; one exact
+location sample was preserved. On this machine p50/p95 indexed seek was
+1.123/2.329 ms. This is one-race backend evidence, not a browser frame-rate
+or multi-race correctness claim. Pack/source hashes are in the local manifest;
+the pack hash changes across rebuilds because ingest timestamps change.
+
 ## Known failure and risk matrix
 
 | Issue | Evidence | Effect / next handling |
@@ -90,14 +109,16 @@ improvement is claimed. The UI remains the Vite starter; no replay demo exists.
 | Q1 pace proxy vs final Q classification | Pipeline target/label definitions | Report separately; phase-aware model remains future work |
 | Limited uncertainty evidence | 18 held-out events; paired interval crosses zero | Avoid superiority or deployment claims |
 | Team names and driver acronyms as identifiers | Current row schema | Audit transfers, substitutions and renamed constructors before production |
+| Approximate replay geometry | OpenF1 positions have arbitrary origin and unknown unit; trace is VER lap 3 | Show coordinate/quality labels; do not call the trace surveyed or precise |
+| Repeated stopped-car locations | Provider may repeat constant points after a DNF/DNS | Detect stale motion before rendering active cars; no retirement time inferred now |
 
 ## Next five actions
 
-1. Run the full checks for the new session foundation, then commit and push
-   this second documented checkpoint.
-2. Extend the real race sample with measured positions, laps and pit events;
-   add source capability flags and replay checkpoints.
-3. Build a shared frontend clock and 2D workspace from that replay pack.
+1. Final review, commit and push the verified Monza replay-pack milestone.
+2. Serve the local pack through an API and build a shared-clock 2D workspace
+   from the canonical `RaceState`, with exact demo and browser checks.
+3. Audit two additional historical sessions with real SC/VSC and mixed weather
+   coverage before claiming general replay reliability.
 4. Expand cross-provider overlap and as-of timestamp audits before promoting
    a qualifying model toward production use.
 

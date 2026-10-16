@@ -79,6 +79,21 @@ For each candidate subsystem we answer:
 
 These are investigation roles, not hard dependencies.
 
+### Verified provider reference used in the 2026-10-15 replay milestone
+
+[OpenF1 API documentation](https://openf1.org/docs/) was inspected for
+`drivers`, `position`, `laps`, `pit`, `stints`, `race_control`, `intervals`,
+`location` and `session_result` fields. Historical 2025 Monza session 9912 was
+queried and cached; `docs/REPLAY_2025_MONZA.md` gives real row counts, source
+hashes and quality limitations. The inspected
+[OpenF1 repository](https://github.com/br-g/openf1) revision was
+`87540e3f495bbd9bedb37b10456dd848c8f193d6` with
+[CC BY-NC-SA 4.0 license](https://github.com/br-g/openf1/blob/87540e3f495bbd9bedb37b10456dd848c8f193d6/LICENSE).
+F1LAB independently implemented the adapter and reducer; no OpenF1 source code
+was copied. The API's approximate coordinate precision and rights to
+commercially redistribute upstream timing data remain limitations. The raw
+responses and derived pack are ignored by Git.
+
 ## 4. F1 Terminal / open-f1
 
 Repository: https://github.com/i-ares/open-f1

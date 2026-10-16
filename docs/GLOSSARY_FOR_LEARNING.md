@@ -47,9 +47,11 @@ to the planned race workstation.
     dependence and gives a descriptive interval for the observed calendar.
 11. **RaceState and one clock.** The new Python reducer applies ordered
     `SessionEvent`s to one canonical state and supports deterministic seeking.
-    A real 2025 Monza race-control message sample exercises the contract. 2D,
-    3D, timing and telemetry must eventually read that same session time;
-    they are not connected yet. Drawing frames do not invent extra race time.
+    A real 2025 Monza pack now adds positions, laps, pit and stints to the
+    race-control message sample. `ReplaySource.state_at(t)` returns all
+    available fields at one session time, using event checkpoints and indexed
+    location/interval samples. 2D, 3D, timing and telemetry are not connected
+    yet. Drawing frames must not invent extra race time.
 12. **Distance alignment.** Two lap telemetry streams should be interpolated
     to matching track distances before speed or braking comparisons. Equal
     timestamps can represent different physical places. This is a planned P3
@@ -64,3 +66,10 @@ to the planned race workstation.
     exogenous random worlds where valid, reducing noise in their comparison;
     traffic that depends on a strategy remains branch-specific. These samples
     would express model-conditional uncertainty, not guaranteed win odds.
+15. **Measured versus estimated position.** An OpenF1 coordinate is an
+    approximate provider observation, marked measured only in the sense that
+    it came directly from that response. A car point between two nearby
+    samples is linearly interpolated and marked estimated. Neither coordinate
+    can override the provider's official position or lap timing. The coordinate
+    origin and unit are not known, so the first circuit outline is a trace,
+    not a surveyed engineering map.

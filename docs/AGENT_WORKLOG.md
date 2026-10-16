@@ -93,3 +93,66 @@
   is no reorder buffer for late live packets, checkpoint index or frontend
   binding. Next add measured position/lap/pit events, then a versioned pack and
   shared frontend clock. Check `git log -1` for the final checkpoint SHA.
+
+## 2026-10-15 UTC — P1 first full offline race pack
+
+- **Starting state:** `feat/foundation` at pushed `4c5bd37`; only two unrelated
+  untracked helper files in `ml/features/` were present and left untouched.
+  The previous checkpoint normalized 53 race-control messages but had no car
+  position or lap replay. This milestone implements the next dependent data
+  path for one actual race; no frontend claim is made.
+- **Files:** `session/contracts.py` adds typed lap, pit-stop and stint payloads
+  plus separate timing/position/location quality fields;
+  `session/reducer.py` applies them and rejects event-ID reuse with changed
+  contents; `session/source.py` defines the mode-independent `RaceSource`
+  protocol; `session/openf1_replay.py` caches/normalizes OpenF1 data into a
+  compact ignored pack; `session/replay_source.py` supplies indexed seek and
+  sidecar sampling; `session/validate_replay.py` runs real-data QA.
+  `tests/test_session_reducer.py` and `tests/test_openf1_replay.py` cover
+  synthetic invariants. README and `docs/REPLAY_2025_MONZA.md`, `ROADMAP.md`,
+  `ARCHITECTURE.md`, `DATA_CONTRACTS.md`, `VISUAL_PIPELINE.md`, `DECISIONS.md`,
+  `IMPLEMENTATION_ATLAS.md`, `GLOSSARY_FOR_LEARNING.md`, `EXPERIMENT_REGISTER.md`,
+  `TEST_EVIDENCE.md`, this worklog, the handoff and ADR-0001 document the
+  same milestone.
+- **Real source and algorithm:** [OpenF1 API](https://openf1.org/docs/) session
+  9912, meeting 1268. UTC clock origin is scheduled 2025-09-07 13:00. Twenty
+  driver rows, 421 position rows, 976 laps, 19 pit, 39 stints, 73 control and
+  20,226 interval rows were fetched, plus 20 driver-specific location responses
+  of 30,700 rows each. The client used its 2.1-second minimum request interval
+  and cached raw JSON. Sparse events sort by time, type priority and source
+  index; 974 lap completions are at `approximate date_start + lap_duration`
+  seconds and marked estimated; 2 unusable lap rows are counted. Twenty
+  latest pre-clock position rows seed t=0 while preserving their older source
+  observation. Location retains **actual** nonzero points at most 2 Hz, never
+  synthetic points in the stored sidecar. Replay samples them through a binary
+  search; only short in-between movement is estimated. Intervals older than
+  10 seconds are hidden. A 166-point trace from VER lap 3 is approximate
+  geometry in unknown provider coordinate units.
+- **Evidence:** 1,506 events, 198,300 retained location samples, 24
+  checkpoints, 20 drivers and ~1.8 MB compressed local pack. The builder's
+  end-state comparison matched 18/18 classified positions and 20/20 lap totals
+  against post-session results. The validator matched 131 indexed seeks to full
+  reducer output and one exact measured location; local p50/p95 seek times
+  were 1.123/2.329 ms. `uv sync --dev` resolved 167 and checked 164 packages;
+  `.venv/bin/pytest -q` passed 24 synthetic tests; Ruff passed. Artifacts and
+  source SHA values are in ignored `data/processed/replay_packs/`. After
+  explicit event type aliases and nullable numeric guards, session-scoped
+  mypy passed eight source files. Reproduce
+  via the two commands in `REPLAY_2025_MONZA.md`.
+- **Bug and fix:** the first builder run cached all 20 locations but failed
+  when a singular `lap` event was incorrectly used as the plural `laps` raw
+  table key. The mapping was corrected; the cached rerun succeeded. A synthetic
+  normalization test protects the source-time transformation. A later check
+  found `source_timestamp` for lap start must differ from the estimated
+  completion `observed_at`; the builder now records both correctly.
+- **Rationale/rights:** ADR-0001 explains sidecars and checkpoints. The
+  adapter is independent code informed by OpenF1's documented schema. The
+  inspected OpenF1 repository revision was
+  `87540e3f495bbd9bedb37b10456dd848c8f193d6`, licensed CC BY-NC-SA 4.0;
+  upstream race data rights need separate review. Raw/pack data stay ignored.
+  No new dependency was added.
+- **Limits/next:** one race; coordinates approximate, source units unknown;
+  stale stationary points may repeat after retirement; pit records do not
+  locate pit entry/exit; no full telemetry or browser demo. Next serve the
+  pack locally and build a shared-clock 2D UI, then audit two more sessions.
+  Check `git log -1` and remote for this checkpoint's final SHA/push state.

@@ -66,3 +66,15 @@ after scheduled start, with source response SHA-256
 `b138137eadc17c3d10d1b1bfe7f5fe8beddf033753b0a5adad79904a5693fa25`.
 Its only advertised capability is `race_control_messages`; it is not a full
 race replay. Raw and normalized data stay in ignored `data/`.
+
+The newer 2025 Monza race pack extends that smoke sample. Its sparse event
+types now include position changes, estimated lap completions, pit records,
+estimated stint boundaries and race-control messages. OpenF1 `location` and
+`intervals` are indexed sidecars sampled into the same `RaceState` at seek
+time. Driver identifiers are event-specific car numbers, not acronyms; the
+pack maps them to name/team/color metadata. `position_quality` and
+`location_quality` are separate. A location between two retained measurements
+is estimated; lap time and classification are never interpolated. Raw
+`session_result` is used only to verify the final state, not injected as an
+early replay event. See `REPLAY_2025_MONZA.md` for counts, timestamp choices,
+source hashes, limits and reproduction.
