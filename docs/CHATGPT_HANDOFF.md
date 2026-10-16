@@ -473,10 +473,10 @@ and ignored; the two unrelated user feature helpers remain untouched.
 Next: extend shared-clock telemetry beyond the Monza reference pair.
 
 
-## Latest P3 worktree — three-session six-channel telemetry (verified; publication pending)
+## Published P3 checkpoint — three-session six-channel telemetry
 
 Starting published source `acff2d86ba79ef9dc23c20ac3070d54a989bab8e`, branch `feat/foundation`.
-New changes remain uncommitted; verification passed and publication is pending.
+Implementation and correction are committed and remote-verified on `feat/foundation`.
 The previous checkpoint's 92 Python / 8 frontend unit / 11 browser results are
 baseline evidence, not proof for this milestone.
 
@@ -563,3 +563,12 @@ After cleanup, `npx playwright test --grep='six telemetry channels'` passed
 three-race run verifies the subsequent cleanup. Corrective source commit/push
 remains pending. Prior 14-scenario/39.2-second evidence applies to the original
 published P3 source.
+
+### P3 publication proof
+
+Implementation commit `5bce32930dfaa802c6ec1c7a54e1a0f7ffce0cf9` expanded the catalog and channel UI. Review
+correction commit `9a13f6eef679c417fc3bc6a8beddd320504dbc06` fixed held-value traces at missing discrete samples
+and crowded mobile delta labels. Both are on `origin/feat/foundation`;
+`git ls-remote origin refs/heads/feat/foundation` returned `9a13f6eef679c417fc3bc6a8beddd320504dbc06`. Git
+used Aymen Jedidi's repository identity, with no assistant coauthor. The two
+unrelated user helpers under `ml/features/` remain untracked and untouched.

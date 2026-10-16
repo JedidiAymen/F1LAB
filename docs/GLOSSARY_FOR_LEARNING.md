@@ -259,3 +259,12 @@ next value is missing, drawing the horizontal segment to its boundary expresses
 known prior coverage; stopping there and breaking the path expresses unknown
 future coverage. Suppressing overlapping tick text improves legibility without
 removing the numerical grid scale.
+
+### P3 publication proof
+
+Implementation commit `5bce32930dfaa802c6ec1c7a54e1a0f7ffce0cf9` expanded the catalog and channel UI. Review
+correction commit `9a13f6eef679c417fc3bc6a8beddd320504dbc06` fixed held-value traces at missing discrete samples
+and crowded mobile delta labels. Both are on `origin/feat/foundation`;
+`git ls-remote origin refs/heads/feat/foundation` returned `9a13f6eef679c417fc3bc6a8beddd320504dbc06`. Git
+used Aymen Jedidi's repository identity, with no assistant coauthor. The two
+unrelated user helpers under `ml/features/` remain untracked and untouched.

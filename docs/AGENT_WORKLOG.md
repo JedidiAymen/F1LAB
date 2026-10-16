@@ -797,7 +797,7 @@ times or prediction calibration.
 ## 2026-10-16 UTC — validated driving-line geometry and focused map context (P2 partial)
 
 - **Starting source SHA:** `1a5b7b4fa64ae3ceab0ab7cb6957c2331a5ce7b6` on `feat/foundation`.
-  Two pre-existing untracked `ml/features/` helpers are preserved. Final verification passed; publication remains pending.
+  Two pre-existing untracked `ml/features/` helpers are preserved. Final verification passed; publication was pending at this earlier checkpoint; the publication proof below records completion.
 - **Scope and paths:** `session/geometry.py`, `session/openf1_replay.py` and
   provider cache support select and persist typed display geometry;
   `session/location_history.py` and `api.py` attach optional selected-driver
@@ -993,3 +993,12 @@ After cleanup, `npx playwright test --grep='six telemetry channels'` passed
 three-race run verifies the subsequent cleanup. Corrective source commit/push
 remains pending. Prior 14-scenario/39.2-second evidence applies to the original
 published P3 source.
+
+### P3 publication proof
+
+Implementation commit `5bce32930dfaa802c6ec1c7a54e1a0f7ffce0cf9` expanded the catalog and channel UI. Review
+correction commit `9a13f6eef679c417fc3bc6a8beddd320504dbc06` fixed held-value traces at missing discrete samples
+and crowded mobile delta labels. Both are on `origin/feat/foundation`;
+`git ls-remote origin refs/heads/feat/foundation` returned `9a13f6eef679c417fc3bc6a8beddd320504dbc06`. Git
+used Aymen Jedidi's repository identity, with no assistant coauthor. The two
+unrelated user helpers under `ml/features/` remain untracked and untouched.

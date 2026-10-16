@@ -360,7 +360,7 @@ Final integrated checks (all exit 0): `uv run pytest -q` — 92 passed in
 `origin/feat/foundation`; `git ls-remote` returned the identical SHA.
 
 
-## R-011 — three-session six-channel distance comparison (verified; publication pending)
+## R-011 — three-session six-channel distance comparison (verified and published)
 
 Starting source `acff2d86ba79ef9dc23c20ac3070d54a989bab8e`. This is an engineering/data-quality
 extension, not a predictive model experiment. Catalog pairs are Monza 2025
@@ -373,7 +373,7 @@ lap starts. Six channels retain provider/null semantics, and delta remains
 elapsed B−A. Distances are estimated and source conditions are not controlled;
 Monaco lacks pit data. No clean-lap, equal-condition or general performance
 claim follows. Offline reproduction and contracts/API/UI checks pass;
-normal publication remains pending.
+normal push to `origin/feat/foundation` was verified at the correction SHA below.
 
 Verified reproduction: `uv run python -m f1_racelab.telemetry.openf1_lap_comparison --all --offline`
 completed from cached data; log `data/processed/telemetry_comparisons/catalog_build.log`.
@@ -429,3 +429,12 @@ After cleanup, `npx playwright test --grep='six telemetry channels'` passed
 three-race run verifies the subsequent cleanup. Corrective source commit/push
 remains pending. Prior 14-scenario/39.2-second evidence applies to the original
 published P3 source.
+
+### P3 publication proof
+
+Implementation commit `5bce32930dfaa802c6ec1c7a54e1a0f7ffce0cf9` expanded the catalog and channel UI. Review
+correction commit `9a13f6eef679c417fc3bc6a8beddd320504dbc06` fixed held-value traces at missing discrete samples
+and crowded mobile delta labels. Both are on `origin/feat/foundation`;
+`git ls-remote origin refs/heads/feat/foundation` returned `9a13f6eef679c417fc3bc6a8beddd320504dbc06`. Git
+used Aymen Jedidi's repository identity, with no assistant coauthor. The two
+unrelated user helpers under `ml/features/` remain untracked and untouched.
