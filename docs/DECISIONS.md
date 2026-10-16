@@ -103,9 +103,10 @@ The prior UI advanced React state on every animation frame. It now uses a
 monotonic clock anchored at play/pause/seek/rate changes and samples that
 clock every 200 ms. Seeks retain exact source milliseconds. Switching session
 remounts the workspace and cancels old requests. This keeps one clock and
-avoids 60 Hz whole-tree rendering while continuous smooth map rendering is
-developed separately. Four Playwright Chromium tests run against real local
-packs; browser snapshots exposed an unnamed slider input, which was fixed.
+avoids 60 Hz whole-tree rendering. At this checkpoint there was no continuous
+map interpolation; D-011 later adds a small playback-only CSS transform
+between adjacent canonical samples. Four Playwright Chromium tests run against
+real local packs; browser snapshots exposed an unnamed slider input, which was fixed.
 The web lockfile is tracked despite a user-global ignore; the shadcn CLI is
 a development dependency. Production-only npm audit is clean, with seven
 upstream high advisories still reported for the development CLI chain.
@@ -128,3 +129,25 @@ never to green. This avoids turning a phrase such as “SAFETY CAR IN THIS LAP�
 or “SESSION STARTED” into a false current flag. Unsupported and local signals
 stay available as raw race-control messages. Proof on three real races and the
 source lineage report are in `REPLAY_CONTEXT.md`.
+
+## D-011 — as-of tyre stints and display-only map transitions, 2026-10-16
+
+Existing OpenF1 stint start events and lap events are enough to expose tyre
+history without adding future information to a source event. `RaceState` now
+emits schema 3, while event and replay-pack schema remain version 2. A start
+event appends a source-identified stint; the next source start closes its
+predecessor at the latest completed lap, with the close event ID and quality.
+Lap events extend only the currently open segment. The provider's eventual
+`lap_end` is not copied onto the start event because doing so would reveal a
+future stint boundary during an earlier replay seek. Same-lap starts are
+accepted and retained: Monaco car 27 has two provider rows starting at lap 1.
+The UI makes mapped overlap explicit and does not fill missing laps.
+
+The map still receives canonical positions at 5 Hz. A short 180 ms CSS
+transform bridges a forward visual update only when the state delta is at most
+4 seconds (including the 3.2 second gap possible at 16× playback). Exact and
+backward seeks, larger source gaps and initial appearance set `transition:
+none`; the existing reduced-motion CSS rule remains in force. This is a
+rendering aid, not another simulation clock or a claim of continuously
+measured location. Source counts, tests and screenshots are recorded in
+`REPLAY_STINTS_AND_MOTION.md`.

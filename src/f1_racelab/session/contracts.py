@@ -33,6 +33,30 @@ class SessionId(BaseModel):
     provider_key: str | None = None
 
 
+class TyreStintState(BaseModel):
+    """One source-backed tyre stint visible at a replay cutoff."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+
+    stint_number: int = Field(ge=1)
+    lap_start: int = Field(ge=1)
+    lap_end: int | None = Field(default=None, ge=1)
+    lap_end_quality: Quality | None = None
+    compound: str = Field(min_length=1)
+    tyre_age_at_start: int | None = Field(default=None, ge=0)
+    source_event_id: str = Field(min_length=1)
+    closed_by_event_id: str | None = None
+    session_time_seconds: float = Field(ge=0)
+    quality: Quality
+    observed_at: AwareDatetime
+
+    @model_validator(mode="after")
+    def ordered_lap_range(self) -> TyreStintState:
+        if self.lap_end is not None and self.lap_end < self.lap_start:
+            raise ValueError("Stint lap_end cannot precede lap_start")
+        return self
+
+
 class DriverState(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -53,6 +77,7 @@ class DriverState(BaseModel):
     stint_number: int | None = Field(default=None, ge=1)
     stint_lap_start: int | None = Field(default=None, ge=1)
     tyre_age_at_stint_start: int | None = Field(default=None, ge=0)
+    tyre_stints: tuple[TyreStintState, ...] = ()
     pit_count: int = Field(default=0, ge=0)
     last_pit_lane_seconds: float | None = Field(default=None, gt=0)
     last_pit_stop_seconds: float | None = Field(default=None, gt=0)
@@ -216,7 +241,7 @@ class SessionEvent(BaseModel):
 class RaceState(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    schema_version: Literal[1, 2] = 2
+    schema_version: Literal[1, 2, 3] = 3
     session: SessionId
     capabilities: tuple[str, ...] = ()
     session_time_seconds: float = Field(default=0, ge=0)

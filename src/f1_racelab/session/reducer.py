@@ -21,6 +21,7 @@ from .contracts import (
     StintPayload,
     TrackStatusObservation,
     TrackStatusPayload,
+    TyreStintState,
     WeatherObservation,
     WeatherPayload,
 )
@@ -109,6 +110,15 @@ def reduce_event(state: RaceState, event: SessionEvent) -> RaceState:
             age = prior.tyre_age_laps
             if prior.stint_lap_start is not None and prior.tyre_age_at_stint_start is not None:
                 age = prior.tyre_age_at_stint_start + payload.lap_number - prior.stint_lap_start + 1
+            stint_history = prior.tyre_stints
+            if stint_history:
+                active_stint = stint_history[-1]
+                if (active_stint.closed_by_event_id is None
+                        and payload.lap_number >= active_stint.lap_start
+                        and (active_stint.lap_end is None or payload.lap_number > active_stint.lap_end)):
+                    stint_history = (*stint_history[:-1], active_stint.model_copy(
+                        update={"lap_end": payload.lap_number,
+                                "lap_end_quality": event.quality}))
             duration = payload.lap_duration_seconds
             best = min(duration, prior.best_lap_seconds) if duration and prior.best_lap_seconds else (
                 duration or prior.best_lap_seconds
@@ -116,6 +126,7 @@ def reduce_event(state: RaceState, event: SessionEvent) -> RaceState:
             drivers[payload.driver_id] = prior.model_copy(update={
                 "lap": payload.lap_number, "last_lap_seconds": duration,
                 "best_lap_seconds": best, "tyre_age_laps": age,
+                "tyre_stints": stint_history,
                 "quality": event.quality, "observed_at": event.observed_at,
             })
         elif isinstance(payload, PitStopPayload):
@@ -126,16 +137,36 @@ def reduce_event(state: RaceState, event: SessionEvent) -> RaceState:
                 "quality": event.quality, "observed_at": event.observed_at,
             })
         elif isinstance(payload, StintPayload):
+            stint_history_list = list(prior.tyre_stints)
+            if stint_history_list:
+                previous = stint_history_list[-1]
+                if payload.stint_number <= previous.stint_number or payload.lap_start < previous.lap_start:
+                    raise ValueError("Stint number and lap start cannot move backwards")
+                last_completed_lap = prior.lap if prior.lap is not None else previous.lap_start
+                end_lap = max(previous.lap_start, last_completed_lap)
+                stint_history_list[-1] = previous.model_copy(update={
+                    "lap_end": max(previous.lap_end or previous.lap_start, end_lap),
+                    "lap_end_quality": prior.quality or event.quality,
+                    "closed_by_event_id": event.event_id,
+                })
+            stint_history_list.append(TyreStintState(
+                stint_number=payload.stint_number, lap_start=payload.lap_start,
+                compound=payload.compound, tyre_age_at_start=payload.tyre_age_at_start,
+                source_event_id=event.event_id,
+                session_time_seconds=event.session_time_seconds,
+                quality=event.quality, observed_at=event.observed_at,
+            ))
             drivers[payload.driver_id] = prior.model_copy(update={
                 "stint_number": payload.stint_number,
                 "stint_lap_start": payload.lap_start,
                 "tyre_compound": payload.compound,
                 "tyre_age_at_stint_start": payload.tyre_age_at_start,
                 "tyre_age_laps": payload.tyre_age_at_start,
+                "tyre_stints": tuple(stint_history_list),
                 "quality": event.quality, "observed_at": event.observed_at,
             })
     return state.model_copy(update={
-        "schema_version": 2,
+        "schema_version": 3,
         "session_time_seconds": event.session_time_seconds,
         "flag": flag, "flag_message": flag_message, "drivers": drivers,
         "track_status": track_status, "weather": weather,

@@ -11,16 +11,17 @@ is in `SOL61_MASTER_EXECUTION.md`; this page tracks execution.
 | M4: historical-form ablation | Complete as a research ablation | Five models, same eligible rows and common features; form did not win 2024 |
 | M5: production ML audit | Not started | Timestamped feature registry, calibrated probabilities only after point model |
 | P0: domain contracts and repo hardening | Partial | Python event/state contract and reducer tests exist; CI, schema export and ownership remain |
-| P1: replay pack | Three-reference offline gate verified; broader contracts partial | Monza/Monaco/Brazil match available final results; 15,162 boundary/arbitrary-time checks and 600 shuffled seeks; context observations add 700 as-of/freshness checks and 14 reviewed track-signal boundaries; full geometry remains |
-| P2: 2D Race Control | Partial, real browser interaction proof | Session picker, 0.25×–16× clock, map/timing/control/weather/status synchronization and exact source-time jumps pass six Chromium tests; smooth rendering, stint bars and fuller geometry remain |
+| P1: replay pack | Three-reference offline gate verified; broader contracts partial | Monza/Monaco/Brazil match available final results; 15,162 boundary/arbitrary-time checks and 600 shuffled seeks; context adds 700 as-of checks; 148 source-timed stint histories are reconstructed without changing pack events; full geometry remains |
+| P2: 2D Race Control | Partial, real browser interaction proof | Session picker, 0.25×–16× clock, synchronized map/timing/control/weather/status/stints, playback transforms and exact source-time jumps pass eight Chromium tests; fuller geometry and rendering performance coverage remain |
 | P3–P4: telemetry and Prediction Lab | Not started | Distance-aligned laps and reproducible as-of prediction in UI |
 | P5–P6: strategy and counterfactual | Not started | Tested units, seeded worlds, real-event sanity checks |
 | P7–P8: live, radio and 3D | Not started | Provider-aware live fan-out and same-clock 3D |
 
 ## Current dependency order
 
-1. Finish P2 timestamped smooth rendering and tyre/stint views while preserving
-   the now-integrated source-time weather and conservative track-signal state.
+1. Continue P2 with fuller circuit geometry and rendering performance coverage
+   while preserving the integrated source-time weather, stint history and
+   conservative track-signal state.
 2. Build distance-aligned telemetry after richer measured geometry and lap
    synchronization. The three audited sessions now build and play; see
    `REPLAY_GOLDEN_SESSIONS.md` and `REPLAY_CONTEXT.md` for proof and limits.

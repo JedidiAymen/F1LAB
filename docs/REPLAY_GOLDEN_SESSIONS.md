@@ -184,5 +184,25 @@ latest local p50/p95 seek milliseconds are 1.148/2.544, 1.329/3.276 and
 not browser FPS. Schema 2 adds 350 weather observations and 14 accepted global
 signals without extending replay clocks. See `REPLAY_CONTEXT.md` for source
 hashes, units, per-field semantics, exact as-of validation, UI freshness,
-browser scenarios and limits. P1/P2 are still partial: smooth motion, stint
-views, surveyed geometry, retirement chronology and telemetry remain open.
+browser scenarios and limits. The subsequent schema 3 state and P2 visual
+follow-up are recorded below.
+
+## 2026-10-16 follow-up — schema 3 stint state and map motion
+
+Current `RaceState` output is schema 3; stored packs and `SessionEvent`
+envelopes remain schema 2. The stint history is reduced from already-present
+stint-start/lap events and does not change pack SHA or event counts. It retains
+148 source stints across Monza/Monaco/Brazil (39/57/52), with two Brazil raw
+stint rows separately omitted because they have no usable start mapping.
+Source car 27 in Monaco has two lap-1 starts; both survive the reducer and the
+UI marks the mapped overlap. Full source/event boundary semantics are in
+`REPLAY_STINTS_AND_MOTION.md`.
+
+Latest independent replay validation passed 4,020/6,049/4,793 event-boundary
+and regular cutoffs plus 200 shuffled seeks in each pack (15,162 + 600 total).
+The regenerated report confirms schema 3 and 39/57/52 pack-end stint counts.
+The context validator still passes 700 weather cutoff checks and 14 reviewed
+track-signal boundaries. The eight-case Chromium suite now includes same-clock
+stint history, nearby playback transforms, backward and small-forward exact
+seek disabling, and reduced-motion behavior. No measured FPS/60 Hz claim is
+made. Screenshots and exact commands are in the new detailed follow-up.

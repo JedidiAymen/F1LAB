@@ -100,3 +100,29 @@ Brazil case and final six-case suite pass. No behavior test uses mocked race
 observations; the weather freshness unit tests use synthetic times by design.
 Toolchain: Python 3.12.13 / FastAPI 0.142.2; Node 22.23.2 / npm 10.9.8;
 Playwright 1.64.1 / Chromium 156; Vite 8.3.2.
+
+## 2026-10-16 — source-time stint state and playback map transitions
+
+| Exact command/check | Result | Evidence class and artifact |
+|---|---|---|
+| `.venv/bin/pytest -q` | 51 passed; one existing Starlette/httpx deprecation warning | Synthetic reducer/API/context contracts |
+| `.venv/bin/ruff check src tests scripts` | Passed | Static source checks |
+| `.venv/bin/mypy src/f1_racelab/session src/f1_racelab/api.py --follow-imports=silent --ignore-missing-imports` | 13 source files passed | Static type checking |
+| `cd apps/web && npm run test:unit` | 3 passed | Synthetic clock/weather tests |
+| `cd apps/web && npm run lint` | Passed | ESLint |
+| `cd apps/web && npm run build` | Passed; JavaScript 413.23 KB (136.45 KB gzip), CSS 67.09 KB (13.12 KB gzip) | TypeScript/Vite production build |
+| `cd apps/web && npm run test:e2e` | 8 passed in 19.5 s | Chromium, actual local Monza/Monaco/Brazil packs; stints, map playback, backward/small-forward seek and reduced motion |
+| `.venv/bin/python -m f1_racelab.session.validate_replay --all` | All packs passed; 15,162 event-boundary/regular cutoffs and 600 shuffled revisits | Real local packs; ignored `golden_sessions.qa.json`; emitted `RaceState` schema 3 with 39/57/52 stint segments |
+| `.venv/bin/python -m f1_racelab.session.validate_context --all` | All packs passed; 700 weather cutoff checks, 14 reviewed signal boundaries, zero invalid weather rows | Real raw cache; ignored per-pack context reports and `golden_context.qa.json` |
+| `git diff --check` | Passed before publication | Patch/whitespace check |
+
+The first map-motion browser attempt sought Monza's pack end and expected a car
+element after all location observations had become unavailable. The page
+correctly rendered zero cars there, so the test now seeks to the source
+`SESSION STARTED` record with measured positions. Review also found that a
+short forward exact seek should be immediate even if its time delta resembles
+a playback sample; motion now requires `playing=true`, and the browser suite
+checks a paused forward seek. The reducer similarly accepts Monaco car 27's
+two same-lap stint starts rather than discarding one. Full source lineage,
+contracts, screenshot paths and limitations are in
+`REPLAY_STINTS_AND_MOTION.md`.

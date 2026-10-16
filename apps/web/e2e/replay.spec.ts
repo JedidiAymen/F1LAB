@@ -11,6 +11,7 @@ async function expectSynchronized(page: Page) {
     'Race control feed',
     'Weather observations',
     'Session summary',
+    'Tyre stints',
   ]) {
     await expect(page.getByRole('region', { name })).toHaveAttribute(
       'data-session-time',
@@ -263,4 +264,76 @@ test('Brazil ending signals and restart keep their source meaning', async ({
     path: testInfo.outputPath('brazil-context-desktop.png'),
     fullPage: true,
   })
+})
+
+test('Monaco stint history follows event time and keeps same-lap source rows visible', async ({
+  page,
+}, testInfo) => {
+  await chooseSession(page, '2023 Monaco Grand Prix')
+  const panel = page.getByRole('region', { name: 'Tyre stints' })
+  await page
+    .getByRole('region', { name: 'Timing tower' })
+    .getByRole('button', { name: /HUL/ })
+    .click()
+  await expect(panel.locator('li[data-stint-number]')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Jump to race start' }).click()
+  await expect(panel.locator('li[data-stint-number]')).toHaveCount(2)
+  await expect(panel).toContainText('Mapped stint boundaries share a lap')
+  await expect(panel).toContainText('ESTIMATED START')
+  await expectSynchronized(page)
+  const slider = page.getByRole('slider', { name: 'Session time' })
+  await slider.focus()
+  await slider.press('End')
+  await expect(page.getByTestId('state-clock')).toHaveAttribute(
+    'data-seconds',
+    '7030.073',
+  )
+  await expect(panel.locator('li[data-stint-number]')).toHaveCount(4)
+  await expect(panel).toContainText('WET')
+  await expectSynchronized(page)
+  await page.screenshot({
+    path: testInfo.outputPath('monaco-stints-desktop.png'),
+    fullPage: true,
+  })
+})
+
+test('map cars interpolate on playback and reduce motion remains immediate', async ({
+  page,
+}) => {
+  await page.getByRole('button', { name: 'Jump to race start' }).click()
+  const car = page.locator('.map-car').first()
+  await expect(car).toBeVisible()
+  await page.getByRole('button', { name: 'Play replay' }).click()
+  await expect
+    .poll(async () =>
+      Number(await page.getByTestId('state-clock').getAttribute('data-seconds')),
+    )
+    .toBeGreaterThan(214.805)
+  await expect
+    .poll(async () => car.evaluate((element) => getComputedStyle(element).transitionDuration))
+    .toBe('0.18s')
+  await page.getByRole('button', { name: 'Pause replay' }).click()
+  await page
+    .getByRole('region', { name: 'Race control feed' })
+    .getByRole('button', { name: /SESSION STARTED/ })
+    .click()
+  await expect(page.getByTestId('state-clock')).toHaveAttribute(
+    'data-seconds',
+    '214.805',
+  )
+  await expect(car).toBeVisible()
+  await expect(car).toHaveAttribute('style', /transition: none/)
+  const slider = page.getByRole('slider', { name: 'Session time' })
+  await slider.focus()
+  await slider.press('ArrowRight')
+  await expect
+    .poll(async () =>
+      Number(await page.getByTestId('state-clock').getAttribute('data-seconds')),
+    )
+    .toBeGreaterThan(214.805)
+  await expect(car).toHaveAttribute('style', /transition: none/)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect
+    .poll(async () => car.evaluate((element) => getComputedStyle(element).transitionDuration))
+    .toBe('0s')
 })

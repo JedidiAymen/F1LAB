@@ -365,6 +365,107 @@ PY
   `running_unknown` intentionally makes no green assertion; `suspended` follows
   SESSION ABORTED, not a guessed red flag. Reported rain does not imply a wet
   surface, rainfall amount, or intensity. The 120-second age is a UI freshness
-  policy, not a provider guarantee. Offline replay only; live feed, smooth
-  rendering, stint bars, telemetry, strategy and the remaining roadmap gates
+  policy, not a provider guarantee. Offline replay only; live feed, complete
+  measured rendering, telemetry, strategy and the remaining roadmap gates
   are incomplete.
+
+## 2026-10-16 UTC — schema 3 source-time stints and playback map transforms
+
+- **Starting source SHA:** `2feed4059141107b43c31bf87f9937c565e2bdef` on
+  `feat/foundation`, previously synchronized with `origin/feat/foundation`.
+  Two unrelated untracked user helpers under `ml/features/` were preserved.
+  The implementation/documentation checkpoint is to be committed and pushed
+  normally; this entry will be completed with both exact SHAs in a follow-up
+  documentation checkpoint. No assistant coauthor will be added.
+- **Changed source paths and functions:**
+  `src/f1_racelab/session/contracts.py` adds immutable `TyreStintState`,
+  `DriverState.tyre_stints`, and `RaceState` output schema 3;
+  `session/reducer.py:reduce_event` appends and closes stint history at source
+  event time and grows only the open stint on later lap events;
+  `session/validate_replay.py:validate` reports state version and stint
+  coverage; `apps/web/src/lib/session-context.ts` defines the API shape;
+  new `apps/web/src/components/StintPanel.tsx` draws same-clock history;
+  `apps/web/src/App.tsx:TrackMap` gates 180 ms transforms on active playback,
+  positive forward delta and at most 4 s; `App.css` supplies compound colors,
+  lanes, transform timing and the existing reduced-motion rule. Tests changed
+  in `test_session_reducer.py`, `test_replay_api.py`, `test_replay_context.py`
+  and `apps/web/e2e/replay.spec.ts`.
+- **Milestone documentation paths:** `ROADMAP.md`, this `AGENT_WORKLOG.md`,
+  `IMPLEMENTATION_ATLAS.md`, `TEST_EVIDENCE.md`, `EXPERIMENT_REGISTER.md`,
+  `DECISIONS.md`, `GLOSSARY_FOR_LEARNING.md`, `CHATGPT_HANDOFF.md`,
+  `DATA_CONTRACTS.md`, `REPLAY_CONTEXT.md`, `REPLAY_GOLDEN_SESSIONS.md`,
+  `RACE_CONTROL_UI.md`, and the new detailed `REPLAY_STINTS_AND_MOTION.md`.
+- **Version contract:** stored pack and `SessionEvent` schema stay version 2;
+  the reducer emits `RaceState` schema 3. Existing timed stint events were
+  already in all three packs, so no provider fetch, pack rebuild, timestamp
+  shift or event-count change was required. Version 1 pack reading remains.
+- **Inputs, fields and algorithm:** source is the OpenF1 historical
+  `stints`/`laps` data already retained in sessions 9912, 9094 and 9636.
+  Each state segment records source event ID, session-clock seconds, aware UTC
+  observation time, compound, one-based lap start/end, start age in laps,
+  quality and closing event ID. On a later `StintPayload`, previous end is
+  `max(previous.lap_start, latest_completed_lap)` (using its start when the
+  driver has no completed lap); the reducer records the close event and
+  appends the new source segment. A later `LapPayload` updates the current
+  open segment's inclusive end and end quality. It deliberately does not copy
+  the provider's eventual `lap_end` to the earlier start event, which would
+  leak a future boundary. Stint number/lap start may not decrease; equal starts
+  are preserved because Monaco HUL/car 27 has MEDIUM and HARD source rows both
+  starting at lap 1. No missing lap is inferred into a gap.
+- **UI formula and motion choice:** the StintPanel uses one lane per source
+  row. For `N=scheduled_laps`, left is `100*(lap_start-1)/N` percent and
+  inclusive width is `100*max(1,lap_end-lap_start+1)/N` percent. Null end draws
+  at least the start lap and remains labelled in progress. The display reports
+  source quality and explicitly labels shared lap boundaries. Map positions
+  remain in the same canonical state polled at 5 Hz. Only when `playing` is
+  true and state time advances by `0 < delta <= 4` does CSS interpolate SVG
+  `transform` for 180 ms ease-out. At 16× the nominal 200 ms state interval is
+  3.2 seconds. First appearance, pause/seeks (including small forward exact
+  seeks), reverse movement, larger gaps and reduced motion show no transition.
+  This is visual only and makes no 60 Hz/FPS or continuous measurement claim.
+- **Real source coverage:** manifests report 39/57/54 raw stint rows for
+  Monza/Monaco/Brazil. Retained normalized event totals are 39/57/52 (148).
+  Brazil has one source row without `lap_start` and one without a matching lap
+  start; the builder already records these two exclusions. At pack end the
+  independent validator reports 39/57/52 histories; it does not imply all 20
+  Brazil drivers have stints. OpenF1 docs are at
+  [openf1.org/docs](https://openf1.org/docs/); the repository's pinned
+  [CC BY-NC-SA 4.0 license](https://github.com/br-g/openf1/blob/87540e3f495bbd9bedb37b10456dd848c8f193d6/LICENSE)
+  remains applicable. No raw provider data or pack is committed.
+- **Verification and evidence class:** Python 3.12.13 / FastAPI 0.142.2,
+  Node 22.23.2 / npm 10.9.8, Playwright 1.64.1 / Chromium 156, Vite 8.3.2.
+  `.venv/bin/pytest -q`: 51 passed with one existing Starlette/httpx warning.
+  Ruff passed; session/API mypy passed 13 files. `npm run test:unit`: 3
+  synthetic tests passed. `npm run lint`, `npm run build`, and the real-pack
+  `npm run test:e2e` suite passed; E2E total is 8 Chromium cases. Production
+  build is JS 413.23 KB (136.45 KB gzip), CSS 67.09 KB (13.12 KB gzip).
+  `.venv/bin/python -m f1_racelab.session.validate_replay --all` passed 15,162
+  event-boundary/regular cutoffs plus 600 shuffled revisits; pack-end state
+  versions are 3 and stint counts 39/57/52. The context auditor passed 700
+  weather cutoff comparisons and 14 reviewed track boundaries with zero
+  invalid weather rows. These are real local-pack/source reconciliation and
+  synthetic contract checks, not a tyre model or racing-performance result.
+- **Failure and fix:** an initial reducer draft rejected strictly increasing
+  stint lap starts. The real Monaco car-27 source contradicted that assumption;
+  validation now requires nondecreasing starts and preserves both same-lap
+  records, covered by a new cutoff/overlap reducer test. The first motion
+  browser assertion sought to pack end where no source locations are available;
+  the correct map has zero cars there. The test was redirected to the exact
+  source `SESSION STARTED` row. A further review found small forward exact
+  seeks would otherwise resemble playback deltas, so the animation now also
+  requires `playing=true` and the browser test verifies a paused forward seek.
+- **Artifacts:** `data/processed/replay_packs/golden_sessions.qa.json`,
+  `golden_context.qa.json`, and per-pack QA reports are ignored. Inspected
+  browser images are
+  `data/processed/browser_tests/results/replay-Monaco-stint-histor-accfb-ame-lap-source-rows-visible-chromium/monaco-stints-desktop.png`
+  and
+  `data/processed/browser_tests/results/replay-real-Monza-seeks-ke-610fd-d-control-on-the-same-state-chromium/monza-desktop.png`.
+- **Unresolved scope:** this is a source stint history, not exact pit-exit or
+  tyre-fit timing, wear/grip estimation, degradation prediction or strategy.
+  Lap ranges can overlap or have gaps. Positions stay approximate; missing
+  provider samples remain hidden. Full geometry, calibrated map performance,
+  telemetry, production prediction, strategy/simulation, live, radio, 3D, CI
+  and storage/schema-export work remain. Reproduce the service/build and checks
+  with the commands in `REPLAY_STINTS_AND_MOTION.md`; next, continue P2 geometry
+  and performance evidence, then distance-align telemetry. See all required
+  handoff/atlas/decision notes linked from `CHATGPT_HANDOFF.md`.

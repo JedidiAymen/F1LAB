@@ -106,7 +106,7 @@ remain. See `REPLAY_2025_MONZA.md` for field-level semantics.
 |---|---|---|
 | `session.openf1_context.weather_payload` | OpenF1 row → finite/range/unit validation → canonical weather values | Real cache validation matches all 350 retained observations; no interpolation or rain intensity inference |
 | `session.openf1_context.track_status_payload` | OpenF1 race-control message and scope → accept only eligible track-wide cases → conservative `TrackStatusPayload` | Reviewed golden boundaries: 2 Monza, 2 Monaco, 10 Brazil; ending signals do not assert green |
-| `session.reducer.reduce_event` | Schema 1/2 event + immutable state → copy current observation/status at event time → schema 2 `RaceState` | 20 context reducer/contract tests; schema 1 packs stay readable |
+| `session.reducer.reduce_event` | Schema 1/2 event + immutable state → copy current observation/status at event time → current schema 3 `RaceState` | 20 context reducer/contract tests; schema 1 packs stay readable |
 | `session.validate_context.validate` | Local schema 2 pack + exact raw cache bytes → independent source-lineage, cutoff and golden-message audit → QA JSON | 700 weather before/exact cutoff checks and 14 signal boundary checks; only three cached races |
 | `web.lib.session_context.weatherAt` | Canonical session time + observation → age seconds and `0 <= age <= 120` freshness → shown/stale state | Three unit cases include zero-valued temperatures, exact 120-second limit, future and stale observations |
 | `WeatherPanel` | Canonical state + all historical rainfall state changes → source-labelled readings and exact seek buttons | Six browser tests use actual local packs; rain means provider-reported presence only |
@@ -119,6 +119,16 @@ remain. See `REPLAY_2025_MONZA.md` for field-level semantics.
 | `ReplaySource._location_at` | Indexed provider points → measured exact or short estimated bracket, with 15 s identical-coordinate cutoff | Synthetic frozen-point test; cutoff is heuristic, not a retirement claim |
 | `App` | One playback seconds value and speed (1/2/4×) → 5 Hz canonical state requests, shared timing/map/control rendering | TypeScript build and ESLint; browser interaction/visual review still needed |
 | `TrackMap` | Provider XY trace and current state coordinates → uniformly projected SVG circuit/car marks | Coordinates approximate and unitless; does not produce surveyed geometry or telemetry |
+| `TrackMap` visual interpolation | Successive canonical states → 180 ms CSS transform only on forward deltas up to 4 seconds; seeks/backward/large jumps disable it | Eight Chromium tests cover playback, exact seek and reduced motion; no 60 Hz/FPS claim |
+| `StintPanel` | Selected driver's schema 3 `tyre_stints` at the same session time → one lane per source event, compound, lap range, quality and overlap note | 39/57/52 retained stint events in Monza/Monaco/Brazil; Monaco HUL duplicate lap-1 starts remain separate; see `REPLAY_STINTS_AND_MOTION.md` |
+
+### Schema 3 stint state and display interpolation
+
+| Symbol | Input → algorithm → output | Proof and limit |
+|---|---|---|
+| `contracts.TyreStintState` | Existing timed `StintPayload` plus lap events → validated source event/time, compound, lap range, quality and close event → immutable per-driver history | `RaceState` emits version 3; event envelopes and packs remain version 2; no event data was added to packs |
+| `reducer.reduce_event` stint branch | New source stint → close the prior stint at the latest completed lap (at least its start lap), mark its close event, append the new start; lap event grows the open end | Does not read provider `lap_end` from a start row; same-lap starts are retained; synthetic test covers cutoff and overlap |
+| `StintPanel` timeline geometry | `scheduled_laps`, `lap_start`, `lap_end` → `left=100×(lap_start−1)/scheduled_laps`; `width=100×max(1,lap_end−lap_start+1)/scheduled_laps` | Gaps and overlaps stay visible; null end renders at start lap, labelled in progress |
 
 All transport times are seconds since scheduled 2025 Monza race origin. SVG
 projection is dimensionless. Driver lap durations/gaps remain seconds from

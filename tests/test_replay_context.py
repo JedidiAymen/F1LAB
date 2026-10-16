@@ -120,7 +120,7 @@ def test_old_pack_is_readable_and_context_requires_new_schema() -> None:
         "events": [legacy],
     }
     state = ReplaySource(pack).state_at(0)
-    assert state.schema_version == 2 and state.flag == "red" and state.weather is None
+    assert state.schema_version == 3 and state.flag == "red" and state.weather is None
     with pytest.raises(ValidationError, match="require schema_version 2"):
         SessionEvent.model_validate(legacy | {"type": "weather", "payload": {"rainfall": True}})
     with pytest.raises(ValueError, match="newer event"):

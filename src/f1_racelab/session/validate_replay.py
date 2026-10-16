@@ -77,12 +77,20 @@ def validate(path: Path = OUTPUT) -> dict:
         ):
             raise AssertionError(f"Measured car location changed during seek: {driver_id}")
         measured_drivers.append(driver_id)
+    final_state = source.state_at(duration)
+    stint_count = sum(len(driver.tyre_stints) for driver in final_state.drivers.values())
+    drivers_with_stints = sorted(
+        driver_id for driver_id, driver in final_state.drivers.items() if driver.tyre_stints
+    )
     report = {
         "pack_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         "session": source.session.model_dump(mode="json"),
         "duration_seconds": duration,
         "drivers": len(source.pack["drivers"]),
         "discrete_events": len(source.events),
+        "race_state_schema_version": final_state.schema_version,
+        "tyre_stint_segments_at_pack_end": stint_count,
+        "drivers_with_stint_segments": drivers_with_stints,
         "location_samples": sum(map(len, source.locations.values())),
         "checkpoint_count": len(source.checkpoint_indices),
         "seek_cases_matching_full_reducer": len(times),

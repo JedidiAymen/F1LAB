@@ -49,7 +49,7 @@ def test_manifest_and_state_share_clock(tmp_path: Path) -> None:
     assert manifest.json()["weather_changes"] == []
     state = client.get("/api/v1/replay/monza-2025/state", params={"seconds": .5})
     assert state.status_code == 200
-    assert state.json()["schema_version"] == 2
+    assert state.json()["schema_version"] == 3
     assert state.json()["weather"] is None
     assert state.json()["session_time_seconds"] == .5
     assert state.json()["drivers"]["1"]["track_x"] == 15

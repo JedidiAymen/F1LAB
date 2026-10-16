@@ -96,11 +96,38 @@ def test_lap_stint_and_pit_transitions_keep_units_and_order() -> None:
     ]
     state = seek_state(SESSION, timeline, 189).drivers["VER"]
     assert (state.lap, state.tyre_compound, state.tyre_age_laps) == (2, "HARD", 1)
+    assert [(stint.stint_number, stint.lap_start, stint.lap_end, stint.compound)
+            for stint in state.tyre_stints] == [
+                (1, 1, 1, "MEDIUM"), (2, 2, 2, "HARD")]
+    assert state.tyre_stints[0].quality == Quality.MEASURED
+    before_second_stint = seek_state(SESSION, timeline, 100).drivers["VER"]
+    assert [(stint.stint_number, stint.lap_end)
+            for stint in before_second_stint.tyre_stints] == [(1, 1)]
     assert (state.pit_count, state.last_pit_lane_seconds, state.last_pit_stop_seconds) == (1, 24.0, 2.5)
     assert (state.last_lap_seconds, state.best_lap_seconds) == (88.0, 88.0)
     with pytest.raises(ValueError, match="lap number moves backwards"):
         reduce_event(seek_state(SESSION, timeline, 189),
                      event(5, 200, "lap", LapPayload(driver_id="VER", lap_number=1)))
+
+
+def test_same_lap_stint_starts_are_retained_without_future_end_leakage() -> None:
+    timeline = [
+        event(0, 0, "stint", StintPayload(driver_id="VER", stint_number=1,
+                                          lap_start=1, compound="MEDIUM")),
+        event(1, 0, "stint", StintPayload(driver_id="VER", stint_number=2,
+                                          lap_start=1, compound="HARD")),
+        event(2, 90, "lap", LapPayload(driver_id="VER", lap_number=1,
+                                        lap_duration_seconds=90.0)),
+    ]
+    at_start = seek_state(SESSION, timeline, 0).drivers["VER"].tyre_stints
+    assert [(stint.compound, stint.lap_start, stint.lap_end) for stint in at_start] == [
+        ("MEDIUM", 1, 1), ("HARD", 1, None)]
+    assert at_start[0].closed_by_event_id == "test-1"
+    before_lap_end = seek_state(SESSION, timeline, 89.999).drivers["VER"].tyre_stints
+    assert before_lap_end[-1].lap_end is None
+    after_lap_end = seek_state(SESSION, timeline, 90).drivers["VER"].tyre_stints
+    assert after_lap_end[-1].lap_end == 1
+    assert after_lap_end[-1].lap_end_quality == Quality.MEASURED
 
 
 def test_replay_source_checkpoint_and_location_quality() -> None:

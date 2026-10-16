@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
@@ -21,12 +21,14 @@ import {
 } from '@/components/ui/select'
 import { PlaybackClock } from '@/lib/playback-clock'
 import { WeatherPanel } from '@/components/WeatherPanel'
+import { StintPanel } from '@/components/StintPanel'
 import {
   formatSessionTime as secondsLabel,
   trackStatusLabels,
   type TrackStatusObservation,
   type WeatherObservation,
   type WeatherChange,
+  type TyreStint,
 } from '@/lib/session-context'
 import './App.css'
 
@@ -47,6 +49,8 @@ type DriverState = {
   interval_ahead_seconds: number | null
   interval_ahead_text: string | null
   tyre_compound: string | null
+  tyre_age_laps: number | null
+  tyre_stints: TyreStint[]
   pit_count: number
   track_x: number | null
   track_y: number | null
@@ -108,15 +112,34 @@ const safeColor = (value: string) =>
 function TrackMap({
   manifest,
   state,
+  playing,
   selectedId,
   onSelect,
 }: {
   manifest: Manifest
   state: RaceState | null
+  playing: boolean
   selectedId: string | null
   onSelect: (id: string) => void
 }) {
   const points = manifest.geometry.centerline_xy
+  const sampleSeconds = state?.session_time_seconds ?? null
+  const previousSeconds = useRef<number | null>(null)
+  const mapSvgRef = useRef<SVGSVGElement | null>(null)
+  useLayoutEffect(() => {
+    const previous = previousSeconds.current
+    const animate =
+      playing &&
+      previous !== null &&
+      sampleSeconds !== null &&
+      sampleSeconds > previous &&
+      sampleSeconds - previous <= 4
+    mapSvgRef.current?.querySelectorAll<SVGGElement>('.map-car').forEach((car) => {
+      if (animate) car.style.removeProperty('transition')
+      else car.style.transition = 'none'
+    })
+    previousSeconds.current = sampleSeconds
+  }, [playing, sampleSeconds])
   const bounds = useMemo(() => {
     const xs = points.map((p) => p[0])
     const ys = points.map((p) => p[1])
@@ -163,6 +186,7 @@ function TrackMap({
       </div>
       <div className="track-wrap">
         <svg
+          ref={mapSvgRef}
           className="track-svg"
           viewBox="0 0 900 530"
           role="img"
@@ -209,6 +233,9 @@ function TrackMap({
                 key={d.driver_id}
                 onClick={() => onSelect(d.driver_id)}
                 className="map-car"
+                style={{
+                  transform: `translate(${x}px, ${y}px)`,
+                }}
                 role="button"
                 tabIndex={0}
                 aria-label={`Select ${d.name}`}
@@ -218,8 +245,8 @@ function TrackMap({
               >
                 {active && (
                   <circle
-                    cx={x}
-                    cy={y}
+                    cx={0}
+                    cy={0}
                     r="18"
                     fill="none"
                     stroke={safeColor(d.team_color)}
@@ -228,8 +255,8 @@ function TrackMap({
                   />
                 )}
                 <circle
-                  cx={x}
-                  cy={y}
+                  cx={0}
+                  cy={0}
                   r={active ? 10 : 6}
                   fill={safeColor(d.team_color)}
                   fillOpacity={s.location_quality === 'estimated' ? 0.7 : 1}
@@ -240,8 +267,8 @@ function TrackMap({
                 />
                 {active && (
                   <text
-                    x={x + 16}
-                    y={y + 4}
+                    x={16}
+                    y={4}
                     fill="#f2f5f7"
                     fontSize="13"
                     fontWeight="700"
@@ -616,6 +643,7 @@ function ReplayWorkspace({
               <TrackMap
                 manifest={manifest}
                 state={state}
+                playing={playing}
                 selectedId={selectedId}
                 onSelect={setSelectedId}
               />
@@ -681,6 +709,14 @@ function ReplayWorkspace({
                     </b>
                   </div>
                 </section>
+                <StintPanel
+                  seconds={state?.session_time_seconds ?? 0}
+                  driverName={selected?.name ?? null}
+                  stints={current?.tyre_stints ?? []}
+                  tyreAge={current?.tyre_age_laps ?? null}
+                  scheduledLaps={manifest.scheduled_laps}
+                  available={manifest.capabilities.includes('stints')}
+                />
                 <section
                   className="control-panel panel"
                   aria-label="Race control feed"

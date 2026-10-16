@@ -2,9 +2,11 @@
 
 **Later checkpoints:** `REPLAY_GOLDEN_SESSIONS.md` supersedes the one-race
 status below, and `REPLAY_CONTEXT.md` documents schema 2 weather and scoped
-track status. Three packs, session selection and six real Chromium interaction
-tests now work; desktop/mobile screenshots were inspected. Weather and global
-status follow the same canonical session clock. P2 remains partial.
+track status. The current emitted state is schema 3 and includes source-time
+stints; stored packs/events are schema 2. Three packs, session selection and
+eight real Chromium interaction tests now work; desktop/mobile screenshots
+were inspected. Weather, global status and stints follow the same canonical
+session clock. P2 remains partial.
 
 **Status:** one real 2025 Monza offline demo implemented; broader P2 gate is
 partial. Starting source commit: `abe031c` on `feat/foundation`. Find this
@@ -35,7 +37,8 @@ when the pack is absent or invalid, and HTTP 422 for an out-of-range seek.
 | `src/f1_racelab/api.py:create_app` | Local gzip pack → cached `ReplaySource` → manifest and `RaceState(t)` JSON |
 | `session/replay_source.py:state_at` | Seconds since scheduled race clock origin → checkpoint replay plus indexed location/interval sidecars → canonical state |
 | `apps/web/src/App.tsx:App` | One browser playback time in seconds → at most five state requests per second; timing, driver focus, map and race-control list use the same returned state |
-| `apps/web/src/App.tsx:TrackMap` | 166 provider-derived XY points and current state → SVG circuit and visible car points; no fabricated path segments |
+| `apps/web/src/App.tsx:TrackMap` | Provider-derived XY trace and current state → SVG circuit and visible car points; playback-only 180 ms CSS transforms bridge forward samples at most 4 seconds apart |
+| `apps/web/src/components/StintPanel.tsx:StintPanel` | Selected driver + current schema 3 state → source-labelled compound and inclusive lap-range lanes, including overlap notes |
 | `apps/web/src/App.css` | Dense responsive pit-wall layout, focus states and reduced-motion support |
 
 The manifest includes 20 driver identities, approximate geometry, 53
@@ -79,3 +82,15 @@ The full live feed, 3D, telemetry, strategy, simulation and additional
 historical sessions remain future work. The raw pack is ignored by Git.
 Provider source and rights: [OpenF1 API](https://openf1.org/docs/) and the
 local source/licensing notes in `REPLAY_2025_MONZA.md`.
+
+## Current follow-up — schema 3 stint state and display interpolation
+
+The earlier metrics above document the first Monza UI checkpoint. Current
+full-suite results, three-pack state and context validation, source stint
+counts, exact state/transition behavior and desktop screenshots are in
+`REPLAY_STINTS_AND_MOTION.md`, `REPLAY_GOLDEN_SESSIONS.md` and
+`TEST_EVIDENCE.md`. The map transitions are cosmetic only. They are active
+only while the canonical clock is playing; paused seeks (including small
+forward seeks), reverse seeks, first appearance, large state gaps and reduced
+motion do not animate. The server and shared panel clock remain sampled at
+5 Hz. Surveyed geometry and quantified rendering performance are still open.

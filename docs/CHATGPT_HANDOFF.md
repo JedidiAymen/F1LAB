@@ -2,17 +2,16 @@
 
 **Status at 2026-10-16 UTC:** qualifying research benchmark complete; three
 real historical race packs build, reconcile and play through one local API/UI:
-Monza 2025, Monaco 2023 and Brazil 2024. Schema 2 now carries source-time
-weather and conservative global track signals through the shared state. Six
-actual Chromium browser tests pass, and desktop/mobile screenshots were
-inspected. P1/P2 remain partial. Current implementation was developed from
-`418806099b7670d96cfe13c13c6484d5f8644a50`; commit
-`111fb60777fa55327ddca36d0b95c04d06990e6f` is pushed to
-`origin/feat/foundation` and verified at the same SHA with `git ls-remote`.
-Prior pushed checkpoints include `af2f64677d48d7f9573451de1419fbe3e0b98e08`
-(three-race replay UI), `2d270fc` (first UI) and `7940f2c` (candidate audit).
-Git uses the repository's Aymen Jedidi identity and no assistant coauthor
-trailers. Two unrelated untracked `ml/features/` helpers remain untouched.
+Monza 2025, Monaco 2023 and Brazil 2024. Stored packs/events are schema 2;
+current `RaceState` output is schema 3 with source-time weather, conservative
+global track signals and as-of tyre stint history. Eight actual Chromium
+browser tests pass, and desktop/mobile screenshots were inspected. P1/P2
+remain partial. This milestone starts at `2feed4059141107b43c31bf87f9937c565e2bdef`;
+its implementation SHA and remote verification are recorded in the latest
+worklog entry and publication follow-up. The preceding pushed context
+checkpoint is `111fb60777fa55327ddca36d0b95c04d06990e6f`. Git uses the
+repository's Aymen Jedidi identity and no assistant coauthor trailers. Two
+unrelated untracked `ml/features/` helpers remain untouched.
 
 ## What exists and what does not
 
@@ -30,9 +29,11 @@ trailers. Two unrelated untracked `ml/features/` helpers remain untouched.
   trace, and executed notebook chart. See `EXPERIMENT_REGISTER.md`.
 - **Replay reference gate verified:** Python Pydantic events/state, pure
   ordered reducer, `RaceSource`, indexed/checkpointed `ReplaySource` and
-  audited session catalog. Schema 2 keeps version 1 pack readability. The
+  audited session catalog. Schema 2 packs/events remain readable; emitted
+  `RaceState` is schema 3. The
   three current packs contain 5,654 events, including 350 weather observations
-  and 14 global track signals, plus 799,422 retained source XY points.
+  and 14 global track signals, plus 799,422 retained source XY points and 148
+  normalized source stint events.
   Available final positions and lap totals reconcile; 15,162 event-boundary/
   regular cutoffs and 600 shuffled jumps pass. `REPLAY_GOLDEN_SESSIONS.md` and
   `REPLAY_CONTEXT.md` contain per-race hashes, source audit and limits.
@@ -40,7 +41,8 @@ trailers. Two unrelated untracked `ml/features/` helpers remain untouched.
   session picker, anchored central clock, 0.25×–16×, exact seek/control and
   race-start jumps, timing tower, driver focus, approximate 2D map, full
   prior control feed, missing-source indicators, weather freshness and rainfall
-  change navigation, conservative track-status summary, and mobile transport.
+  change navigation, conservative track-status summary, source-time tyre
+  history, playback-only map transforms, and mobile transport.
   Every data panel uses one returned state; React polls at 5 Hz rather than
   rerendering the whole tree on every animation frame.
 - **Source quality:** Monaco `pit` is HTTP 404, so capability is absent and
@@ -52,8 +54,8 @@ trailers. Two unrelated untracked `ml/features/` helpers remain untouched.
   Rainfall reports are presence only; no wet-surface or intensity estimate is
   shown. Unknown restarts and ending notices do not imply green.
 - **Not done:** production ML timestamp/probability audit and prediction
-  serving; continuous smooth car rendering, surveyed/full geometry, complete
-  tyre/stint panels and retirement-time handling; telemetry and
+  serving; surveyed/full geometry and measured rendering performance;
+  retirement-time handling; telemetry and
   distance comparisons; strategy, what-if, live/radio, 3D, CI and storage/
   schema-export hardening. The full product goal remains active.
 
@@ -127,13 +129,15 @@ From `apps/web`, `npx playwright install chromium`,
 `npm run test:unit` and `npm run test:e2e` run the clock and actual browser
 checks. The browser suite launches/cleans up its own local servers on
 8011/5181, requires all three packs and performs no provider downloads.
-It passed **6/6**; screenshots under ignored
+It passed **8/8**; screenshots under ignored
 `data/processed/browser_tests/results/` were visually inspected at
 desktop 1440×1000 and mobile 390×844. No measured 60 Hz/FPS claim is made.
 
-The latest full Python test run passed **50/50** with one existing deprecation
+The latest full Python test run passed **51/51** with one existing deprecation
 warning; three JS unit tests passed, Ruff passed, mypy passed for 13 session/API
-source files, and web ESLint/TypeScript/Vite build passed. `npm ci` uses a
+source files, and web ESLint/TypeScript/Vite build passed. The eight-case
+Chromium suite passes; the latest source-timed stint and playback screenshots
+were inspected. `npm ci` uses a
 tracked lockfile.
 Exact commands are
 in `TEST_EVIDENCE.md`. Fixture tests are separate from the real provider data
@@ -155,10 +159,42 @@ lap-total label. The validator compares all discrete/audit fields through
 15,162 event-boundary/regular cutoffs plus 600 seed-42 shuffled revisits.
 It preserves a measured first coordinate for 59 source-driver series;
 Brazil ALB has no retained location series. Latest per-race p50/p95 seek ms:
-Monza 1.148/2.544, Monaco 1.329/3.276, Brazil 1.194/2.606.
+Monza 1.301/2.814, Monaco 1.376/3.229, Brazil 1.236/2.734.
 Full artifact hashes and limits are in `REPLAY_GOLDEN_SESSIONS.md`;
 the combined local report is `replay_packs/golden_sessions.qa.json`.
 Packs change hashes on rebuild because ingest/gzip timestamps change.
+
+## Latest milestone — source-time stints and map motion
+
+`TyreStintState` carries source event/time, compound, one-based lap range,
+quality, start tyre age and closing event. A lap event advances only its open
+stint; a later start closes it at the latest completed lap. The reducer does
+not copy provider `lap_end` into an earlier start, preventing future leakage.
+Monza/Monaco/Brazil retain 39/57/52 normalized stints (148 total); Brazil's
+two unusable source start rows remain counted in coverage. Monaco HUL/car 27
+has two distinct lap-1 starts, both retained and visibly labelled as an
+overlap.
+
+The UI lists stints for the focused driver at the shared canonical state time.
+Map SVG transforms use a 180 ms CSS transition only during playback when a
+forward state sample is at most four seconds ahead. Paused exact seeks,
+including small forward seeks, reverse seeks and reduced motion are immediate.
+This is visual interpolation; the API remains 5 Hz and coordinates remain
+approximate.
+
+Modified source: `contracts.py`, `reducer.py`, `validate_replay.py`,
+`App.tsx`, `App.css`, `session-context.ts`, new `StintPanel.tsx`, their
+reducer/API/context tests and `apps/web/e2e/replay.spec.ts`. Implementation
+details, exact command output, OpenF1 source/license links, screenshot paths,
+initial browser-test failure, limitations and reproduction are in
+`REPLAY_STINTS_AND_MOTION.md`.
+
+Latest verification: 51 Python tests; Ruff; 13-file session/API mypy; 3 JS
+unit tests; web ESLint and TypeScript/Vite build; 8/8 Chromium tests. The replay
+validator checks 15,162 cutoffs and 600 shuffled revisits; the context auditor
+checks 700 weather cutoffs and 14 track boundaries. The end state reports
+39/57/52 stint segments. No model-performance, 60 Hz, tyre-grip or live-data
+claim is made.
 
 ## Known failure and risk matrix
 
@@ -174,14 +210,14 @@ Packs change hashes on rebuild because ingest/gzip timestamps change.
 | Optional historical pit resource | Monaco 2023 `pit` HTTP 404 | Builder/state/UI now expose missing capability; pit duration/count truth remains unavailable |
 | Global track status | 14 accepted signals across three sessions; endings/restarts remain non-green meanings | Other message phrases are unmapped; status can remain at the latest source signal |
 | Weather interpretation | 350 OpenF1 historical readings; rainfall is presence only and 120 s UI freshness | Do not infer wet grip, intensity or conditions between observations; weather calibration remains future work |
-| Partial smoothness and geometry | Backend state is sampled at 5 Hz; outlines are one measured lap trace | Browser interactions pass, but continuous rendering/full geometry/FPS work remains |
+| Partial motion and geometry | Backend state is sampled at 5 Hz; a short transform runs only during playback; outlines are one measured lap trace | Browser checks pass; surveyed geometry and measured rendering/performance coverage remain |
 | Browser dependency audit | Production audit clean; full audit has seven high advisories in shadcn development CLI chain | CLI is dev-only; suggested fix is major downgrade and was not applied |
 | Null Brazil records | STR stint has no start, HUL DSQ lap total null, ALB location empty | Preserve gaps and coverage; do not inject final labels or synthetic coordinates |
 
 ## Next three actions
 
-1. Add timestamped smooth map rendering, tyre/stint views and fuller P2
-   keyboard/performance coverage; then distance-align real lap telemetry.
+1. Add fuller P2 circuit geometry and measured rendering/performance coverage;
+   then distance-align real lap telemetry.
 2. Expand cross-provider overlap and as-of timestamp audits before promoting
    a qualifying model toward production use.
 3. Continue Prediction Lab, independent strategy simulator, what-if, live

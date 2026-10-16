@@ -402,6 +402,9 @@ main {
 }
 .map-car {
   cursor: pointer;
+  transform-box: view-box;
+  transform-origin: 0 0;
+  transition: transform 180ms ease-out;
 }
 .map-car:focus-visible {
   outline: 2px solid #fff;
@@ -472,6 +475,108 @@ main {
 }
 .driver-panel {
   min-height: 253px;
+}
+.stint-panel {
+  flex: 0 0 auto;
+}
+.stint-content {
+  padding: 13px 16px 15px;
+}
+.stint-timeline {
+  display: grid;
+  gap: 4px;
+}
+.stint-lane {
+  position: relative;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #273139;
+}
+.stint-segment {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-right: 2px solid #11171b;
+}
+.stint-segment.soft,
+.stint-swatch.soft {
+  background: #ed4a4a;
+}
+.stint-segment.medium,
+.stint-swatch.medium {
+  background: #e6bc43;
+}
+.stint-segment.hard,
+.stint-swatch.hard {
+  background: #dfe4e6;
+}
+.stint-segment.intermediate,
+.stint-swatch.intermediate {
+  background: #68b879;
+}
+.stint-segment.wet,
+.stint-swatch.wet {
+  background: #5598eb;
+}
+.stint-segment.unknown,
+.stint-swatch.unknown {
+  background: #85929a;
+}
+.stint-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  color: #74838d;
+  font-size: 8px;
+  letter-spacing: 0.09em;
+}
+.stint-note {
+  margin: 9px 0 0;
+  color: #d6b671;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.stint-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+.stint-list li {
+  display: grid;
+  grid-template-columns: 8px 50px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  color: #bac5cb;
+  font-size: 9px;
+}
+.stint-list li b {
+  color: #e3e9ec;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+.stint-list li > span:nth-of-type(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stint-list li small {
+  grid-column: 2 / -1;
+  color: #d6b671;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+.stint-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.stint-empty {
+  padding: 0 16px 14px;
+  color: #8998a1;
+  font-size: 11px;
 }
 .car-number {
   font-size: 23px;
@@ -771,6 +876,7 @@ button:focus-visible {
     line-height: 1.5;
   }
 }
+
 @media (prefers-reduced-motion: reduce) {
   * {
     scroll-behavior: auto !important;

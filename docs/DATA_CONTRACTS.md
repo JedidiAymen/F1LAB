@@ -105,3 +105,18 @@ global track-status observations in the same `RaceState`; exact units, event
 mapping, age rules, raw hashes and proof are in `REPLAY_CONTEXT.md`.
 `REPLAY_GOLDEN_SESSIONS.md` records replay state and `REPLAY_CONTEXT.md`
 records context artifacts and proof.
+
+### Current source-timed stint state
+
+Stored pack files and `SessionEvent` envelopes remain schema 2. The current
+emitted `RaceState` is schema 3 and adds `DriverState.tyre_stints`, a tuple of
+`TyreStintState` records. Each record includes source event ID, source time in
+seconds since the scheduled origin, UTC-aware provider observation time,
+compound, one-based lap start/end, start age in laps, quality and the event
+that closed the segment. A lap event extends only the current open segment;
+the next stint event closes it at the latest completed lap. Eventual provider
+`lap_end` values are not copied into earlier state. This retains same-lap
+source starts and prevents future boundary leakage. Current pack totals are
+39 Monza, 57 Monaco and 52 Brazil normalized stints; the two unnormalizable
+Brazil rows are separately counted in coverage. Full algorithm and evidence:
+`REPLAY_STINTS_AND_MOTION.md`.

@@ -119,3 +119,18 @@ to the planned race workstation.
     conservative phrase mapping. “Safety Car in this lap” means an ending
     phase; it does not certify that the track is already green. A session
     restart without a new global flag is shown as running/unknown.
+24. **Tyre stint as-of history.** A stint start says which compound and lap
+    start are known at that source time. The history closes an open stint only
+    as lap events arrive or a later stint-start event appears. Adding the
+    provider's eventual end lap to an earlier state would leak future
+    information. `RaceState` schema 3 holds this derived history while stored
+    events and packs remain schema 2.
+25. **Mapped stint overlap.** A provider can report two stint starts with the
+    same lap number (Monaco 2023 car 27). Separate lanes preserve both source
+    records and show where mapped lap ranges overlap. The display does not
+    guess which row is erroneous or invent unreported laps.
+26. **Visual transform interpolation.** The map animates SVG `transform`
+    between nearby forward state samples. CSS changes only the appearance;
+    canonical state and the session clock remain on the 5 Hz API samples.
+    Exact seeks and reduced-motion settings remove the transition, so visual
+    movement never rewrites source coordinates or creates a new observation.

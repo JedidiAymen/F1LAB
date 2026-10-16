@@ -117,3 +117,43 @@
   `REPLAY_CONTEXT.md` and `TEST_EVIDENCE.md`.
 - This is replay-context evidence for three events, not weather calibration,
   wet-track estimation, live behavior or a general race-condition model.
+
+## R-006 — as-of tyre stint history and map motion
+
+- Starting source SHA `2feed4059141107b43c31bf87f9937c565e2bdef`; real source
+  data is the already-audited OpenF1 stint/lap timeline in the three local
+  packs. Event envelopes and pack files remain schema 2; current emitted
+  `RaceState` is schema 3.
+- `TyreStintState` records source event ID, source time, compound, lap start,
+  as-of lap end, quality, observed time, tyre age at start and closing event.
+  A lap event advances only the currently open segment. A later stint-start
+  event closes the previous segment at the latest completed lap (not below its
+  start), then appends the new event. Provider `lap_end` is not read into an
+  earlier replay state, preventing future leakage.
+- Pack coverage: 39 Monza, 57 Monaco and 52 Brazil stint events are retained
+  (148 total). Brazil has 54 raw rows; one has no `lap_start` and one has no
+  matching lap-start row, so both are counted and omitted. Monaco car 27 has
+  two source starts on lap 1; both appear, including the mapped overlap. No
+  missing lap range is fabricated.
+- The selected-driver panel uses one lane per stint and positions lap `L` at
+  `100×(L−1)/scheduled_laps`; its width is
+  `100×max(1,lap_end−lap_start+1)/scheduled_laps`. Compounds and source quality
+  are shown. Map motion is only visual CSS `transform` interpolation for
+  forward canonical-state deltas through 4 s (180 ms ease-out); exact seeks,
+  reverse movement, initial samples and larger gaps disable transitions.
+  Reduced-motion preference disables CSS transitions. Server state remains
+  sampled at 5 Hz and unchanged; no FPS or physically continuous position
+  claim follows.
+- Synthetic evidence: 51 Python tests pass (one existing Starlette/httpx
+  deprecation), including duplicate lap-start, as-of end and API state schema.
+  Ruff, 13-file session/API mypy and three JS unit tests pass. Real-pack
+  Playwright suite passes 8/8 with inspected Monza/Monaco desktop screenshots.
+  Independent replay QA checks 15,162 boundary/regular cutoffs and 600
+  shuffled revisits; context QA reruns 700 weather cutoff checks and 14
+  reviewed status boundaries with zero invalid rows.
+- The first new browser assertion failed after seeking to pack end because no
+  source car locations remained and React correctly rendered zero cars. The
+  test now exact-seeks to the source `SESSION STARTED` event, where measured
+  locations are present, and verifies the transition is disabled. Exact
+  commands, screenshots, QA artifacts and caveats are in
+  `REPLAY_STINTS_AND_MOTION.md`.

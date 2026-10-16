@@ -25,6 +25,19 @@ export type WeatherChange = {
   session_time_seconds: number
   rainfall: boolean
 }
+export type TyreStint = {
+  stint_number: number
+  lap_start: number
+  lap_end: number | null
+  lap_end_quality: 'measured' | 'estimated' | 'simulated' | null
+  compound: string
+  tyre_age_at_start: number | null
+  source_event_id: string
+  closed_by_event_id: string | null
+  session_time_seconds: number
+  quality: 'measured' | 'estimated' | 'simulated'
+  observed_at: string
+}
 
 export type TrackStatusObservation = Observation & {
   signal: {

@@ -16,12 +16,13 @@ state. It does not complete P1/P2 or the broader F1LAB goal.
 
 ## Contract and meaning
 
-`src/f1_racelab/session/contracts.py` makes schema 2 the current emitted event
-and state format. `ReplaySource` still reads version 1 and version 2 packs;
-version 1 events remain replayable and reduce to a version 2 current state.
-Version 1 event envelopes cannot claim a schema 2 weather or track-status
-payload. Immutable observation metadata carries event/source IDs, UTC-aware
-`observed_at`, session seconds and measured quality.
+`src/f1_racelab/session/contracts.py` uses schema 2 for event envelopes and
+stored packs. `ReplaySource` still reads version 1 and version 2 packs; version
+1 events remain replayable. Current reducer output is `RaceState` schema 3,
+which retains schema 2 weather/status observations and adds source-timed stint
+history. Version 1 event envelopes cannot claim a schema 2 weather or
+track-status payload. Immutable observation metadata carries event/source IDs,
+UTC-aware `observed_at`, session seconds and measured quality.
 
 Weather fields retain source units and missing values:
 
@@ -144,7 +145,7 @@ weather records were silently coerced. The combined report is
 ## Browser proof and reproduction
 
 The real-pack browser cases cover common timestamps across timing, map, focus,
-race control, weather and session summary; session switching and optional
+race control, weather, stint history and session summary; session switching and optional
 Monaco pit unavailability; Monaco rainfall at 4,363.946 s and the dry report
 at 5,923.949 s; Brazil VSC ending at 3,590 s, red at 4,042 s, unknown restart
 at 5,520.39 s, and Safety Car ending at 6,484 s. At the restart, the UI says
@@ -169,7 +170,7 @@ npm run test:e2e
 ```
 
 Browser tests use packs built from the local raw cache; they do not download
-provider data. The test run is six Playwright/Chromium cases. Screenshots,
+provider data. The test run is eight Playwright/Chromium cases. Screenshots,
 traces, packs, QA and reports are ignored build artifacts. Current pack hashes
 can change when rebuilt because gzip metadata includes build-time data.
 The recorded toolchain is Python 3.12.13 / FastAPI 0.142.2, Node 22.23.2 /
@@ -183,6 +184,16 @@ the 120-second display age is a product rule. Session status can remain at the
 last accepted signal. Other global message phrases may not map; source scope is
 required. Nothing here calibrates tyre grip, strategy effects, model
 probabilities, retirement time or live-feed behavior. Remaining work includes
-smooth map motion, stint views, distance-aligned telemetry, richer measured
-geometry, production ML, strategy/counterfactual, live mode, radio, 3D,
-storage/schema export and CI. Consult `ROADMAP.md` for the dependency order.
+distance-aligned telemetry, richer measured geometry, production ML,
+strategy/counterfactual, live mode, radio, 3D, storage/schema export and CI.
+Consult `ROADMAP.md` for the dependency order.
+
+## Follow-up — schema 3 stint state and map transitions
+
+The current output distinction is important: replay packs and `SessionEvent`
+envelopes are schema 2; `RaceState` output is schema 3. Stint history comes
+from existing source-timed stint and lap events and is reconstructed only as
+of the selected replay second. It does not change source weather or track
+signal meanings. Current source counts are 39/57/52 retained stints across
+Monza/Monaco/Brazil. Full reducer semantics, exact QA, browser evidence and
+limitations are in `REPLAY_STINTS_AND_MOTION.md`.
