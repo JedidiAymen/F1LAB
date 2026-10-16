@@ -174,3 +174,16 @@ and four Playwright tests in `apps/web/e2e/replay.spec.ts` cover invariants
 and real-pack browser integration. Screenshot and raw artifact locations,
 units, example timeline jumps, initial failures/fixes and exact reproduction
 commands are in the three-reference document.
+
+## Distance-aligned telemetry (partial P3)
+
+| Symbol | Input → algorithm → output | Proof and limit |
+|---|---|---|
+| `telemetry.contracts.LapTelemetryPoint` | One car-data sample → immutable typed values and source channel names → point on approximate elapsed/distance axes | Unit tests check validation and raw-value preservation; distance is integrated, not measured geometry |
+| `telemetry.distance_alignment.build_lap_telemetry` | One lap row + one driver's timestamped car data → identity/pit-out checks, ≤1 s boundary/gap contract, trapezoidal speed integration → `LapTelemetry` | Real Monza 2025 VER/NOR lap-50 streams and synthetic exact-integration/boundary/gap tests; provider lap start remains approximate |
+| `telemetry.distance_alignment.compare_laps` | Two laps from one session + raw response hashes → common range, regular 5 m grid, continuous linear and discrete previous-state interpolation → `LapComparison` | 1,150 real comparison points; `elapsed_B - elapsed_A` is labelled in seconds; only two drivers and one race |
+| `telemetry.openf1_lap_comparison.main` | CLI options + rate-limited `OpenF1Client` cache → provenance JSON and speed/delta PNG | Reproduced from cached OpenF1 responses; generated files remain ignored under `data/processed/telemetry_comparisons/` |
+
+The graph is a command-line artifact only. A future UI must derive its
+comparison cursor from the canonical replay time before this is described as
+synchronized telemetry.

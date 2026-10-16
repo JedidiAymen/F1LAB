@@ -127,3 +127,18 @@ checks a paused forward seek. The reducer similarly accepts Monaco car 27's
 two same-lap stint starts rather than discarding one. Full source lineage,
 contracts, screenshot paths and limitations are in
 `REPLAY_STINTS_AND_MOTION.md`.
+
+## 2026-10-16 — distance-aligned telemetry foundation
+
+| Exact command/check | Result | Evidence class and artifact |
+|---|---|---|
+| `.venv/bin/pytest -q tests/test_distance_alignment.py` | 5 passed | Synthetic exact integration, boundary, gap, identity and comparison contracts |
+| `.venv/bin/python -m f1_racelab.telemetry.openf1_lap_comparison` | Exit 0; 1,150 grid points at 5 m; distances 5,746.062 m and 5,751.324 m | Real cached OpenF1 session 9912, driver 1/4 lap 50; JSON/PNG ignored under `data/processed/telemetry_comparisons/` |
+| `.venv/bin/pytest -q` | 56 passed; one existing Starlette/httpx deprecation warning | Synthetic suite including telemetry contracts |
+| `.venv/bin/ruff check src tests scripts` | Passed | Repository static checks |
+| `.venv/bin/mypy src/f1_racelab/telemetry src/f1_racelab/session src/f1_racelab/api.py --follow-imports=silent --ignore-missing-imports` | 17 files passed | Static type checking |
+| Visual inspection of comparison PNG | Readable speed and B−A panels with estimated-distance labeling | Real derived artifact; not an interactive UI or precision geometry claim |
+
+Full input hashes, formulas, output hashes and caveats are in
+`DISTANCE_ALIGNED_TELEMETRY.md`. This milestone does not include web tests
+because no frontend/API consumer was changed.

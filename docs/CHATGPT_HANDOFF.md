@@ -6,13 +6,14 @@ Monza 2025, Monaco 2023 and Brazil 2024. Stored packs/events are schema 2;
 current `RaceState` output is schema 3 with source-time weather, conservative
 global track signals and as-of tyre stint history. Eight actual Chromium
 browser tests pass, and desktop/mobile screenshots were inspected. P1/P2
-remain partial. This milestone starts at `2feed4059141107b43c31bf87f9937c565e2bdef`;
-implementation commit `4a0434aea67ff99a2f949abc08babdcbf0b50578` is pushed to
-`origin/feat/foundation` and `git ls-remote` returned the same SHA. The
-preceding pushed context checkpoint is
-`111fb60777fa55327ddca36d0b95c04d06990e6f`. Git uses the repository's Aymen
-Jedidi identity and no assistant coauthor trailers. Two unrelated untracked
-`ml/features/` helpers remain untouched.
+remain partial. A real Monza 2025 two-lap telemetry comparison now builds from
+cached OpenF1 data on an estimated 5 m distance grid; it is not yet connected
+to the replay API or shared-clock UI. P3/P4 remain partial and the overall
+product goal is far from complete. The telemetry implementation starts at
+`89351502ccb6389c25886d18022430f2ce6319f8`; its pushed commit and exact remote
+verification are recorded in the latest worklog entry below. Git uses the
+repository's Aymen Jedidi identity and no assistant coauthor trailers. Two
+unrelated untracked `ml/features/` helpers remain untouched.
 
 ## What exists and what does not
 
@@ -54,11 +55,15 @@ Jedidi identity and no assistant coauthor trailers. Two unrelated untracked
   before/exact-time checks, and verifies 14 reviewed global signal boundaries.
   Rainfall reports are presence only; no wet-surface or intensity estimate is
   shown. Unknown restarts and ending notices do not imply green.
+- **Partial:** distance-aligned telemetry contracts and a real two-driver
+  comparison exist. The result is labelled estimated, does not use GPS or
+  surveyed geometry and remains a command-line artifact. It has no UI,
+  canonical-time cursor or broad event coverage.
 - **Not done:** production ML timestamp/probability audit and prediction
   serving; surveyed/full geometry and measured rendering performance;
-  retirement-time handling; telemetry and
-  distance comparisons; strategy, what-if, live/radio, 3D, CI and storage/
-  schema-export hardening. The full product goal remains active.
+  retirement-time handling; telemetry UI and canonical cursor; strategy,
+  what-if, live/radio, 3D, CI and storage/schema-export hardening. The full
+  product goal remains active.
 
 ## Why the provider changed
 
@@ -90,7 +95,11 @@ path. `session/catalog.py` defines the three supported specifications.
 `session/openf1_context.py` validates provider weather and cautiously maps
 global status phrases; `session/validate_context.py` independently checks raw
 cache lineage and source-time boundaries. The schema and limits are documented
-in `REPLAY_CONTEXT.md`.
+in `REPLAY_CONTEXT.md`. The new `telemetry/contracts.py`,
+`telemetry/distance_alignment.py` and
+`telemetry/openf1_lap_comparison.py` define and reproduce the first
+distance-aligned lap comparison; detailed source hashes and assumptions are
+in `DISTANCE_ALIGNED_TELEMETRY.md`.
 Compressed packs/manifests/QA stay ignored under `data/processed/replay_packs/`.
 `src/f1_racelab/api.py` caches sources by session slug;
 `apps/web/src/App.tsx` and `App.css` render the UI with
@@ -113,6 +122,7 @@ uv sync --dev
 .venv/bin/python -m f1_racelab.session.openf1_replay --session brazil-2024
 .venv/bin/python -m f1_racelab.session.validate_replay --all
 .venv/bin/python -m f1_racelab.session.validate_context --all
+.venv/bin/python -m f1_racelab.telemetry.openf1_lap_comparison
 .venv/bin/python -m f1_racelab.session.audit_candidates
 .venv/bin/uvicorn f1_racelab.api:app --host 127.0.0.1 --port 8000
 cd apps/web && npm ci && npm run dev -- --host 127.0.0.1
@@ -200,6 +210,33 @@ checks 700 weather cutoffs and 14 track boundaries. The end state reports
 39/57/52 stint segments. No model-performance, 60 Hz, tyre-grip or live-data
 claim is made.
 
+## Latest milestone — distance-aligned telemetry foundation (partial P3)
+
+The source commit starts from `89351502ccb6389c25886d18022430f2ce6319f8` and
+is pushed to `origin/feat/foundation`; its exact implementation SHA and
+remote SHA verification are in `AGENT_WORKLOG.md`. The telemetry implementation
+adds immutable lap/comparison contracts, source identity and pit-out checks,
+one-second maximum gaps, trapezoidal speed integration, a common 5 m grid and
+a CLI JSON/PNG artifact. Exact formulas, decisions, source/license links and
+failure history are in `DISTANCE_ALIGNED_TELEMETRY.md`.
+
+Real Monza 2025 session 9912 inputs are VER #1 L50 and NOR #4 L50. The
+calculated distances are 5,746.062 m and 5,751.324 m; 1,150 comparison points
+cover their common distance. The B−A time delta ranges from −0.374 to +0.212 s
+and ends at −0.234 s. This is a two-lap descriptive example, not a model or
+performance claim. Source readings are sampled and lap start times are
+approximate, so the axis remains explicitly estimated.
+
+The telemetry tests pass 5/5; complete Python tests pass 56/56 with one
+existing deprecation warning; Ruff passes and mypy checks 17 files. The plot
+was visually inspected. Web tests were not run in this telemetry milestone
+because no web/API consumer changed. It remains incomplete until the comparison
+is made available in the UI with a cursor derived from the canonical replay
+clock. Reproduction: run
+`.venv/bin/python -m f1_racelab.telemetry.openf1_lap_comparison` after the
+source responses are cached. Full commands and artifact hashes are in
+`TEST_EVIDENCE.md`.
+
 ## Known failure and risk matrix
 
 | Issue | Evidence | Effect / next handling |
@@ -215,13 +252,15 @@ claim is made.
 | Global track status | 14 accepted signals across three sessions; endings/restarts remain non-green meanings | Other message phrases are unmapped; status can remain at the latest source signal |
 | Weather interpretation | 350 OpenF1 historical readings; rainfall is presence only and 120 s UI freshness | Do not infer wet grip, intensity or conditions between observations; weather calibration remains future work |
 | Partial motion and geometry | Backend state is sampled at 5 Hz; a short transform runs only during playback; outlines are one measured lap trace | Browser checks pass; surveyed geometry and measured rendering/performance coverage remain |
+| Estimated telemetry axis | Integrated distance from sampled speed and approximate lap start; two Monza 2025 laps only | Useful for an initial comparison; not GPS/surveyed distance or synchronized UI; derive graph cursor from canonical replay time |
 | Browser dependency audit | Production audit clean; full audit has seven high advisories in shadcn development CLI chain | CLI is dev-only; suggested fix is major downgrade and was not applied |
 | Null Brazil records | STR stint has no start, HUL DSQ lap total null, ALB location empty | Preserve gaps and coverage; do not inject final labels or synthetic coordinates |
 
 ## Next three actions
 
-1. Add fuller P2 circuit geometry and measured rendering/performance coverage;
-   then distance-align real lap telemetry.
+1. Integrate the distance-aligned telemetry comparison with a cursor derived
+   from canonical replay time; expand beyond two laps, then continue P2 geometry
+   and rendering/performance coverage.
 2. Expand cross-provider overlap and as-of timestamp audits before promoting
    a qualifying model toward production use.
 3. Continue Prediction Lab, independent strategy simulator, what-if, live

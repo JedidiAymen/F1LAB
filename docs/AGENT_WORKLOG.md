@@ -471,3 +471,70 @@ PY
   with the commands in `REPLAY_STINTS_AND_MOTION.md`; next, continue P2 geometry
   and performance evidence, then distance-align telemetry. See all required
   handoff/atlas/decision notes linked from `CHATGPT_HANDOFF.md`.
+
+## 2026-10-16 UTC — distance-aligned telemetry foundation (partial P3)
+
+- **Starting source SHA:** `89351502ccb6389c25886d18022430f2ce6319f8` on
+  `feat/foundation`, synchronized with `origin/feat/foundation`. Preserved the
+  two unrelated untracked user helpers under `ml/features/`. This milestone
+  will be committed and pushed as the repository identity Aymen Jedidi, with
+  no assistant coauthor trailer.
+- **Changed source paths and symbols:** new
+  `src/f1_racelab/telemetry/contracts.py` defines immutable
+  `LapTelemetryPoint`, `LapTelemetry`, `DistanceComparisonPoint` and
+  `LapComparison`; `distance_alignment.py:build_lap_telemetry` validates a
+  source lap and integrates bounded speed samples; `compare_laps` interpolates
+  two laps onto a uniform common-distance grid; `openf1_lap_comparison.py`
+  reproduces a cached-source comparison as JSON and PNG. New synthetic tests
+  are in `tests/test_distance_alignment.py`.
+- **Inputs and source lineage:** OpenF1 v1 historical Monza 2025 session 9912,
+  meeting 1268; `laps` response SHA-256
+  `89cee73604aaf44129b1a80cb10205f55eb16937dff0ba804ca38326532bbbae`;
+  car data for VER #1
+  `6ff42419ce5d39a0ca77d8fca0836676328f1456bf187028e94771acf621d36e` and
+  NOR #4
+  `9ed72c1fbbce6a4e462dcf1cb6d93e75813896aa1b5bfc8598df60de82ac1a40`.
+  Official API docs and access notes are linked in
+  `DISTANCE_ALIGNED_TELEMETRY.md`; OpenF1 upstream terms are CC BY-NC-SA 4.0.
+  Raw cache and derived JSON/PNG stay ignored under `data/`.
+- **Contract, units and formulas:** lap rows must match session/meeting/driver,
+  be timezone-aware and not be pit-out. Sample gaps above 1.0 s reject the lap.
+  For speeds in km/h, integrate `((v_i+v_(i+1))/2)/3.6 * delta_seconds` to
+  metres. Lap boundaries are linearly interpolated only when bracketed inside
+  the gap limit. Continuous channels are linear; brake/gear/DRS hold the prior
+  source state. Throttle is not clipped; brake remains a raw source value; DRS
+  remains an integer provider code. Distance and comparison quality are
+  explicitly estimated. Comparison uses a 5 m grid and delta
+  `elapsed_B - elapsed_A` in seconds.
+- **Real result:** VER #1 L50 (81.297 s), 318 source samples / 320 bounded
+  points / 5,746.062 m; NOR #4 L50 (81.123 s), 309 / 311 / 5,751.324 m.
+  Both have two interpolated boundaries; largest bounded interval is 0.799 s.
+  The common grid ends at 5,746.062 m with 1,150 points. B−A ranges from
+  −0.374 to +0.212 s and finishes at −0.234 s. These two real laps do not
+  establish a general performance conclusion. JSON SHA-256
+  `8e4ddc3217641f3543c37aba440574156512f4bd89e5c66a7dd6168b88543277`; PNG
+  `7e7a7f5d6b19a2244a1b63d2cc993fc3227e2742a924202861fa2b7faeb50582`.
+- **Verification:** Python 3.12.13, Pydantic 2.13.5, Matplotlib 3.11.2,
+  pytest 9.1.1, Ruff 0.16.10 and mypy 2.4.0. The telemetry tests pass 5/5;
+  full `.venv/bin/pytest -q` passes 56 with one existing Starlette/httpx
+  deprecation warning; `.venv/bin/ruff check src tests scripts` passes;
+  mypy over telemetry/session/API passes 17 files. Real cached-source CLI exits
+  0 and the generated plot was visually inspected. Exact reproduction and
+  tool versions are in `DISTANCE_ALIGNED_TELEMETRY.md` and
+  `TEST_EVIDENCE.md`.
+- **Failures and fixes:** existing source values of 104 contradicted an
+  assumed 0–100 cap, so clipping/bounds were removed and raw values retained;
+  synthetic tests assert 104 fidelity. Corrected Ruff import ordering and
+  mypy typing. Restyled dark chart labels for readable contrast. No further
+  network request was made after cached responses were available.
+- **Modified documentation paths:** `ROADMAP.md`, this worklog,
+  `IMPLEMENTATION_ATLAS.md`, `TEST_EVIDENCE.md`, `EXPERIMENT_REGISTER.md`,
+  `DECISIONS.md`, `GLOSSARY_FOR_LEARNING.md`, `CHATGPT_HANDOFF.md`,
+  `DATA_CONTRACTS.md`, and detailed `DISTANCE_ALIGNED_TELEMETRY.md`.
+- **Partial/not done:** the comparison is not an API endpoint or frontend
+  panel, and has no cursor bound to canonical `RaceState` time. It has no
+  sector model, GPS alignment, surveyed geometry, uncertainty band, prediction,
+  strategy or live feed. Next: derive a telemetry cursor from the existing
+  replay time and display it within that shared clock; then widen event
+  coverage. P3/P4 remain partial. Commit and remote verification SHAs are
+  recorded in the immediate documentation publication checkpoint.

@@ -120,3 +120,29 @@ source starts and prevents future boundary leakage. Current pack totals are
 39 Monza, 57 Monaco and 52 Brazil normalized stints; the two unnormalizable
 Brazil rows are separately counted in coverage. Full algorithm and evidence:
 `REPLAY_STINTS_AND_MOTION.md`.
+
+## Historical telemetry comparison (partial P3)
+
+`src/f1_racelab/telemetry/contracts.py` defines an immutable source lap
+contract. A point has elapsed seconds, distance in metres integrated from
+reported speed, speed in km/h, source throttle value, raw brake value, RPM,
+gear and DRS code. Lap metadata includes session/meeting/driver/lap identity,
+timezone-aware approximate start, duration, source sample count, bounded point
+count, interpolated-boundary count, maximum gap and integrated distance.
+Every distance and comparison point is explicitly `estimated`.
+
+The builder requires source identity to match, excludes pit-out laps, uses a
+maximum 1-second interpolation/integration gap by default and integrates
+`average(speed_i, speed_(i+1)) / 3.6 * elapsed_seconds` metres. It refuses to
+bridge larger gaps. Throttle and brake are not clipped; brake remains named
+`brake_source_value`, and DRS remains a raw integer code. Continuous channels
+are linear-interpolated while brake/gear/DRS use the preceding source state.
+`LapComparison` holds two same-session laps on a regular shared-distance grid;
+`delta_time_b_minus_a_seconds` is elapsed time for B minus elapsed time for A.
+
+The current real sample is Monza 2025 session 9912, car 1 vs car 4, lap 50,
+with raw query hashes and precise limitations in
+`DISTANCE_ALIGNED_TELEMETRY.md`. Output JSON/PNG is local and ignored. This
+contract is not yet connected to the canonical replay API or UI; it must not
+be presented as synchronized panel state until its cursor is derived from the
+one canonical clock.

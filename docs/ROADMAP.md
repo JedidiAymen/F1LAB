@@ -13,7 +13,7 @@ is in `SOL61_MASTER_EXECUTION.md`; this page tracks execution.
 | P0: domain contracts and repo hardening | Partial | Python event/state contract and reducer tests exist; CI, schema export and ownership remain |
 | P1: replay pack | Three-reference offline gate verified; broader contracts partial | Monza/Monaco/Brazil match available final results; 15,162 boundary/arbitrary-time checks and 600 shuffled seeks; context adds 700 as-of checks; 148 source-timed stint histories are reconstructed without changing pack events; full geometry remains |
 | P2: 2D Race Control | Partial, real browser interaction proof | Session picker, 0.25×–16× clock, synchronized map/timing/control/weather/status/stints, playback transforms and exact source-time jumps pass eight Chromium tests; fuller geometry and rendering performance coverage remain |
-| P3–P4: telemetry and Prediction Lab | Not started | Distance-aligned laps and reproducible as-of prediction in UI |
+| P3–P4: telemetry and Prediction Lab | Partial foundation | A real two-lap distance-alignment artifact and synthetic contracts exist; shared-clock UI integration, as-of prediction and calibration remain |
 | P5–P6: strategy and counterfactual | Not started | Tested units, seeded worlds, real-event sanity checks |
 | P7–P8: live, radio and 3D | Not started | Provider-aware live fan-out and same-clock 3D |
 
@@ -22,9 +22,11 @@ is in `SOL61_MASTER_EXECUTION.md`; this page tracks execution.
 1. Continue P2 with fuller circuit geometry and rendering performance coverage
    while preserving the integrated source-time weather, stint history and
    conservative track-signal state.
-2. Build distance-aligned telemetry after richer measured geometry and lap
-   synchronization. The three audited sessions now build and play; see
-   `REPLAY_GOLDEN_SESSIONS.md` and `REPLAY_CONTEXT.md` for proof and limits.
+2. Integrate the distance-aligned telemetry foundation into the canonical
+   replay clock and UI, then expand source coverage. Current real comparison
+   and limitations are in `DISTANCE_ALIGNED_TELEMETRY.md`; the three audited
+   sessions build and play as documented in `REPLAY_GOLDEN_SESSIONS.md` and
+   `REPLAY_CONTEXT.md`.
 3. Audit provider agreement across more events and timestamp lineage before
    treating the mixed-source ranking as a production claim.
 

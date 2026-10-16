@@ -54,10 +54,11 @@ to the planned race workstation.
     race control from that same API state at one playback time. 3D and
     telemetry remain unconnected. Drawing frames must not invent extra race
     time.
-12. **Distance alignment.** Two lap telemetry streams should be interpolated
-    to matching track distances before speed or braking comparisons. Equal
-    timestamps can represent different physical places. This is a planned P3
-    feature and has no current measured comparison result.
+12. **Distance alignment.** Two lap telemetry streams can be interpolated to
+    matching estimated distances before comparing speed or braking. Equal
+    timestamps can represent different physical places. F1LAB now has one
+    real two-lap example with speed-integrated distance; it is not GPS/surveyed
+    alignment and is not yet synchronized with the replay UI.
 13. **Tyre degradation and undercut.** A race simulator will model lap time as
     baseline pace plus fuel/tyre/weather and other effects in seconds. An
     undercut pits earlier to gain time on fresh tyres while the rival remains
@@ -134,3 +135,13 @@ to the planned race workstation.
     canonical state and the session clock remain on the 5 Hz API samples.
     Exact seeks and reduced-motion settings remove the transition, so visual
     movement never rewrites source coordinates or creates a new observation.
+27. **Speed-integrated distance.** Between two speed samples, approximate
+    distance is average speed multiplied by elapsed time. With speed in km/h,
+    divide by 3.6 to get metres per second. Sparse readings, rounding and an
+    approximate lap start make this axis an estimate rather than surveyed
+    track position.
+28. **Distance-aligned lap delta.** Two laps can be sampled at the same
+    estimated distance even when their timestamps differ. F1LAB reports
+    `elapsed_B - elapsed_A` in seconds; a negative value means B reached that
+    estimated point earlier. This comparison coordinate does not itself
+    advance or replace the canonical replay clock.

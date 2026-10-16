@@ -151,3 +151,22 @@ none`; the existing reduced-motion CSS rule remains in force. This is a
 rendering aid, not another simulation clock or a claim of continuously
 measured location. Source counts, tests and screenshots are recorded in
 `REPLAY_STINTS_AND_MOTION.md`.
+
+## D-012 — distance-integrated telemetry remains estimated, 2026-10-16
+
+OpenF1 car-data speeds can support a useful comparative axis, but they are
+sampled and lap start timestamps are approximate. F1LAB therefore integrates
+each lap's reported speed independently with the trapezoidal rule, labels all
+resulting distance as estimated, rejects source gaps over one second and
+interpolates only boundaries bracketed within that limit. It does not claim
+GPS alignment or surveyed metres. Continuous channels use linear interpolation;
+brake, gear and DRS remain source-state values. Brake is named as a raw source
+value and DRS retains its code because its meaning can be unclear. Provider
+values are not clipped based on documentation assumptions. The first artifact
+compares Monza 2025 laps 50 for cars 1 and 4 on a 5 m shared estimated-distance
+grid; source hashes and limitations are in `DISTANCE_ALIGNED_TELEMETRY.md`.
+
+The comparison is not a separate replay clock. Any UI cursor must derive from
+the current canonical replay time, with the estimated distance shown as a
+derived coordinate. Until that integration and broader event coverage exist,
+this work is a P3 foundation and not a synchronized telemetry feature.

@@ -158,3 +158,28 @@
   locations are present, and verifies the transition is disabled. Exact
   commands, screenshots, QA artifacts and caveats are in
   `REPLAY_STINTS_AND_MOTION.md`.
+
+## R-007 — distance-aligned historical lap telemetry foundation
+
+- Starting source SHA `89351502ccb6389c25886d18022430f2ce6319f8`; source is
+  cached OpenF1 v1 historical session 9912 (Monza 2025), with response hashes
+  and provider/license links in `DISTANCE_ALIGNED_TELEMETRY.md`.
+- Compared VER #1 lap 50 (81.297 s) with NOR #4 lap 50 (81.123 s). Inputs are
+  29,611 car-data rows per driver and the session lap table. In-window counts
+  are 318 and 309; bounded point counts 320 and 311 include two interpolated
+  boundaries each. Maximum bounded sample interval is 0.799 s.
+- Algorithm: integrate speed with the trapezoidal rule after converting km/h
+  to m/s; reject gaps over 1 s; align both independently estimated distance
+  axes to a common 5 m grid; interpolate continuous fields linearly and
+  discrete source states by previous value; delta is elapsed B minus elapsed A.
+- Result: integrated distances 5,746.062 m and 5,751.324 m; common endpoint
+  5,746.062 m; 1,150 grid points; B−A delta range −0.374 to +0.212 s and
+  endpoint −0.234 s. These are descriptive outputs from two laps, not a
+  general performance result.
+- Synthetic tests: 5 telemetry tests; complete repo suite 56 passed (one
+  existing deprecation warning); Ruff passed; mypy passed 17 files. Chart was
+  visually inspected. Full artifact hashes and exact commands are recorded in
+  `TEST_EVIDENCE.md` and `DISTANCE_ALIGNED_TELEMETRY.md`.
+- Failure/fix: observations of 104 in full source streams disproved an assumed
+  0–100 validation bound; no clipping is performed. Chart contrast was fixed.
+  No frontend, canonical cursor or prediction model has been added.
