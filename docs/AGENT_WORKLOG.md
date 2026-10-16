@@ -540,3 +540,69 @@ PY
   coverage. P3/P4 remain partial. Remote verification used
   `git ls-remote origin refs/heads/feat/foundation` and returned the exact
   implementation SHA above.
+
+## 2026-10-16 UTC — shared-clock telemetry comparison panel (partial P3)
+
+- **Starting source SHA:** `10b53fd4905a6a22ad94ac249dc9632ce016845e` on
+  `feat/foundation`, synchronized with `origin/feat/foundation`. The current
+  API/UI implementation will be committed and pushed under Aymen Jedidi's
+  configured repository identity with no assistant coauthor trailer. The two
+  unrelated untracked user helpers under `ml/features/` remain untouched.
+- **Changed source paths and symbols:** `src/f1_racelab/telemetry/artifacts.py`
+  shares the ignored artifact root; `api.py:create_app` advertises local
+  comparisons and `/api/v1/replay/{slug}/telemetry/lap-comparison` validates
+  and projects an existing artifact without provider requests;
+  `apps/web/src/lib/telemetry-comparison.ts` maps canonical replay seconds to
+  the reference-lap grid; new `components/TelemetryPanel.tsx` renders speed,
+  delta and the canonical-time cursor; `App.tsx` fetches the available local
+  artifact and passes `RaceState.session_time_seconds`; CSS provides responsive
+  chart/readout layout. Tests changed in `test_replay_api.py`, new unit tests
+  in `telemetry-comparison.test.ts`, and a Chromium scenario in
+  `apps/web/e2e/replay.spec.ts`.
+- **Inputs and formulas:** unchanged real cached source is OpenF1 v1 historical
+  Monza 2025 session 9912, VER #1 L50 against NOR #4 L50. Its raw query hashes,
+  license and detailed units are in `DISTANCE_ALIGNED_TELEMETRY.md`. For UI
+  session time `t`, reference elapsed is
+  `t - ((lap_a.start_utc - clock_origin_utc) / 1000)`; if inside the approximate
+  lap duration, the UI linearly interpolates `distance_m`, B−A time and both
+  speeds by `elapsed_a_seconds`. Outside that lap window, it hides the cursor.
+  Jumping to the reference calls the existing `PlaybackClock.seek()`; no new
+  clock is maintained.
+- **API behavior and payload:** manifest lists the expected local #1 L50 vs #4
+  L50 artifact per catalog session, with availability from `data/processed/`.
+  The route validates Pydantic data and requires the artifact session and
+  meeting keys to match the selected slug. Missing/invalid artifacts return
+  unavailable; API never calls OpenF1. It returns plotted fields plus source
+  hashes: current response is 200,119 bytes vs 847,619 bytes for the full local
+  comparison JSON. Full source channels remain in the ignored artifact.
+- **UI/result:** the panel plots #1/#4 speed and B−A cumulative seconds versus
+  estimated integrated metres. In the real sample, distances remain 5,746.062
+  m and 5,751.324 m; grid has 1,150 points. The cursor follows the exact
+  canonical state timestamp shown in every other panel. `Jump to reference lap`
+  seeks to session time 4,294.383 s; forward 10 s moves the cursor down the
+  distance curve, and seeking to pack end hides it. Screenshot, visually
+  inspected at the reference lap start:
+  `data/processed/browser_tests/results/replay-telemetry-crosshair-176f6--clock-on-its-reference-lap-chromium/telemetry-cursor.png`.
+- **Verification:** `.venv/bin/pytest -q`: 57 passed, one existing
+  Starlette/httpx deprecation warning. Ruff passed; mypy passed 18 files. In
+  `apps/web`, `npm run test:unit` passed 5, `npm run lint` passed,
+  `npm run build` passed (JS 420.49 KB / 138.37 KB gzip; CSS 69.12 KB /
+  13.60 KB gzip), and `npm run test:e2e` passed 9 Chromium cases in 19.0 s.
+  The full test and artifact evidence is in `TEST_EVIDENCE.md`.
+- **Failure and fixes:** first E2E run passed 8/9 because the pre-existing
+  `getByRole('status')` pit-unavailable assertion also matched the new static
+  telemetry hint. The hint no longer uses the live `status` role; 9/9 then
+  passed. Visual inspection found the distance-axis title overlapped its tick
+  labels, so the SVG plot gives the title its own space. The y scales are
+  derived from the returned sample values to avoid clipping other comparisons.
+- **Modified documentation paths:** `ROADMAP.md`, this worklog,
+  `IMPLEMENTATION_ATLAS.md`, `TEST_EVIDENCE.md`, `EXPERIMENT_REGISTER.md`,
+  `DECISIONS.md`, `GLOSSARY_FOR_LEARNING.md`, `CHATGPT_HANDOFF.md`,
+  `DATA_CONTRACTS.md`, `ARCHITECTURE.md`, `RACE_CONTROL_UI.md`, and
+  `DISTANCE_ALIGNED_TELEMETRY.md`.
+- **Partial/not done:** only one fixed driver/lap pair is generated and served;
+  no channel selectors, brake/gear/DRS plots, GPS distance, sector alignment,
+  calibrated uncertainty, prediction, strategy or live telemetry exist. Other
+  sessions display a build-artifact hint. Next widen real comparison coverage,
+  then add historical-as-of prediction outputs. P3/P4 remain partial. The
+  commit and remote SHA are recorded in the immediate follow-up checkpoint.

@@ -142,7 +142,11 @@ are linear-interpolated while brake/gear/DRS use the preceding source state.
 
 The current real sample is Monza 2025 session 9912, car 1 vs car 4, lap 50,
 with raw query hashes and precise limitations in
-`DISTANCE_ALIGNED_TELEMETRY.md`. Output JSON/PNG is local and ignored. This
-contract is not yet connected to the canonical replay API or UI; it must not
-be presented as synchronized panel state until its cursor is derived from the
-one canonical clock.
+`DISTANCE_ALIGNED_TELEMETRY.md`. Output JSON/PNG is local and ignored. The
+local API validates and serves the generated comparison artifact; the endpoint
+does not fetch provider data. `TelemetryPanel` derives its crosshair from the
+reference lap's UTC start and the `session_time_seconds` of the same
+`RaceState` used by the rest of the page. Its “jump to reference lap” action
+seeks the existing playback clock. The distance remains a derived coordinate,
+not another clock or a surveyed location. Other session artifacts are shown
+only after the corresponding local CLI output exists.

@@ -12,10 +12,13 @@ from functools import lru_cache
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query
+from pydantic import ValidationError
 
 from f1_racelab.session.catalog import DEFAULT_SESSION, SESSIONS
 from f1_racelab.session.contracts import WeatherPayload
 from f1_racelab.session.replay_source import ReplaySource
+from f1_racelab.telemetry.artifacts import COMPARISON_ROOT
+from f1_racelab.telemetry.contracts import LapComparison
 
 DEFAULT_PACK = DEFAULT_SESSION.pack_path
 
@@ -35,10 +38,20 @@ def _rainfall_changes(replay: ReplaySource) -> list[dict]:
     return changes
 
 
-def create_app(pack_path: Path | None = None, *, pack_paths: dict[str, Path] | None = None) -> FastAPI:
+def create_app(
+    pack_path: Path | None = None,
+    *,
+    pack_paths: dict[str, Path] | None = None,
+    telemetry_comparison_paths: dict[str, Path] | None = None,
+) -> FastAPI:
     """Create an API bound to a local replay pack, allowing isolated fixtures."""
     paths = {slug: spec.pack_path for slug, spec in SESSIONS.items()}
     paths.update(pack_paths or {})
+    telemetry_paths = {
+        slug: COMPARISON_ROOT / f"{slug}_driver_1_lap_50_vs_4_lap_50.json"
+        for slug in SESSIONS
+    }
+    telemetry_paths.update(telemetry_comparison_paths or {})
     if pack_path or os.environ.get("F1LAB_REPLAY_PACK"):
         paths[DEFAULT_SESSION.slug] = pack_path or Path(os.environ["F1LAB_REPLAY_PACK"])
     app = FastAPI(title="F1LAB local replay API", version="0.1.0")
@@ -87,6 +100,12 @@ def create_app(pack_path: Path | None = None, *, pack_paths: dict[str, Path] | N
             "coverage": pack["coverage"],
             "race_control": [event for event in pack["events"] if event["type"] == "race_control"],
             "weather_changes": _rainfall_changes(replay),
+            "telemetry_comparisons": ([{
+                "id": "driver-1-lap-50-vs-driver-4-lap-50",
+                "label": "#1 L50 vs #4 L50",
+                "available": telemetry_paths[slug].is_file(),
+                "quality": "estimated",
+            }] if slug in telemetry_paths else []),
         }
 
     @app.get("/api/v1/replay/{slug}/state")
@@ -97,6 +116,53 @@ def create_app(pack_path: Path | None = None, *, pack_paths: dict[str, Path] | N
         return replay.state_at(seconds).model_dump(
             mode="json",
             exclude={"applied_event_ids", "applied_event_hashes", "event_log", "race_control_messages"},
+        )
+
+    @app.get("/api/v1/replay/{slug}/telemetry/lap-comparison")
+    def lap_comparison(slug: str) -> dict:
+        if slug not in SESSIONS:
+            raise HTTPException(status_code=404, detail="Unknown replay session")
+        path = telemetry_paths.get(slug)
+        if path is None:
+            raise HTTPException(status_code=404, detail="No telemetry comparison is configured")
+        if not path.is_file():
+            raise HTTPException(
+                status_code=503,
+                detail="Telemetry comparison artifact unavailable. Run python -m "
+                "f1_racelab.telemetry.openf1_lap_comparison.",
+            )
+        try:
+            comparison = LapComparison.model_validate_json(path.read_bytes())
+        except (OSError, ValidationError) as exc:
+            raise HTTPException(status_code=503, detail=f"Invalid telemetry artifact: {exc}") from exc
+        spec = SESSIONS[slug]
+        if (comparison.session_key, comparison.meeting_key) != (spec.session_key, spec.meeting_key):
+            raise HTTPException(status_code=503, detail="Telemetry artifact belongs to a different session")
+        return comparison.model_dump(
+            mode="json",
+            include={
+                "session_key": True,
+                "meeting_key": True,
+                "source": True,
+                "distance_quality": True,
+                "sample_spacing_m": True,
+                "common_distance_end_m": True,
+                "source_hashes": True,
+                "lap_a": {
+                    "driver_number", "lap_number", "start_utc",
+                    "lap_duration_seconds", "integrated_distance_m",
+                },
+                "lap_b": {
+                    "driver_number", "lap_number", "start_utc",
+                    "lap_duration_seconds", "integrated_distance_m",
+                },
+                "samples": {
+                    "__all__": {
+                        "distance_m", "elapsed_a_seconds",
+                        "delta_time_b_minus_a_seconds", "speed_a_kmh", "speed_b_kmh",
+                    },
+                },
+            },
         )
 
     return app

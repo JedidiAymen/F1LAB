@@ -13,10 +13,8 @@ from matplotlib import pyplot as plt
 
 from f1_racelab.data.openf1_qualifying import RAW_ROOT, OpenF1Client
 from f1_racelab.session.catalog import SESSIONS
+from f1_racelab.telemetry.artifacts import COMPARISON_ROOT
 from f1_racelab.telemetry.distance_alignment import build_lap_telemetry, compare_laps
-
-ROOT = Path(__file__).resolve().parents[3]
-OUTPUT_ROOT = ROOT / "data/processed/telemetry_comparisons"
 
 
 def _source_lap(rows: list[dict], driver_number: int, lap_number: int) -> dict:
@@ -119,7 +117,7 @@ def main() -> None:
         session_slug=args.session, driver_a=args.driver_a, lap_a_number=args.lap_a,
         driver_b=args.driver_b, lap_b_number=args.lap_b, spacing_m=args.spacing_m,
     )
-    output = args.out or OUTPUT_ROOT / (
+    output = args.out or COMPARISON_ROOT / (
         f"{args.session}_driver_{args.driver_a}_lap_{args.lap_a}_"
         f"vs_{args.driver_b}_lap_{args.lap_b}.json"
     )

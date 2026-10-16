@@ -50,15 +50,15 @@ to the planned race workstation.
     A real 2025 Monza pack now adds positions, laps, pit and stints to the
     race-control message sample. `ReplaySource.state_at(t)` returns all
     available fields at one session time, using event checkpoints and indexed
-    location/interval samples. The first local UI now draws 2D, timing and
-    race control from that same API state at one playback time. 3D and
-    telemetry remain unconnected. Drawing frames must not invent extra race
-    time.
+    location/interval samples. The local UI draws 2D, timing and race control
+    from that same API state; the telemetry chart derives its cursor from that
+    state's session time. 3D remains unconnected. Drawing frames must not
+    invent extra race time.
 12. **Distance alignment.** Two lap telemetry streams can be interpolated to
     matching estimated distances before comparing speed or braking. Equal
     timestamps can represent different physical places. F1LAB now has one
-    real two-lap example with speed-integrated distance; it is not GPS/surveyed
-    alignment and is not yet synchronized with the replay UI.
+    real two-lap example with speed-integrated distance and a cursor tied to
+    canonical replay time; it is not GPS/surveyed alignment.
 13. **Tyre degradation and undercut.** A race simulator will model lap time as
     baseline pace plus fuel/tyre/weather and other effects in seconds. An
     undercut pits earlier to gain time on fresh tyres while the rival remains

@@ -19,9 +19,10 @@ flowchart LR
 
 Each event is a prediction group. Training is 2022–2023, validation 2024,
 test 2025. The row schema and timestamp policy are in `DATA_CONTRACTS.md`.
-The existing React/Vite app is still the starter screen; it is not integrated
-with predictions or replay yet. Python API and session-engine directories are
-scaffolds.
+The React/Vite app now integrates the local replay API and its canonical
+session clock. It does not yet serve predictions, strategy, live data or 3D.
+The local Python API serves replay state and reads a generated telemetry
+comparison artifact without requesting provider data.
 
 ## Canonical session foundation (P0, partial)
 
@@ -65,6 +66,15 @@ local UI is wired to three replay packs through the Python API. It requests
 one canonical state every 200 ms during playback and immediately on seeks.
 Switching session remounts the workspace, cancels old requests and resets
 the clock. The full live/simulation contract remains pending.
+
+The first historical telemetry chart is a sidecar built from cached OpenF1
+car data. Its immutable comparison points are aligned by estimated integrated
+distance, while its vertical cursor is derived from the current canonical
+`RaceState.session_time_seconds` and the reference lap's UTC start. Seeking to
+that lap uses the existing browser clock. This produces a synchronized
+historical comparison without treating estimated metres as another session
+clock or as surveyed geometry. Details and boundaries are in
+`DISTANCE_ALIGNED_TELEMETRY.md`.
 
 ## Storage and module ownership
 

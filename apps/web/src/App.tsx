@@ -22,6 +22,8 @@ import {
 import { PlaybackClock } from '@/lib/playback-clock'
 import { WeatherPanel } from '@/components/WeatherPanel'
 import { StintPanel } from '@/components/StintPanel'
+import { TelemetryPanel } from '@/components/TelemetryPanel'
+import type { LapComparison } from '@/lib/telemetry-comparison'
 import {
   formatSessionTime as secondsLabel,
   trackStatusLabels,
@@ -88,6 +90,12 @@ type Manifest = {
   geometry: { centerline_xy: number[][]; quality: string; source: string }
   race_control: ControlEvent[]
   weather_changes: WeatherChange[]
+  telemetry_comparisons: {
+    id: string
+    label: string
+    available: boolean
+    quality: 'estimated'
+  }[]
   coverage: Record<string, unknown>
 }
 
@@ -321,6 +329,8 @@ function ReplayWorkspace({
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState(1)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [telemetryComparison, setTelemetryComparison] = useState<LapComparison | null>(null)
+  const [telemetryError, setTelemetryError] = useState<string | null>(null)
   const clock = useRef(new PlaybackClock(0))
   const requestId = useRef(0)
 
@@ -344,6 +354,29 @@ function ReplayWorkspace({
       })
     return () => controller.abort()
   }, [base])
+
+  const telemetryAvailable =
+    manifest?.telemetry_comparisons.some((comparison) => comparison.available) ?? false
+  const telemetryLoading = telemetryAvailable && !telemetryComparison && !telemetryError
+  useEffect(() => {
+    if (!manifest || !telemetryAvailable) return
+    const controller = new AbortController()
+    fetch(`${base}/telemetry/lap-comparison`, { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) {
+          const body = await response.json()
+          throw new Error(body.detail ?? 'Telemetry comparison unavailable')
+        }
+        return response.json()
+      })
+      .then((data: LapComparison) => {
+        setTelemetryComparison(data)
+      })
+      .catch((e) => {
+        if (e.name !== 'AbortError') setTelemetryError(String(e))
+      })
+    return () => controller.abort()
+  }, [base, manifest, telemetryAvailable])
 
   const seek = useCallback((seconds: number, pause = false) => {
     const now = performance.now()
@@ -761,6 +794,15 @@ function ReplayWorkspace({
                 </section>
               </aside>
             </div>
+            <TelemetryPanel
+              seconds={state?.session_time_seconds ?? 0}
+              clockOriginUtc={manifest.clock_origin_utc}
+              comparison={telemetryComparison}
+              available={telemetryAvailable}
+              loading={telemetryLoading}
+              error={telemetryError}
+              onSeek={(seconds) => seek(seconds, true)}
+            />
             <section className="transport panel" aria-label="Replay transport">
               <div className="transport-main">
                 <div className="transport-title">

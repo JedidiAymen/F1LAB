@@ -4,9 +4,9 @@
 status below, and `REPLAY_CONTEXT.md` documents schema 2 weather and scoped
 track status. The current emitted state is schema 3 and includes source-time
 stints; stored packs/events are schema 2. Three packs, session selection and
-eight real Chromium interaction tests now work; desktop/mobile screenshots
-were inspected. Weather, global status and stints follow the same canonical
-session clock. P2 remains partial.
+nine real Chromium interaction tests now work; desktop/mobile screenshots
+were inspected. Weather, global status, stints and the first telemetry
+comparison follow the same canonical session clock. P2 remains partial.
 
 **Status:** one real 2025 Monza offline demo implemented; broader P2 gate is
 partial. Starting source commit: `abe031c` on `feat/foundation`. Find this
@@ -48,8 +48,9 @@ the race fields, observation times and quality markers. The top-level UI
 clock drives all requests. Map and timing both read the same `RaceState`;
 the message list only reveals messages up to that state's time. The SVG
 projects provider XY using a uniform scale and labels unknown coordinate
-units. The browser does not create telemetry, add future results, or infer a
-global flag from sector messages. If a location bracket is missing, it hides
+units. The browser does not synthesize telemetry or add future results; it
+displays the cached comparison artifact only when one exists. It does not infer
+a global flag from sector messages. If a location bracket is missing, it hides
 the car. Provider coordinates unchanged for 15 seconds are now hidden to
 avoid showing a stopped car as active indefinitely; that is a visual
 staleness rule, not a retirement classification.
@@ -78,8 +79,9 @@ The 2D map is an approximate OpenF1 coordinate trace, not surveyed geometry.
 Repeated coordinate detection may hide a legitimately stationary car after
 15 seconds; the current pack has no authoritative retirement timestamp.
 Position is latest provider observation; gap expires after 10 seconds.
-The full live feed, 3D, telemetry, strategy, simulation and additional
-historical sessions remain future work. The raw pack is ignored by Git.
+The full live feed, 3D, production telemetry coverage, strategy, simulation
+and additional historical sessions remain future work. The raw pack is ignored
+by Git.
 Provider source and rights: [OpenF1 API](https://openf1.org/docs/) and the
 local source/licensing notes in `REPLAY_2025_MONZA.md`.
 
@@ -94,3 +96,21 @@ only while the canonical clock is playing; paused seeks (including small
 forward seeks), reverse seeks, first appearance, large state gaps and reduced
 motion do not animate. The server and shared panel clock remain sampled at
 5 Hz. Surveyed geometry and quantified rendering performance are still open.
+
+## Current follow-up — shared-clock telemetry comparison
+
+`TelemetryPanel` displays the generated Monza VER #1 L50 versus NOR #4 L50
+artifact through
+`GET /api/v1/replay/{slug}/telemetry/lap-comparison`. The endpoint reads only
+local JSON and verifies its session identity; if the artifact is missing it
+returns unavailable without downloading provider data. It sends the chart
+fields and source hashes but not the full per-sample channel payload.
+
+The chart shows both speeds and B−A cumulative time over estimated
+speed-integrated distance. Its cursor uses `RaceState.session_time_seconds`
+and the reference lap's UTC start, and is visible only while canonical replay
+time is within that approximate lap window. “Jump to reference lap” calls the
+same `PlaybackClock.seek()` used by every panel. E2E verifies the cursor is
+aligned at the reference start, advances on the normal transport and hides
+outside the lap. Formula, API response size, tests and limitations are in
+`DISTANCE_ALIGNED_TELEMETRY.md`.

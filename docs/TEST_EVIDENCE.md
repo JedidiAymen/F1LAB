@@ -143,3 +143,24 @@ contracts, screenshot paths and limitations are in
 Full input hashes, formulas, output hashes and caveats are in
 `DISTANCE_ALIGNED_TELEMETRY.md`. This milestone does not include web tests
 because no frontend/API consumer was changed.
+
+## 2026-10-16 — shared-clock telemetry panel and local API artifact route
+
+| Exact command/check | Result | Evidence class and artifact |
+|---|---|---|
+| `.venv/bin/pytest -q` | 57 passed; one existing Starlette/httpx deprecation warning | Synthetic reducer/API/telemetry contracts |
+| `.venv/bin/ruff check src tests scripts` | Passed | Repository static checks |
+| `.venv/bin/mypy src/f1_racelab/telemetry src/f1_racelab/session src/f1_racelab/api.py --follow-imports=silent --ignore-missing-imports` | 18 files passed | Static type checking |
+| `cd apps/web && npm run test:unit` | 5 passed | Clock, weather and synthetic UTC-to-distance cursor tests |
+| `cd apps/web && npm run lint` | Passed | ESLint |
+| `cd apps/web && npm run build` | Passed; JS 420.49 KB (138.37 KB gzip), CSS 69.12 KB (13.60 KB gzip) | TypeScript/Vite production build |
+| `cd apps/web && npm run test:e2e` | 9 passed in 19.0 s | Chromium against three real packs; cursor matches canonical time, advances on normal seek and hides out of reference-lap range |
+| `GET /api/v1/replay/monza-2025/telemetry/lap-comparison` via FastAPI `TestClient` | HTTP 200; 200,119 bytes; 5 projected sample fields plus session and source hashes | Real local comparison artifact; full JSON is 847,619 bytes and remains ignored |
+| Screenshot inspection | Cursor at estimated 0 m on lap start; speed and delta axes readable, no tick/title overlap | `data/processed/browser_tests/results/replay-telemetry-crosshair-176f6--clock-on-its-reference-lap-chromium/telemetry-cursor.png` |
+
+First browser run had 8/9 passing because the existing generic status-role
+selector matched both the Monaco coverage notice and a static telemetry hint.
+The hint no longer uses that role; the full 9-case run passes. Axis-title
+overlap was fixed after screenshot review. This integration makes no new
+provider request. Details and exact query hashes are in
+`DISTANCE_ALIGNED_TELEMETRY.md`.

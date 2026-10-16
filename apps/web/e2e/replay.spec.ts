@@ -12,6 +12,7 @@ async function expectSynchronized(page: Page) {
     'Weather observations',
     'Session summary',
     'Tyre stints',
+    'Telemetry comparison',
   ]) {
     await expect(page.getByRole('region', { name })).toHaveAttribute(
       'data-session-time',
@@ -97,6 +98,39 @@ test('real Monza seeks keep map, timing, focus and control on the same state', a
     'data-status',
     'chequered',
   )
+})
+
+test('telemetry crosshair follows the canonical replay clock on its reference lap', async ({
+  page,
+}, testInfo) => {
+  const panel = page.getByRole('region', { name: 'Telemetry comparison' })
+  await expect(panel).toHaveAttribute('data-cursor-visible', 'false')
+  await page.getByRole('button', { name: 'Jump to reference lap' }).click()
+  await expect(page.getByTestId('state-clock')).toHaveAttribute(
+    'data-seconds',
+    /\d+\.\d{3}/,
+  )
+  await expect(panel).toHaveAttribute('data-cursor-visible', 'true')
+  const distance = Number(await panel.getAttribute('data-cursor-distance'))
+  expect(distance).toBeLessThan(1)
+  await expectSynchronized(page)
+  await page.screenshot({
+    path: testInfo.outputPath('telemetry-cursor.png'),
+    fullPage: true,
+  })
+
+  await page.getByRole('button', { name: 'Forward 10 seconds' }).click()
+  await expect
+    .poll(async () => Number(await panel.getAttribute('data-cursor-distance')))
+    .toBeGreaterThan(100)
+  await expectSynchronized(page)
+
+  const slider = page.getByRole('slider', { name: 'Session time' })
+  await slider.focus()
+  await slider.press('End')
+  await expect(panel).toHaveAttribute('data-cursor-visible', 'false')
+  await expect(page.getByRole('button', { name: 'Jump to reference lap' })).toBeVisible()
+  await expectSynchronized(page)
 })
 
 test('play, speed change, pause and exact message seek use the central clock', async ({

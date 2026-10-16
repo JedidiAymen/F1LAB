@@ -185,3 +185,32 @@
 - Failure/fix: observations of 104 in full source streams disproved an assumed
   0–100 validation bound; no clipping is performed. Chart contrast was fixed.
   No frontend, canonical cursor or prediction model has been added.
+
+## R-008 — canonical-time telemetry comparison display
+
+- Starting source SHA `10b53fd4905a6a22ad94ac249dc9632ce016845e`; this builds on
+  R-007's pushed comparison artifact and source hashes. Implementation SHA
+  and remote publication are recorded in the current worklog after push.
+- `GET /api/v1/replay/{slug}/telemetry/lap-comparison` reads only the expected
+  ignored JSON artifact, validates its session/meeting, returns unavailable
+  when absent and never calls OpenF1. The current full artifact is 847,619
+  bytes; the plotted-field response is 200,119 bytes and retains source hashes.
+- `TelemetryPanel` graphs speed A/B and B−A time versus estimated integrated
+  distance. The cursor maps the canonical RaceState time through the reference
+  lap's UTC start to `elapsed_a_seconds`, then interpolates distance/delta/
+  speed. The jump action invokes the existing clock's seek. No second clock or
+  surveyed-position claim is introduced.
+- Evidence: two synthetic cursor unit tests, API fixture and unavailable-path
+  tests, five JS unit tests, and nine Chromium tests using all three real replay
+  packs. The browser case checks reference-start alignment, movement after a
+  normal transport seek, hiding outside the reference lap and shared panel
+  session time. Desktop chart screenshot was visually inspected; file path and
+  exact commands are in `TEST_EVIDENCE.md`.
+- Initial e2e failed because a generic `role=status` selector matched both the
+  Monaco pit-coverage notice and the new static telemetry hint. The hint no
+  longer uses that live status role; the existing pit assertion and complete
+  suite pass. The first chart screenshot also showed the x-axis title
+  overlapping distance ticks; SVG plotting area was given separate title space.
+- This is a real-data view of one fixed Monza lap pair. More generated events,
+  driver/lap selection, braking/gear/DRS charts, prediction outputs and
+  uncertainty calibration remain unimplemented.

@@ -2,12 +2,54 @@
 
 import gzip
 import json
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from fastapi.testclient import TestClient
 
 from f1_racelab.api import create_app
 from f1_racelab.session.replay_source import ReplaySource
+from f1_racelab.telemetry.distance_alignment import build_lap_telemetry, compare_laps
+
+
+def _write_telemetry_comparison(path: Path) -> None:
+    start = datetime(2025, 9, 7, 14, tzinfo=UTC)
+    laps = []
+    for driver_number, base_speed in ((1, 72), (4, 54)):
+        rows = [
+            {
+                "date": (start + timedelta(seconds=second)).isoformat(),
+                "session_key": 9912,
+                "meeting_key": 1268,
+                "driver_number": driver_number,
+                "speed": base_speed,
+                "throttle": 70,
+                "brake": 0,
+                "rpm": 9000,
+                "n_gear": 5,
+                "drs": 0,
+            }
+            for second in range(3)
+        ]
+        lap_row = {
+            "session_key": 9912,
+            "meeting_key": 1268,
+            "driver_number": driver_number,
+            "lap_number": 50,
+            "date_start": start.isoformat(),
+            "lap_duration": 2,
+            "is_pit_out_lap": False,
+        }
+        laps.append(build_lap_telemetry(
+            rows, lap_row, session_key=9912, meeting_key=1268,
+            driver_number=driver_number,
+        ))
+    comparison = compare_laps(
+        laps[0], laps[1],
+        source_hashes={"laps": "a" * 64, "car_a": "b" * 64, "car_b": "c" * 64},
+        spacing_m=5,
+    )
+    path.write_text(comparison.model_dump_json())
 
 
 def test_missing_replay_pack_is_reported(tmp_path: Path) -> None:
@@ -39,7 +81,13 @@ def test_manifest_and_state_share_clock(tmp_path: Path) -> None:
              "locations": {"1": [[0, 100, 20], [1, 110, 20]]}}
     with gzip.open(other_path, "wt", encoding="utf-8") as handle:
         json.dump(other, handle)
-    client = TestClient(create_app(path, pack_paths={"monaco-2023": other_path}))
+    comparison_path = tmp_path / "telemetry.json"
+    _write_telemetry_comparison(comparison_path)
+    client = TestClient(create_app(
+        path,
+        pack_paths={"monaco-2023": other_path},
+        telemetry_comparison_paths={"monza-2025": comparison_path},
+    ))
     catalog = client.get("/api/v1/replays").json()
     assert next(row for row in catalog if row["slug"] == "monaco-2023")["available"]
     assert client.get("/api/v1/replay/unknown/manifest").status_code == 404
@@ -47,6 +95,16 @@ def test_manifest_and_state_share_clock(tmp_path: Path) -> None:
     assert manifest.status_code == 200
     assert manifest.json()["duration_seconds"] == 1
     assert manifest.json()["weather_changes"] == []
+    assert manifest.json()["telemetry_comparisons"] == [{
+        "id": "driver-1-lap-50-vs-driver-4-lap-50",
+        "label": "#1 L50 vs #4 L50",
+        "available": True,
+        "quality": "estimated",
+    }]
+    comparison = client.get("/api/v1/replay/monza-2025/telemetry/lap-comparison")
+    assert comparison.status_code == 200
+    assert comparison.json()["distance_quality"] == "estimated"
+    assert len(comparison.json()["samples"]) == 7
     state = client.get("/api/v1/replay/monza-2025/state", params={"seconds": .5})
     assert state.status_code == 200
     assert state.json()["schema_version"] == 3
@@ -79,3 +137,12 @@ def test_frozen_provider_points_are_hidden_after_fifteen_seconds(tmp_path: Path)
     replay = ReplaySource.from_file(path)
     assert replay.state_at(14).drivers["1"].track_x == 10
     assert replay.state_at(15).drivers["1"].track_x is None
+
+
+def test_missing_telemetry_artifact_is_reported_without_fetching(tmp_path: Path) -> None:
+    client = TestClient(create_app(
+        telemetry_comparison_paths={"monza-2025": tmp_path / "missing.json"},
+    ))
+    response = client.get("/api/v1/replay/monza-2025/telemetry/lap-comparison")
+    assert response.status_code == 503
+    assert "openf1_lap_comparison" in response.json()["detail"]

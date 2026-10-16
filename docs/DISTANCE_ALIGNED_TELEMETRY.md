@@ -1,15 +1,17 @@
 # Distance-aligned telemetry foundation
 
-This document records the first reproducible telemetry comparison. It is a
-backend/data milestone only: the result is not yet served by the replay API or
-shown in the Race Control UI, and it does not claim a precise surveyed track
-distance.
+This document records the first reproducible telemetry comparison and its
+initial shared-clock UI integration. The only real comparison is still the
+Monza 2025 reference pair; it does not claim a precise surveyed track distance
+or represent a general performance result.
 
-The implementation starts at source SHA
-`89351502ccb6389c25886d18022430f2ce6319f8`. Commit
+The comparison foundation started at source SHA
+`89351502ccb6389c25886d18022430f2ce6319f8`; implementation commit
 `2ac01012c780552f26bd9504f88c9cac87541000` is pushed to
-`origin/feat/foundation`; `git ls-remote` returned the same SHA. It was
-committed as Aymen Jedidi with no assistant coauthor trailer.
+`origin/feat/foundation`. The shared-clock API/UI integration starts at
+`10b53fd4905a6a22ad94ac249dc9632ce016845e`; its implementation commit and
+remote verification will be recorded in the latest worklog entry. Both source
+milestones use the repository identity without an assistant coauthor trailer.
 
 ## Source and coverage
 
@@ -92,6 +94,35 @@ chart SHA-256 is
 The chart was visually inspected. These generated artifacts are intentionally
 not committed; cached source hashes and the CLI reproduce them.
 
+## API and shared-clock UI integration
+
+`src/f1_racelab/api.py` advertises the expected driver-1/lap-50 versus
+driver-4/lap-50 artifact for each supported replay slug. The endpoint
+`GET /api/v1/replay/{slug}/telemetry/lap-comparison` reads and validates only
+the generated local JSON. If its artifact is missing or belongs to the wrong
+session, the endpoint reports an unavailable response; it never fetches from
+OpenF1. The API projects only the fields used by the plot, including the source
+hashes, and returns 200,119 bytes for the current artifact instead of the full
+847,619-byte raw comparison JSON. The full channels and SHA-256 lineage remain
+in the ignored local artifact.
+
+`apps/web/src/lib/telemetry-comparison.ts` converts the canonical state time
+to reference-lap elapsed time using
+`(lap_a.start_utc - clock_origin_utc)` and interpolates the comparison grid by
+`elapsed_a_seconds`. It returns no cursor before or after the reference lap.
+`TelemetryPanel.tsx` plots both speeds and B−A cumulative time and displays a
+vertical cursor, distance, speed and time-delta readout. Its jump button calls
+the existing `seek()` function at the lap's session-relative start. The panel
+uses `state.session_time_seconds`, not the browser's unsnapped animation value,
+so its `data-session-time` matches the clock, map, timing and control panels.
+No second playback clock is introduced.
+
+The current comparison is available in the Monza local replay UI after running
+the documented CLI. Other sessions show the local artifact status and can use
+the same endpoint pattern when their comparisons have been generated. The
+comparison currently has no driver/lap selector, braking/gear chart or link to
+telemetry coordinates on circuit geometry.
+
 ## Reproduction and verification
 
 From the repository root, with the already-cached historical responses:
@@ -99,18 +130,23 @@ From the repository root, with the already-cached historical responses:
 ```bash
 .venv/bin/python -m f1_racelab.telemetry.openf1_lap_comparison
 .venv/bin/pytest -q tests/test_distance_alignment.py
+.venv/bin/pytest -q tests/test_replay_api.py
 .venv/bin/pytest -q
 .venv/bin/ruff check src tests scripts
 .venv/bin/mypy src/f1_racelab/telemetry src/f1_racelab/session src/f1_racelab/api.py --follow-imports=silent --ignore-missing-imports
+cd apps/web && npm run test:unit && npm run lint && npm run build && npm run test:e2e
 ```
 
 The comparison CLI uses the existing rate-limited, hash-recording
 `OpenF1Client`; it needed no new network request because all three response
 files were cached. Five synthetic telemetry tests pass, including exact
 integration, boundary interpolation, excessive-gap rejection, identity/pit-out
-checks, discrete values and shared-session/spacing validation. Full suite:
-56 passed with one existing Starlette/httpx deprecation warning. Repository
-Ruff passes and mypy reports 17 checked Python files without issues. The real
+checks, discrete values and shared-session/spacing validation. The original
+CLI foundation checkpoint passed 56 Python tests and mypy on 17 relevant
+files. The integrated API/UI checkpoint passes 57 Python tests with one
+existing Starlette/httpx deprecation warning; repository Ruff and mypy on 18
+files pass; five JS unit tests, frontend lint/build and nine Chromium tests
+pass. The chart was visually inspected at the reference lap start. The real
 comparison has two driver streams and one session; it is not a population
 study or performance claim.
 
@@ -127,10 +163,9 @@ mypy narrow typing diagnostics were corrected before the final checks.
 
 The selected lap windows themselves have throttle/brake values from 0 to 100;
 the 104 observations are elsewhere in the source response, while the fixture
-checks preservation. There is no GPS/distance alignment, sector segmentation,
+checks preservation. There is no GPS track alignment, sector segmentation,
 pit-lap classification beyond the explicit pit-out flag, uncertainty band,
-frontend graph/crosshair, canonical replay-clock binding, prediction model,
-strategy inference or live data. The next integration should derive its graph
-cursor from the existing canonical replay time rather than introducing a
-second independent clock. Broader lap eligibility checks and more events are
-also needed.
+prediction model, strategy inference or live data. More events, lap eligibility
+checks, driver/lap selection and rendering of braking/gear/DRS remain future
+work. Browser evidence and the latest implementation SHA are recorded in
+`TEST_EVIDENCE.md` and `AGENT_WORKLOG.md`.

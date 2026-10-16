@@ -183,7 +183,11 @@ commands are in the three-reference document.
 | `telemetry.distance_alignment.build_lap_telemetry` | One lap row + one driver's timestamped car data → identity/pit-out checks, ≤1 s boundary/gap contract, trapezoidal speed integration → `LapTelemetry` | Real Monza 2025 VER/NOR lap-50 streams and synthetic exact-integration/boundary/gap tests; provider lap start remains approximate |
 | `telemetry.distance_alignment.compare_laps` | Two laps from one session + raw response hashes → common range, regular 5 m grid, continuous linear and discrete previous-state interpolation → `LapComparison` | 1,150 real comparison points; `elapsed_B - elapsed_A` is labelled in seconds; only two drivers and one race |
 | `telemetry.openf1_lap_comparison.main` | CLI options + rate-limited `OpenF1Client` cache → provenance JSON and speed/delta PNG | Reproduced from cached OpenF1 responses; generated files remain ignored under `data/processed/telemetry_comparisons/` |
+| `api.create_app` telemetry route | Session slug + expected local artifact path → Pydantic validation, session-key check and plotted-field projection → comparison JSON | Returns 503 when the local artifact is absent/invalid; it never calls the provider |
+| `web.lib.telemetry-comparison.comparisonCursorAtSessionTime` | One canonical session time + reference lap UTC start → elapsed time on lap A → interpolated estimated distance/delta/speed cursor | Synthetic UTC-offset unit tests and real Chromium seek/playback checks; cursor is hidden outside the reference lap |
+| `TelemetryPanel` | The returned comparison + current canonical `RaceState.session_time_seconds` → speed/delta SVG and crosshair → readouts on the shared replay clock | Nine Chromium tests pass; the fixed Monza pair has no selector and only other sessions with generated artifacts can display data |
 
-The graph is a command-line artifact only. A future UI must derive its
-comparison cursor from the canonical replay time before this is described as
-synchronized telemetry.
+The full hashed JSON artifact retains all source channels. The API projects the
+fields needed by this chart, reducing the current response from 847,619 to
+200,119 bytes. The chart labels the axis as estimated and displays the exact
+session-time basis for its cursor.

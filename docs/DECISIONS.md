@@ -168,5 +168,26 @@ grid; source hashes and limitations are in `DISTANCE_ALIGNED_TELEMETRY.md`.
 
 The comparison is not a separate replay clock. Any UI cursor must derive from
 the current canonical replay time, with the estimated distance shown as a
-derived coordinate. Until that integration and broader event coverage exist,
-this work is a P3 foundation and not a synchronized telemetry feature.
+derived coordinate. D-013 records the first implementation; broader event
+coverage and prediction work remain incomplete.
+
+## D-013 — telemetry cursor follows canonical replay time, 2026-10-16
+
+The distance comparison is an analytical sidecar, not a second session
+timeline. `TelemetryPanel` computes reference-lap elapsed time by subtracting
+its approximate UTC lap start from the replay pack's clock origin, then uses
+the current `RaceState.session_time_seconds` to interpolate the shared-distance
+grid. The cursor disappears outside that lap window. Jumping to the reference
+lap calls the existing browser `PlaybackClock.seek()`. This keeps the chart,
+map, timing and other data panels on the same selected replay state and makes
+no continuous-position claim between 5 Hz API updates.
+
+The API reads the generated, ignored local artifact and validates its
+Pydantic contract and session identifiers. It does not make OpenF1 requests.
+It projects the fields the graph uses while retaining response hashes; raw
+channels remain in the local full artifact. Missing artifact paths are shown
+as unavailable, not as an empty measured comparison. The first implementation
+supports the default #1 L50 vs #4 L50 artifact naming across the catalog, but
+only Monza has a generated artifact. Driver/lap selection and broader event
+coverage remain future work. Full browser/API evidence is in
+`DISTANCE_ALIGNED_TELEMETRY.md`.
