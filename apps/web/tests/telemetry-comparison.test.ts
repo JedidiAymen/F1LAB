@@ -121,3 +121,12 @@ test('trace gaps do not draw zeroes or bridge missing source readings; discrete 
   const gear = TELEMETRY_CHANNELS.find((channel) => channel.id === 'gear')!
   assert.equal(telemetryChannelPath(samples, gear, 'a', project), 'M0.00 4.00 H10.00 V5.00 H20.00 V6.00')
 })
+
+test('discrete traces keep the last known step up to the first missing observation', () => {
+  const samples = comparison.samples.map((sample, index) => ({
+    ...sample, gear_a: [4, null, 6][index],
+  }))
+  const gear = TELEMETRY_CHANNELS.find((channel) => channel.id === 'gear')!
+  const project = (distance: number, value: number): [number, number] => [distance, value]
+  assert.equal(telemetryChannelPath(samples, gear, 'a', project), 'M0.00 4.00 H10.00 M20.00 6.00')
+})

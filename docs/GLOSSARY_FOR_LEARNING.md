@@ -230,3 +230,32 @@ estimated distance. It does not establish equal fuel, tyres, traffic or weather.
 **Catalog versus quality certificate:** an explicit source pair gives stable,
 reproducible selection. It does not prove both laps are clean; missing Monaco
 pit coverage leaves pit-in status uncertain despite available non-pit-out flags.
+
+
+### 2026-10-16 — telemetry UI review correction
+
+Published P3 source: `5bce32930dfaa802c6ec1c7a54e1a0f7ffce0cf9`. A subsequent
+UI/source review found a discrete trace ended at the previous known point
+instead of extending its held value to the first missing observation. The path
+now draws that final horizontal step to the missing grid point, then breaks;
+it does not bridge the unknown interval. A gear regression checks this behavior.
+The review also found delta-axis tick text could crowd the zero label. Nearby
+text within 14 SVG pixels is suppressed while its grid line remains visible.
+These are display corrections; source comparison artifacts and hashes are
+unchanged.
+
+Current corrective checks: `cd apps/web && npm run test:unit` — 13 passed;
+`npm run build` and `npm run lint` passed. Latest JS is 452.63 KB (148.05 KB
+gzip), CSS unchanged at 79.61 KB (15.71 KB gzip). Full
+`cd apps/web && npm run test:e2e` passed 14/14 in 36.5 s with both UI fixes.
+After cleanup, `npx playwright test --grep='six telemetry channels'` passed
+3/3 in 14.4 s. The full suite covers the fixes before cleanup; the targeted
+three-race run verifies the subsequent cleanup. Corrective source commit/push
+remains pending. Prior 14-scenario/39.2-second evidence applies to the original
+published P3 source.
+
+A held discrete value applies until the next observation boundary. When that
+next value is missing, drawing the horizontal segment to its boundary expresses
+known prior coverage; stopping there and breaking the path expresses unknown
+future coverage. Suppressing overlapping tick text improves legibility without
+removing the numerical grid scale.

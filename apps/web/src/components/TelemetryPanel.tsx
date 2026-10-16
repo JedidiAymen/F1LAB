@@ -88,10 +88,14 @@ export function TelemetryPanel({ seconds, clockOriginUtc, comparison, available,
                     <text x={PLOT.left - 12} y={y + 4} textAnchor="end" className="telemetry-axis-label">{Number.isInteger(value) ? value : value.toFixed(1)}</text>
                   </g>
                 })}
-                {[plot.deltaMin, 0, plot.deltaMax].map((delta) => <g key={`delta-${delta}`}>
-                  <line x1={PLOT.left} x2={PLOT.right} y1={plot.deltaY(delta)} y2={plot.deltaY(delta)} className="telemetry-grid-line" />
-                  <text x={PLOT.left - 12} y={plot.deltaY(delta) + 4} textAnchor="end" className="telemetry-axis-label">{delta.toFixed(2)}</text>
-                </g>)}
+                {[plot.deltaMin, 0, plot.deltaMax].map((delta) => {
+                  const y = plot.deltaY(delta)
+                  const crowdedWithZero = delta !== 0 && Math.abs(y - plot.deltaY(0)) < 14
+                  return <g key={`delta-${delta}`}>
+                    <line x1={PLOT.left} x2={PLOT.right} y1={y} y2={y} className="telemetry-grid-line" />
+                    {!crowdedWithZero && <text x={PLOT.left - 12} y={y + 4} textAnchor="end" className="telemetry-axis-label">{delta.toFixed(2)}</text>}
+                  </g>
+                })}
                 {[0, 0.25, 0.5, 0.75, 1].map((fraction) => <g key={`distance-${fraction}`}>
                   <line x1={plot.x(plot.distanceEnd * fraction)} x2={plot.x(plot.distanceEnd * fraction)} y1={PLOT.top} y2={PLOT.deltaBottom} className="telemetry-grid-line telemetry-grid-vertical" />
                   <text x={plot.x(plot.distanceEnd * fraction)} y="316" textAnchor="middle" className="telemetry-axis-label">{Math.round(plot.distanceEnd * fraction)}</text>

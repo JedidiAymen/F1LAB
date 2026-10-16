@@ -65,13 +65,25 @@ export function telemetryChannelPath(
 ): string {
   let connected = false
   const commands: string[] = []
+  let previousValue: number | null = null
   for (const sample of samples) {
     const value = channelValue(sample, channel, driver)
-    if (value === null) { connected = false; continue }
+    if (value === null) {
+      // A discrete value is held until the first missing observation, so draw
+      // that known interval to the null sample before starting a gap.
+      if (connected && channel.discrete && previousValue !== null) {
+        const [x] = project(sample.distance_m, previousValue)
+        commands.push(`H${x.toFixed(2)}`)
+      }
+      connected = false
+      previousValue = null
+      continue
+    }
     const [x, y] = project(sample.distance_m, value)
     commands.push(!connected ? `M${x.toFixed(2)} ${y.toFixed(2)}`
       : channel.discrete ? `H${x.toFixed(2)} V${y.toFixed(2)}` : `L${x.toFixed(2)} ${y.toFixed(2)}`)
     connected = true
+    previousValue = value
   }
   return commands.join(' ')
 }
