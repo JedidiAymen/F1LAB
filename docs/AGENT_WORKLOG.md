@@ -878,5 +878,15 @@ Final integrated checks (all exit 0): `uv run pytest -q` — 92 passed in
 `uv run mypy src/f1_racelab/session src/f1_racelab/api.py src/f1_racelab/data/openf1_qualifying.py --ignore-missing-imports`
 — 16 source files, no issues. In `apps/web`, `npm run test:unit` — 8 passed;
 `npm run build` and `npm run lint` passed. Build JS is 434.63 KB
-(142.33 KB gzip), CSS 78.65 KB (15.55 KB gzip). Milestone source commit and
-normal push are pending; the root agent will record publication proof.
+(142.33 KB gzip), CSS 78.65 KB (15.55 KB gzip). Milestone source commit `132e3aaff34f4c805485e54bbef24f39025aab03` was pushed normally to
+`origin/feat/foundation`; `git ls-remote` returned the identical SHA.
+
+
+### P2 publication proof
+
+Implementation commit `132e3aaff34f4c805485e54bbef24f39025aab03` includes source, tests and all eight
+required milestone documents. `git push origin feat/foundation` succeeded;
+`git ls-remote origin refs/heads/feat/foundation` returned the same SHA.
+Author: Aymen Jedidi; no assistant coauthor. Generated evidence remains local
+and ignored; the two unrelated user feature helpers remain untouched.
+Next: extend shared-clock telemetry beyond the Monza reference pair.

@@ -308,7 +308,7 @@ scoped four-file mypy, frontend build/lint and all 10 Chromium scenarios
 passed (23.8 s for Chromium).
 
 
-## R-010 — circuit trace selection and bounded browser observations (verified; publication pending)
+## R-010 — circuit trace selection and bounded browser observations (verified and published)
 
 Question: can measured-source display geometry and selected-driver context be
 made deterministic and auditable while observing synchronization and local
@@ -356,5 +356,5 @@ Final integrated checks (all exit 0): `uv run pytest -q` — 92 passed in
 `uv run mypy src/f1_racelab/session src/f1_racelab/api.py src/f1_racelab/data/openf1_qualifying.py --ignore-missing-imports`
 — 16 source files, no issues. In `apps/web`, `npm run test:unit` — 8 passed;
 `npm run build` and `npm run lint` passed. Build JS is 434.63 KB
-(142.33 KB gzip), CSS 78.65 KB (15.55 KB gzip). Milestone source commit and
-normal push are pending; the root agent will record publication proof.
+(142.33 KB gzip), CSS 78.65 KB (15.55 KB gzip). Milestone source commit `132e3aaff34f4c805485e54bbef24f39025aab03` was pushed normally to
+`origin/feat/foundation`; `git ls-remote` returned the identical SHA.

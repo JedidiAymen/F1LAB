@@ -389,7 +389,7 @@ For tutoring, read `QUALIFYING_PHASES.md`, `PREDICTION_LAB.md`,
 ## Latest P2 worktree — geometry, focused trail and observations
 
 Starting source/last published checkpoint: `1a5b7b4fa64ae3ceab0ab7cb6957c2331a5ce7b6` on
-`feat/foundation`. New work remains uncommitted and publication is pending.
+`feat/foundation`. The implementation is committed as `132e3aaff34f4c805485e54bbef24f39025aab03`, pushed normally to `origin/feat/foundation` and remote-verified.
 P1/P2 remain partial; strategy, what-if, live/radio and 3D remain not started.
 
 Done in source: typed approximate `CircuitGeometry` selection from one complete
@@ -424,7 +424,7 @@ one of three supported races, select a driver, play/pause and seek; the map
 shows a quality-marked trailing path and movement arrow when connected current
 movement exists. Opt into observations with `cd apps/web && npm run benchmark:replay`.
 See `REPLAY_GEOMETRY_AND_PERFORMANCE.md` for commands, provenance, evidence and
-remaining gaps. Next: publish the verified checkpoint; then expand telemetry coverage and evaluate
+remaining gaps. Next: expand telemetry coverage and evaluate
 licensed physical circuit geometry sources before declaring the P2 gate done.
 
 Final idle browser artifact:
@@ -459,5 +459,15 @@ Final integrated checks (all exit 0): `uv run pytest -q` — 92 passed in
 `uv run mypy src/f1_racelab/session src/f1_racelab/api.py src/f1_racelab/data/openf1_qualifying.py --ignore-missing-imports`
 — 16 source files, no issues. In `apps/web`, `npm run test:unit` — 8 passed;
 `npm run build` and `npm run lint` passed. Build JS is 434.63 KB
-(142.33 KB gzip), CSS 78.65 KB (15.55 KB gzip). Milestone source commit and
-normal push are pending; the root agent will record publication proof.
+(142.33 KB gzip), CSS 78.65 KB (15.55 KB gzip). Milestone source commit `132e3aaff34f4c805485e54bbef24f39025aab03` was pushed normally to
+`origin/feat/foundation`; `git ls-remote` returned the identical SHA.
+
+
+### P2 publication proof
+
+Implementation commit `132e3aaff34f4c805485e54bbef24f39025aab03` includes source, tests and all eight
+required milestone documents. `git push origin feat/foundation` succeeded;
+`git ls-remote origin refs/heads/feat/foundation` returned the same SHA.
+Author: Aymen Jedidi; no assistant coauthor. Generated evidence remains local
+and ignored; the two unrelated user feature helpers remain untouched.
+Next: extend shared-clock telemetry beyond the Monza reference pair.

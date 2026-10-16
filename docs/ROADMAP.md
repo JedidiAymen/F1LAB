@@ -33,7 +33,7 @@ The React app now has a three-race offline workstation. The full product
 inventory remains required; this is an early integrated slice.
 
 
-## Current P2 geometry and observation checkpoint (verified; publication pending)
+## Current P2 geometry and observation checkpoint (verified and published)
 
 The worktree now contains a versioned, quality-checked driving-line geometry
 contract, a selected-driver 12-second trail and estimated movement direction
@@ -43,6 +43,5 @@ Three packs were rebuilt from cached OpenF1 source. Offline CLI rebuild, replay/
 P1/P2 remain partial: physical circuit dimensions, pit-lane geometry, official
 timing-line location and broader rendering evidence are still required.
 
-Next: publish with source/manifest fingerprints, then expand
-telemetry coverage and evaluate a licensed source of physical circuit geometry.
+Next: expand telemetry coverage and evaluate a licensed source of physical circuit geometry.
 See `REPLAY_GEOMETRY_AND_PERFORMANCE.md` for this checkpoint's evidence.
