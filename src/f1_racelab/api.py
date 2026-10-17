@@ -11,7 +11,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
 from f1_racelab.models.prediction_lab import load_prediction_lab, prediction_event
@@ -20,6 +20,7 @@ from f1_racelab.strategy.optimizer import best_strategies, compare_strategies
 from f1_racelab.strategy.monte_carlo import mc_compare
 from f1_racelab.strategy.simulator import PitStop, Strategy
 from f1_racelab.strategy.whatif import branch as whatif_branch
+from f1_racelab.live.ingest import _registry as live_registry
 from f1_racelab.models.qualifying_phase_lab import (
     load_phase_prediction_lab,
     phase_prediction_event,
@@ -578,6 +579,69 @@ def create_app(
             "actual_laps": [_lap_dict(l) for l in result.actual_laps],
             "counterfactual_laps": [_lap_dict(l) for l in result.counterfactual_laps],
             "simulation_limits": list(result.simulation_limits),
+        }
+
+    # ------------------------------------------------------------------ #
+    # P7 Live / simulated-live WebSocket endpoint                         #
+    # ------------------------------------------------------------------ #
+
+    @app.websocket("/ws/live/{slug}")
+    async def live_ws(
+        websocket: WebSocket,
+        slug: str,
+        speed: float = Query(default=1.0, ge=0.1, le=16.0),
+        start: float = Query(default=0.0, ge=0.0),
+    ) -> None:
+        """Simulated-live WebSocket fan-out for a session.
+
+        Plays back the cached replay pack at real-time speed (adjustable via
+        the 'speed' query parameter).  All subscribers share one ingest task.
+        Reconnect delivers the current snapshot immediately.
+
+        The client MUST display the SIMULATED LIVE badge whenever mode='simulated'.
+        Every message contains a 'badge' field with the required label.
+        """
+        if slug not in SESSIONS:
+            await websocket.close(code=4004, reason='Unknown session')
+            return
+        await websocket.accept()
+        try:
+            session = await live_registry.get_or_create(slug, speed=speed)
+            async with session.subscribe() as sub:
+                async for snapshot in sub:
+                    try:
+                        await websocket.send_json(snapshot)
+                    except Exception:
+                        break
+        except WebSocketDisconnect:
+            pass
+        except Exception as exc:
+            try:
+                await websocket.send_json({
+                    'type': 'error',
+                    'session_slug': slug,
+                    'detail': str(exc),
+                })
+            except Exception:
+                pass
+        finally:
+            try:
+                await websocket.close()
+            except Exception:
+                pass
+
+    @app.get("/api/v1/live/{slug}/status")
+    async def live_status(slug: str) -> dict:
+        """Check if a live session is running and how many clients are connected."""
+        if slug not in SESSIONS:
+            raise HTTPException(status_code=404, detail='Unknown session')
+        s = live_registry._sessions.get(slug)
+        return {
+            'session_slug': slug,
+            'running': s._running if s else False,
+            'subscriber_count': s.subscriber_count if s else 0,
+            'mode': s.mode if s else None,
+            'session_time_seconds': round(s._session_time, 3) if s else None,
         }
 
     return app
