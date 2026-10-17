@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import {
   channelValue, comparisonCursorAtSessionTime, referenceLapStartSessionSeconds,
   TELEMETRY_CHANNELS, telemetryChannelPath,
@@ -11,13 +11,14 @@ const PLOT = { left: 74, right: 980, top: 40, bottom: 166, deltaTop: 218, deltaB
 const formatSeconds = (value: number) => `${value >= 0 ? '+' : ''}${value.toFixed(3)} s`
 const formatValue = (value: number | null) => value === null ? 'Unavailable' : Number.isInteger(value) ? String(value) : value.toFixed(1)
 
-export function TelemetryPanel({ seconds, clockOriginUtc, comparison, available, loading, error, onSeek }: {
+export function TelemetryPanel({ seconds, clockOriginUtc, comparison, available, loading, error, controls, onSeek }: {
   seconds: number
   clockOriginUtc: string
   comparison: LapComparison | null
   available: boolean
   loading: boolean
   error: string | null
+  controls?: ReactNode
   onSeek: (seconds: number) => void
 }) {
   const [channelId, setChannelId] = useState<TelemetryChannelId>('speed')
@@ -53,7 +54,10 @@ export function TelemetryPanel({ seconds, clockOriginUtc, comparison, available,
   return (
     <section className="telemetry-panel panel" aria-label="Telemetry comparison" data-testid="telemetry-panel"
       data-session-time={seconds} data-cursor-distance={cursor?.distance_m.toFixed(3) ?? ''}
-      data-cursor-visible={cursor ? 'true' : 'false'} data-channel={channelId}>
+      data-cursor-visible={cursor ? 'true' : 'false'} data-channel={channelId}
+      data-reference-driver={comparison?.lap_a.driver_number ?? ''} data-reference-lap={comparison?.lap_a.lap_number ?? ''}
+      data-comparison-driver={comparison?.lap_b.driver_number ?? ''} data-comparison-lap={comparison?.lap_b.lap_number ?? ''}
+      aria-busy={loading}>
       <div className="panel-heading telemetry-heading">
         <div>
           <span className="eyebrow">LAP ANALYSIS · HISTORICAL SOURCE DATA</span>
@@ -61,6 +65,7 @@ export function TelemetryPanel({ seconds, clockOriginUtc, comparison, available,
         </div>
         <span className="panel-tag">SPEED-INTEGRATED · ESTIMATED</span>
       </div>
+      {controls}
       {loading ? <p className="telemetry-empty">Loading cached telemetry comparison…</p>
         : error ? <p className="telemetry-empty" role="status">Telemetry comparison unavailable: {error}</p>
         : !available ? <p className="telemetry-empty">Build this session’s local comparison with the documented telemetry command.</p>

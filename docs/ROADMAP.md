@@ -89,3 +89,17 @@ and crowded mobile delta labels. Both are on `origin/feat/foundation`;
 `git ls-remote origin refs/heads/feat/foundation` returned `9a13f6eef679c417fc3bc6a8beddd320504dbc06`. Git
 used Aymen Jedidi's repository identity, with no assistant coauthor. The two
 unrelated user helpers under `ml/features/` remain untracked and untouched.
+
+
+## P3 lap library and driver/lap selection (partial P3 advance)
+
+A per-session offline lap library now indexes each driver's available cached
+laps. Content-addressed gzip files hold validated `LapTelemetry` instances;
+a manifest published only after all referenced files exist records source hashes,
+pit-check status and rejected-lap reasons. The UI exposes a `TelemetrySelection`
+control above the chart so the user can pick any available driver/lap pair and
+apply it without touching the replay clock. The API's `/telemetry/laps` catalog
+route returns the manifest; the existing `/telemetry/lap-comparison` route now
+accepts `driver_a/lap_a/driver_b/lap_b` query params for library-backed
+comparisons. This advances arbitrary lap selection; cross-year, sector and wider
+driver coverage remain incomplete.

@@ -1,19 +1,24 @@
 # F1LAB handoff for the next ChatGPT session
 
-**Status at 2026-10-16 UTC:** qualifying research benchmark complete; a
+**Status at 2026-10-17 UTC:** qualifying research benchmark complete; a
 historical Prediction Lab is now integrated; three real historical race packs
 build, reconcile and play through one local API/UI:
 Monza 2025, Monaco 2023 and Brazil 2024. Stored packs/events are schema 2;
 current `RaceState` output is schema 3 with source-time weather, conservative
-global track signals and as-of tyre stint history. Fourteen actual Chromium
-browser scenarios pass, and desktop/mobile screenshots were inspected. P1/P2
+global track signals and as-of tyre stint history. Fifteen actual Chromium
+browser scenarios pass (including one that selects a new driver/lap pair from
+the UI), and desktop/mobile screenshots were inspected. P1/P2
 remain partial. Versioned approximate driving-line geometry, a selected-driver
 12-second trail/direction and fingerprinted local browser observations now
-exist; physical circuit geometry remains incomplete. Three real two-lap telemetry comparisons (Monza/Monaco/Brazil) now expose
-speed, throttle, brake source value, RPM, gear and DRS plus persistent time
-delta through the local API/UI; their cursor follows canonical replay time. P3/P4 remain partial; a three-phase historical qualifying lab is now
-integrated, while exact feature publication timestamps, calibration, arbitrary comparison selection and wider
-telemetry analysis remain incomplete. The overall product goal is far from complete.
+exist; physical circuit geometry remains incomplete. Three-race six-channel
+telemetry comparisons (Monza/Monaco/Brazil) now expose speed, throttle, brake
+source value, RPM, gear and DRS plus persistent time delta through the local
+API/UI. A full per-session, per-driver, per-lap lap library is built offline
+from cached source; arbitrary driver/lap pairs can be selected and applied
+through the UI without changing the replay clock. P3/P4 remain partial; a
+three-phase historical qualifying lab is integrated, while exact feature
+publication timestamps, calibration and cross-year sector comparisons remain
+incomplete. The overall product goal is far from complete.
 Telemetry source starts at `89351502ccb6389c25886d18022430f2ce6319f8`, with comparison
 foundation commit `2ac01012c780552f26bd9504f88c9cac87541000` and docs checkpoint
 `10b53fd4905a6a22ad94ac249dc9632ce016845e` pushed and remote-verified. The
@@ -69,16 +74,19 @@ The latest Prediction Lab implementation is commit
   before/exact-time checks, and verifies 14 reviewed global signal boundaries.
   Rainfall reports are presence only; no wet-surface or intensity estimate is
   shown. Unknown restarts and ending notices do not imply green.
-- **Partial:** Monza telemetry contracts, a source-hashed artifact, local
-  API endpoint and speed/delta panel exist. The cursor derives from canonical
-  `RaceState.session_time_seconds`; the UI has no independent telemetry clock.
-  Distance is speed-integrated and estimated, not GPS/surveyed, and current
-  coverage is only one two-driver lap pair.
+- **Partial:** Three-race six-channel telemetry with a shared-clock cursor.
+  Per-session lap library (content-addressed gzip, manifest validated against
+  source hashes) supports arbitrary driver/lap selection from the UI without
+  contacting any provider. Monza has 2 available drivers (VER/NOR) with 22/23
+  cached laps; Monaco and Brazil each have 2 available drivers (VER/SAI or
+  VER/OCO) with ~45–61 laps each. Other drivers lack cached car_data; their
+  unavailable status is labelled. Distance is speed-integrated and estimated.
 - **Not done:** after-FP1/after-FP2 forecasts, per-feature observation-time
   lineage and probability calibration; surveyed/full geometry and measured
-  rendering performance; retirement-time handling; wider telemetry/lap/channel
-  coverage; strategy, what-if, live/radio, 3D, CI and
-  storage/schema-export hardening. The full product goal remains active.
+  rendering performance; retirement-time handling; cross-year/sector
+  telemetry comparisons; wider driver car_data caching; strategy, what-if,
+  live/radio, 3D, CI and storage/schema-export hardening. The full product
+  goal remains active.
 
 ## Why the provider changed
 

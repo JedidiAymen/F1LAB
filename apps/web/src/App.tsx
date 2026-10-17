@@ -23,6 +23,8 @@ import { PlaybackClock } from '@/lib/playback-clock'
 import { WeatherPanel } from '@/components/WeatherPanel'
 import { StintPanel } from '@/components/StintPanel'
 import { TelemetryPanel } from '@/components/TelemetryPanel'
+import { TelemetrySelection } from '@/components/TelemetrySelection'
+import { initialTelemetrySelection, telemetrySelectionQuery, type TelemetryLapLibrary, type TelemetrySelection as TelemetrySelectionValue } from '@/lib/telemetry-selection'
 import { PredictionLab } from '@/components/PredictionLab'
 import { TrackMap } from '@/components/TrackMap'
 import type { CircuitGeometry, LocationContext } from '@/lib/circuit-geometry'
@@ -142,6 +144,10 @@ function ReplayWorkspace({
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [telemetryComparison, setTelemetryComparison] = useState<LapComparison | null>(null)
   const [telemetryError, setTelemetryError] = useState<string | null>(null)
+  const [telemetryLibrary, setTelemetryLibrary] = useState<TelemetryLapLibrary | null>(null)
+  const [telemetryLibraryError, setTelemetryLibraryError] = useState<string | null>(null)
+  const [telemetryRequest, setTelemetryRequest] = useState<{ selection: TelemetrySelectionValue | null; revision: number }>({ selection: null, revision: 0 })
+  const telemetryController = useRef<AbortController | null>(null)
   const clock = useRef(new PlaybackClock(0))
   const requestId = useRef(0)
 
@@ -166,13 +172,41 @@ function ReplayWorkspace({
     return () => controller.abort()
   }, [base])
 
-  const telemetryAvailable =
+  const referenceTelemetryAvailable =
     manifest?.telemetry_comparisons.some((comparison) => comparison.available) ?? false
+  const telemetryInitialSelection = telemetryLibrary ? initialTelemetrySelection(telemetryLibrary) : null
+  const telemetryAvailable = referenceTelemetryAvailable || !!telemetryInitialSelection
   const telemetryLoading = telemetryAvailable && !telemetryComparison && !telemetryError
+
   useEffect(() => {
-    if (!manifest || !telemetryAvailable) return
+    if (!manifest) return
     const controller = new AbortController()
-    fetch(`${base}/telemetry/lap-comparison`, { signal: controller.signal })
+    fetch(`${base}/telemetry/laps`, { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error((await response.json()).detail ?? 'Lap library unavailable')
+        return response.json()
+      })
+      .then((data: TelemetryLapLibrary) => {
+        if (controller.signal.aborted) return
+        if (data.session_slug !== slug || data.session_key !== Number(manifest.session.provider_key.replace(/^openf1:/, ''))) throw new Error('Lap library session does not match this replay')
+        setTelemetryLibrary(data)
+        const selection = initialTelemetrySelection(data)
+        if (!referenceTelemetryAvailable && selection) {
+          setTelemetryRequest({ selection, revision: 0 })
+        }
+      })
+      .catch((e) => {
+        if (!controller.signal.aborted) setTelemetryLibraryError(String(e))
+      })
+    return () => controller.abort()
+  }, [base, manifest, referenceTelemetryAvailable, slug])
+
+  useEffect(() => {
+    if (!manifest || (!referenceTelemetryAvailable && !telemetryRequest.selection)) return
+    const controller = new AbortController()
+    telemetryController.current = controller
+    const query = telemetryRequest.selection ? `?${telemetrySelectionQuery(telemetryRequest.selection)}` : ''
+    fetch(`${base}/telemetry/lap-comparison${query}`, { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) {
           const body = await response.json()
@@ -181,13 +215,27 @@ function ReplayWorkspace({
         return response.json()
       })
       .then((data: LapComparison) => {
+        if (controller.signal.aborted) return
+        const selection = telemetryRequest.selection
+        if (data.session_key !== Number(manifest.session.provider_key.replace(/^openf1:/, ''))
+          || (selection && (data.lap_a.driver_number !== selection.driver_a || data.lap_a.lap_number !== selection.lap_a
+            || data.lap_b.driver_number !== selection.driver_b || data.lap_b.lap_number !== selection.lap_b))) {
+          throw new Error('Comparison response does not match the requested laps')
+        }
         setTelemetryComparison(data)
       })
       .catch((e) => {
-        if (e.name !== 'AbortError') setTelemetryError(String(e))
+        if (!controller.signal.aborted) setTelemetryError(String(e))
       })
     return () => controller.abort()
-  }, [base, manifest, telemetryAvailable])
+  }, [base, manifest, referenceTelemetryAvailable, telemetryRequest])
+
+  const applyTelemetrySelection = (selection: TelemetrySelectionValue) => {
+    telemetryController.current?.abort()
+    setTelemetryComparison(null)
+    setTelemetryError(null)
+    setTelemetryRequest((current) => ({ selection, revision: current.revision + 1 }))
+  }
 
   const seek = useCallback((seconds: number, pause = false) => {
     const now = performance.now()
@@ -616,7 +664,17 @@ function ReplayWorkspace({
               available={telemetryAvailable}
               loading={telemetryLoading}
               error={telemetryError}
-              onSeek={(seconds) => seek(seconds, true)}
+              controls={telemetryLibrary && telemetryInitialSelection ? <TelemetrySelection
+                library={telemetryLibrary}
+                initialSelection={telemetryInitialSelection}
+                onApply={applyTelemetrySelection}
+              /> : <p className="telemetry-selection-note" role="status">{telemetryLibraryError
+                ? `Selectable lap library unavailable: ${telemetryLibraryError}. The saved reference comparison remains available when cached.`
+                : telemetryLibrary ? 'No eligible pairs in this session’s cached lap library.' : 'Loading selectable lap library…'}</p>}
+              onSeek={(seconds) => {
+                if (telemetryComparison) setSelectedId(String(telemetryComparison.lap_a.driver_number))
+                seek(seconds, true)
+              }}
             />
             <section className="transport panel" aria-label="Replay transport">
               <div className="transport-main">

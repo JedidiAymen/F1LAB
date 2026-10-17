@@ -1002,3 +1002,88 @@ and crowded mobile delta labels. Both are on `origin/feat/foundation`;
 `git ls-remote origin refs/heads/feat/foundation` returned `9a13f6eef679c417fc3bc6a8beddd320504dbc06`. Git
 used Aymen Jedidi's repository identity, with no assistant coauthor. The two
 unrelated user helpers under `ml/features/` remain untracked and untouched.
+
+
+## 2026-10-17 UTC — per-session lap library and driver/lap selection UI (P3 partial advance)
+
+- **Starting source SHA:** `9a13f6eef679c417fc3bc6a8beddd320504dbc06` on
+  `feat/foundation`, synchronized with `origin/feat/foundation`. The two
+  pre-existing user helper files under `ml/features/` were left untouched.
+- **Scope:** build an offline, content-addressed lap library for all three
+  sessions; add a driver/lap selection control to the Telemetry panel; wire
+  the new API catalog route and extend the existing comparison route to accept
+  arbitrary selections from the library.
+- **Modified source paths and symbols:**
+  `src/f1_racelab/telemetry/lap_library.py` defines `LapEntry`,
+  `DriverEntry`, `LapSelection`, `LapLibrary`, `build_library`,
+  `load_library`, `load_lap` and `compare_library_laps`; the builder indexes
+  cached car_data timestamps, validates each lap's bounded window and writes
+  a deterministic gzip with a content-addressed filename; the manifest is
+  published atomically only after all referenced files exist.
+  `src/f1_racelab/telemetry/contracts.py` relaxes `source_hashes` minimum
+  from 3 to 2 to allow same-driver comparisons that share one car_data source.
+  `src/f1_racelab/api.py:create_app` adds `telemetry_library_roots` override,
+  `GET /api/v1/replay/{slug}/telemetry/laps` and extends the existing
+  `lap-comparison` route to validate and serve library-backed arbitrary pairs.
+  `apps/web/src/lib/telemetry-selection.ts` defines TypeScript types and
+  `initialTelemetrySelection`, `telemetrySelectionError`, `changeTelemetryDriver`
+  and `telemetrySelectionQuery`.
+  `apps/web/src/components/TelemetrySelection.tsx` renders driver/lap dropdowns
+  and "Compare laps" with a validation note.
+  `apps/web/src/App.tsx` fetches the library on session change, initializes a
+  `telemetryRequest` state and calls `applyTelemetrySelection`; the
+  `TelemetryPanel` receives the selector as a `controls` slot.
+  `apps/web/src/components/TelemetryPanel.tsx` accepts `controls?: ReactNode`
+  and exposes `data-reference-driver/lap` and `data-comparison-driver/lap`
+  attributes.
+  `apps/web/src/App.css` adds layout rules for the selection group.
+  `tests/test_telemetry_library.py` covers build, roundtrip, pit filtering,
+  same-driver comparison, reverse delta and manifest security mutations.
+  `tests/test_telemetry_library_api.py` covers catalog/selection HTTP routes.
+  `apps/web/tests/telemetry-selection.test.ts` covers eligibility, driver
+  change and query serialization.
+  `apps/web/e2e/replay.spec.ts` adds the selection scenario and fixes the
+  Monaco pit test's `role="status"` conflict.
+- **Algorithm/units:** the builder sorts car_data by timestamp and selects a
+  window `[lap_start - gap, lap_end + gap]` (gap = 1.0 s default), delegating
+  to `build_lap_telemetry`; rejected laps record the reason string. Pit-in
+  check uses cached `pit` data when available, marking status
+  `checked_not_pit_in` or `unverified`. `compare_library_laps` includes pit
+  source hash only when it was used for both laps' sessions. Manifest filename
+  encodes `driver-{N}-lap-{M}-{sha256}.json.gz`; content hash guards against
+  replay and substitution.
+- **Real evidence:** Monza 2025: 2 available drivers (1/4) with 22/23 accepted
+  laps; 18 total rejected across pit/pit-out/gap reasons; default selection
+  driver 1 L50 vs driver 4 L50 (the existing reference comparison). Monaco
+  2023: 2 available drivers (1/31) with 61/61 accepted laps. Brazil 2024: 2
+  available drivers (1/31) with 45/46 accepted laps. Other drivers in all
+  sessions report `car_data source is not cached`. Libraries were built offline
+  from existing cached provider data; no new network request was made.
+- **Accessibility fix:** `TelemetrySelection`'s informational paragraph
+  (driver count) no longer carries `role="status"`; only the validation error
+  case does. This resolved a `getByRole('status')` count conflict with the
+  Monaco pit unavailable note in the existing Chromium test.
+- **Verification:**
+  `.venv/bin/pytest -q` — 123 passed in 4.35 s, one existing Starlette/httpx
+  deprecation warning.
+  `.venv/bin/ruff check src/f1_racelab tests` — clean (corrected import order
+  in `test_telemetry_library_api.py`).
+  `mypy src/f1_racelab/telemetry src/f1_racelab/session src/f1_racelab/api.py
+  --ignore-missing-imports` — 21 source files, no issues.
+  `npm run test:unit` — 16 passed; `npm run lint` and `npm run build` passed
+  (JS 458.09 KB / 149.53 KB gzip, CSS 80.28 KB / 15.81 KB gzip).
+  `npm run test:e2e` — 15 Chromium scenarios passed in 36 s, including the
+  new selection scenario and all prior 14.
+- **Failure and fix:** initial E2E test selected the wrong dropdown (driver
+  instead of lap) causing a 30-second timeout. Corrected to use `combos.nth(1)`
+  (the side-A lap dropdown). A prior Ruff failure corrected import block order
+  in the API test file.
+- **Limits:** only VER and NOR/SAI/OCO have cached car_data in these three
+  sessions; other drivers are labelled unavailable. Lap distance remains
+  speed-integrated and estimated. No cross-year or sector comparisons exist.
+  The `LapComparison.source_hashes` minimum of 2 allows same-driver
+  single-source comparisons; the prior minimum-3 requirement was not a
+  stated contract invariant and matched an implicit three-source assumption
+  that does not apply to same-driver pairs.
+- **Commit/push:** commit SHA and push state recorded after normal push.
+  Author: Aymen Jedidi; no assistant coauthor trailer.

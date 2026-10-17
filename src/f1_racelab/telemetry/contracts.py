@@ -110,7 +110,7 @@ class LapComparison(BaseModel):
     distance_quality: Literal["estimated"] = "estimated"
     sample_spacing_m: float = Field(gt=0)
     common_distance_end_m: float = Field(gt=0)
-    source_hashes: dict[str, str] = Field(min_length=3)
+    source_hashes: dict[str, str] = Field(min_length=2)
     samples: tuple[DistanceComparisonPoint, ...] = Field(min_length=2)
 
     @model_validator(mode="after")

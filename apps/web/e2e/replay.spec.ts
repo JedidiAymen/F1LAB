@@ -487,3 +487,35 @@ for (const session of [
     }
   })
 }
+
+test('telemetry selection UI shows available drivers and applies a different lap pair', async ({
+  page, request,
+}, testInfo) => {
+  const panel = page.getByRole('region', { name: 'Telemetry comparison' })
+  const selector = page.getByRole('group', { name: 'Choose telemetry laps' })
+  await expect(selector).toBeVisible()
+  // Default pair for Monza is #1 L50 vs #4 L50.
+  await expect(panel.getByRole('heading', { name: '#1 L50 vs #4 L50', exact: true })).toBeVisible()
+  // Library catalog API: only drivers with cached car_data are available.
+  const catalogResponse = await request.get('/api/v1/replay/monza-2025/telemetry/laps')
+  expect(catalogResponse.status()).toBe(200)
+  const library = await catalogResponse.json()
+  expect(library.session_slug).toBe('monza-2025')
+  expect(library.drivers.filter((d: { available: boolean }) => d.available).length).toBeGreaterThanOrEqual(2)
+  // Change side-A lap using the lap dropdown (second combobox in side-A pair, overall index 1).
+  // Structure: [driverA, lapA, driverB, lapB] — four comboboxes in order.
+  const combos = selector.getByRole('combobox')
+  await combos.nth(1).click()
+  await page.getByRole('option').filter({ hasText: /L10/ }).first().click()
+  await selector.getByRole('button', { name: 'Compare laps' }).click()
+  // Panel attributes and heading update to reflect the new selected pair.
+  await expect(panel).toHaveAttribute('data-reference-driver', '1')
+  await expect(panel).toHaveAttribute('data-reference-lap', '10')
+  await expect(panel).toHaveAttribute('data-comparison-driver', '4')
+  await expect(panel).toHaveAttribute('data-comparison-lap', '50')
+  await expect(panel.getByRole('heading', { name: '#1 L10 vs #4 L50', exact: true })).toBeVisible()
+  // Replay time is unchanged; the cursor jumps to the new reference lap start.
+  await panel.getByRole('button', { name: 'Jump to reference lap' }).click()
+  await expect(panel).toHaveAttribute('data-cursor-visible', 'true')
+  await page.screenshot({ path: testInfo.outputPath('telemetry-selection.png'), fullPage: true })
+})

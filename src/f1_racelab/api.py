@@ -25,6 +25,12 @@ from f1_racelab.session.location_history import build_location_context
 from f1_racelab.session.replay_source import ReplaySource
 from f1_racelab.telemetry.artifacts import COMPARISONS
 from f1_racelab.telemetry.contracts import LapComparison
+from f1_racelab.telemetry.lap_library import (
+    LIBRARY_ROOT,
+    LapSelection,
+    compare_library_laps,
+    load_library,
+)
 
 DEFAULT_PACK = DEFAULT_SESSION.pack_path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -52,6 +58,7 @@ def create_app(
     *,
     pack_paths: dict[str, Path] | None = None,
     telemetry_comparison_paths: dict[str, Path] | None = None,
+    telemetry_library_roots: dict[str, Path] | None = None,
     qualifying_prediction_path: Path | None = None,
     qualifying_phase_prediction_path: Path | None = None,
 ) -> FastAPI:
@@ -60,6 +67,8 @@ def create_app(
     paths.update(pack_paths or {})
     telemetry_paths = {slug: comparison.path for slug, comparison in COMPARISONS.items()}
     telemetry_paths.update(telemetry_comparison_paths or {})
+    library_roots = {slug: LIBRARY_ROOT / slug for slug in SESSIONS}
+    library_roots.update(telemetry_library_roots or {})
     prediction_path = Path(qualifying_prediction_path or DEFAULT_PREDICTION_ARTIFACTS)
     phase_prediction_path = Path(
         qualifying_phase_prediction_path or DEFAULT_PHASE_PREDICTION_ARTIFACTS
@@ -146,8 +155,50 @@ def create_app(
             ).model_dump(mode="json")
         return payload
 
+    def telemetry_library(slug: str):
+        if slug not in SESSIONS:
+            raise HTTPException(status_code=404, detail="Unknown replay session")
+        try:
+            return load_library(library_roots[slug], slug)
+        except (OSError, ValueError, KeyError) as exc:
+            raise HTTPException(status_code=503, detail="Telemetry lap library unavailable or invalid. "
+                                "Run python -m f1_racelab.telemetry.lap_library --all --offline. "
+                                f"{exc}") from exc
+
+    @app.get("/api/v1/replay/{slug}/telemetry/laps")
+    def telemetry_laps(slug: str) -> dict:
+        return telemetry_library(slug).model_dump(mode="json")
+
     @app.get("/api/v1/replay/{slug}/telemetry/lap-comparison")
-    def lap_comparison(slug: str) -> dict:
+    def lap_comparison(
+        slug: str, driver_a: int | None = Query(default=None, gt=0),
+        lap_a: int | None = Query(default=None, ge=1),
+        driver_b: int | None = Query(default=None, gt=0),
+        lap_b: int | None = Query(default=None, ge=1),
+    ) -> dict:
+        if slug not in SESSIONS:
+            raise HTTPException(status_code=404, detail="Unknown replay session")
+        selection_values = (driver_a, lap_a, driver_b, lap_b)
+        if any(value is not None for value in selection_values):
+            if any(value is None for value in selection_values):
+                raise HTTPException(status_code=422, detail="All four driver/lap selections are required")
+            if (driver_a, lap_a) == (driver_b, lap_b):
+                raise HTTPException(status_code=422, detail="A lap cannot be compared with itself")
+            library = telemetry_library(slug)
+            assert driver_a is not None and lap_a is not None and driver_b is not None and lap_b is not None
+            selection = LapSelection(driver_a=driver_a, lap_a=lap_a, driver_b=driver_b, lap_b=lap_b)
+            try:
+                # Resolve unknown selections before opening any artifact files.
+                library.entry(selection.driver_a, selection.lap_a)
+                library.entry(selection.driver_b, selection.lap_b)
+            except KeyError as exc:
+                raise HTTPException(status_code=404, detail=str(exc)) from exc
+            try:
+                comparison = compare_library_laps(library_roots[slug], library, selection)
+            except (OSError, ValueError, KeyError, EOFError) as exc:
+                raise HTTPException(status_code=503, detail=f"Invalid telemetry lap artifact: {exc}") from exc
+            return comparison.model_dump(mode="json", exclude={"lap_a": {"points"}, "lap_b": {"points"}})
+
         if slug not in SESSIONS:
             raise HTTPException(status_code=404, detail="Unknown replay session")
         path = telemetry_paths.get(slug)

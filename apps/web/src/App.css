@@ -1141,6 +1141,14 @@ button:focus-visible {
   border-color: #77927c;
   color: #b6d9bb;
 }
+.telemetry-selection { padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.telemetry-selection-controls { display: flex; gap: 14px; flex-wrap: wrap; align-items: end; }
+.telemetry-selection-pair { display: flex; gap: 10px; flex: 1 1 300px; min-width: 0; }
+.telemetry-selection-field { display: flex; flex: 1 1 0; min-width: 0; flex-direction: column; gap: 6px; }
+.telemetry-selection-field > span { color: var(--muted-foreground); font-size: 11px; }
+.telemetry-selection-field [data-slot='select-trigger'] { width: 100%; min-width: 0; }
+.telemetry-selection-field [data-slot='select-value'] { overflow: hidden; text-overflow: ellipsis; }
+.telemetry-selection-note { margin: 8px 0 0; color: var(--muted-foreground); font-size: 11px; line-height: 1.5; }
 @media (max-width: 750px) {
   .session-id {
     display: flex;
