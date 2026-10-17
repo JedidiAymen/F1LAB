@@ -32,6 +32,10 @@ The latest Prediction Lab implementation is commit
 `8a2c06c898e93f0083058a7abb3bcbd5b3f9b606`, pushed and remote-verified on
 `origin/feat/foundation`; the owner's identity is the author.
 
+The lap library and selection UI implementation is commit
+`32db149737d56d5e32147fdde5080820cf9eb499`, pushed and remote-verified on
+`origin/feat/foundation`.
+
 ## What exists and what does not
 
 - **Done before this run:** Monza 2025 practice/qualifying exploration; Sprint 2

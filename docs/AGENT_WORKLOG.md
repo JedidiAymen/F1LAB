@@ -1085,5 +1085,8 @@ unrelated user helpers under `ml/features/` remain untracked and untouched.
   single-source comparisons; the prior minimum-3 requirement was not a
   stated contract invariant and matched an implicit three-source assumption
   that does not apply to same-driver pairs.
-- **Commit/push:** commit SHA and push state recorded after normal push.
-  Author: Aymen Jedidi; no assistant coauthor trailer.
+- **Commit/push:** implementation commit
+  `32db149737d56d5e32147fdde5080820cf9eb499` pushed normally to
+  `origin/feat/foundation`; `git ls-remote` returned the identical SHA.
+  Author: Aymen Jedidi; no assistant coauthor trailer. The two unrelated
+  user helpers under `ml/features/` remain untracked.
