@@ -27,6 +27,7 @@ import { TelemetrySelection } from '@/components/TelemetrySelection'
 import { initialTelemetrySelection, telemetrySelectionQuery, type TelemetryLapLibrary, type TelemetrySelection as TelemetrySelectionValue } from '@/lib/telemetry-selection'
 import { PredictionLab } from '@/components/PredictionLab'
 import StrategyLab from '@/components/StrategyLab'
+import WhatIfLab from '@/components/WhatIfLab'
 import { TrackMap } from '@/components/TrackMap'
 import type { CircuitGeometry, LocationContext } from '@/lib/circuit-geometry'
 import type { LapComparison } from '@/lib/telemetry-comparison'
@@ -130,12 +131,14 @@ function ReplayWorkspace({
   onSessionChange,
   onOpenPrediction,
   onOpenStrategy,
+  onOpenWhatIf,
 }: {
   slug: string
   sessions: CatalogEntry[]
   onSessionChange: (slug: string) => void
   onOpenPrediction: () => void
   onOpenStrategy?: () => void
+  onOpenWhatIf?: () => void
 }) {
   const base = `/api/v1/replay/${slug}`
   const [manifest, setManifest] = useState<Manifest | null>(null)
@@ -380,6 +383,11 @@ function ReplayWorkspace({
           {onOpenStrategy && (
             <button className="prediction-nav-button" type="button" onClick={onOpenStrategy}>
               <FlagTriangleRight size={13} /> Strategy Lab
+            </button>
+          )}
+          {onOpenWhatIf && (
+            <button className="prediction-nav-button" type="button" onClick={onOpenWhatIf}>
+              <CircleAlert size={13} /> What-If
             </button>
           )}
         </div>
@@ -799,7 +807,7 @@ function ReplayWorkspace({
 function App() {
   const [sessions, setSessions] = useState<CatalogEntry[]>([])
   const [slug, setSlug] = useState('monza-2025')
-  const [workspace, setWorkspace] = useState<'replay' | 'prediction' | 'strategy'>('replay')
+  const [workspace, setWorkspace] = useState<'replay' | 'prediction' | 'strategy' | 'whatif'>('replay')
   useEffect(() => {
     const controller = new AbortController()
     fetch('/api/v1/replays', { signal: controller.signal })
@@ -820,6 +828,14 @@ function App() {
       <StrategyLab sessionSlug={slug} baseUrl={window.location.origin} />
     </div>
   )
+  if (workspace === 'whatif') return (
+    <div style={{ padding: 16 }}>
+      <button onClick={() => setWorkspace('replay')} style={{ marginBottom: 12, background: 'none', border: '1px solid #555', borderRadius: 4, color: '#aaa', cursor: 'pointer', padding: '4px 10px' }}>
+        ← Back
+      </button>
+      <WhatIfLab sessionSlug={slug} baseUrl={window.location.origin} />
+    </div>
+  )
   return <ReplayWorkspace
     key={slug}
     slug={slug}
@@ -827,6 +843,7 @@ function App() {
     onSessionChange={setSlug}
     onOpenPrediction={() => setWorkspace('prediction')}
     onOpenStrategy={() => setWorkspace('strategy')}
+    onOpenWhatIf={() => setWorkspace('whatif')}
   />
 }
 

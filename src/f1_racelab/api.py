@@ -19,6 +19,7 @@ from f1_racelab.strategy.models import CIRCUIT_COMPOUNDS, RACE_SPECS
 from f1_racelab.strategy.optimizer import best_strategies, compare_strategies
 from f1_racelab.strategy.monte_carlo import mc_compare
 from f1_racelab.strategy.simulator import PitStop, Strategy
+from f1_racelab.strategy.whatif import branch as whatif_branch
 from f1_racelab.models.qualifying_phase_lab import (
     load_phase_prediction_lab,
     phase_prediction_event,
@@ -502,6 +503,81 @@ def create_app(
                 }
                 for i, r in enumerate(results)
             ],
+        }
+
+    # ------------------------------------------------------------------ #
+    # P6 What-if / counterfactual branch endpoint                         #
+    # ------------------------------------------------------------------ #
+
+    @app.post("/api/v1/strategy/{slug}/whatif")
+    def strategy_whatif(slug: str, body: dict) -> dict:
+        """Fork a real race at a chosen lap and compare actual vs counterfactual.
+
+        Body: {
+          "driver_number": 1,
+          "fork_lap": 30,
+          "actual_strategy": {"start_compound": "MEDIUM",
+                              "pit_stops": [{"lap": 37, "compound": "HARD"}]},
+          "counterfactual_strategy": {"start_compound": "MEDIUM",
+                                      "pit_stops": [{"lap": 25, "compound": "HARD"}]}
+        }
+        """
+        if slug not in RACE_SPECS:
+            raise HTTPException(status_code=404, detail=f"No strategy model for session {slug!r}")
+        try:
+            driver_number = int(body.get("driver_number", 1))
+            fork_lap = int(body["fork_lap"])
+
+            def _parse_strategy(raw: dict, driver: int) -> Strategy:
+                return Strategy(
+                    driver_number=driver,
+                    start_compound=raw["start_compound"],
+                    pit_stops=tuple(
+                        PitStop(lap=p["lap"], compound=p["compound"])
+                        for p in raw.get("pit_stops", [])
+                    ),
+                )
+
+            actual = _parse_strategy(body["actual_strategy"], driver_number)
+            counterfactual = _parse_strategy(body["counterfactual_strategy"], driver_number)
+        except (KeyError, TypeError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail=f"Invalid what-if payload: {exc}") from exc
+
+        try:
+            result = whatif_branch(
+                slug, driver_number, actual, counterfactual, fork_lap
+            )
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+        def _lap_dict(lap) -> dict:
+            return {
+                "lap": lap.lap,
+                "compound": lap.compound,
+                "stint_lap": lap.stint_lap,
+                "lap_time_s": lap.lap_time_s,
+                "cumulative_race_time_s": lap.cumulative_race_time_s,
+                "pitted_this_lap": lap.pitted_this_lap,
+                "pit_loss_s": lap.pit_loss_s,
+                "estimation": lap.estimation,
+                "is_fork_lap": lap.is_fork_lap,
+            }
+
+        return {
+            "session_slug": slug,
+            "driver_number": driver_number,
+            "fork_lap": result.fork_lap,
+            "actual_strategy_label": result.actual_strategy_label,
+            "counterfactual_strategy_label": result.counterfactual_strategy_label,
+            "actual_total_race_time_s": result.actual_total_race_time_s,
+            "counterfactual_total_race_time_s": result.counterfactual_total_race_time_s,
+            "delta_counterfactual_vs_actual_s": result.delta_counterfactual_vs_actual_s,
+            "counterfactual_is_faster": result.counterfactual_is_faster,
+            "actual_laps": [_lap_dict(l) for l in result.actual_laps],
+            "counterfactual_laps": [_lap_dict(l) for l in result.counterfactual_laps],
+            "simulation_limits": list(result.simulation_limits),
         }
 
     return app
