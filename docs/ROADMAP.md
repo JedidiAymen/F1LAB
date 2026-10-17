@@ -14,8 +14,10 @@ is in `SOL61_MASTER_EXECUTION.md`; this page tracks execution.
 | P1: replay pack | Three-reference offline gate verified; broader contracts partial | Monza/Monaco/Brazil match available final results; 15,162 boundary/arbitrary-time checks and 600 shuffled seeks; context adds 700 as-of checks; 148 source-timed stint histories are reconstructed without changing pack events; full geometry remains |
 | P2: 2D Race Control | Partial, real browser interaction proof | Session picker, 0.25×–16× clock, synchronized map/timing/control/weather/status/stints/telemetry cursor, playback transforms and exact source-time jumps; 11 Chromium scenarios pass; versioned driving-line geometry, 12-second selected trail/direction and bounded browser measurements exist; physical geometry and broader rendering evidence remain |
 | P3–P4: telemetry and Prediction Lab | Partial, historical phase-aware UI integrated | Three-race six-channel telemetry follows canonical `RaceState`, offline catalog and stronger artifact contracts pass; local qualifying lab serves checksum-verified FP1/FP2/pre-Q snapshots, same-provider 2023 training/2024 validation/2025 holdout and phase feature registries; wider telemetry, publication timestamps and calibration remain |
-| P5–P6: strategy and counterfactual | Not started | Tested units, seeded worlds, real-event sanity checks |
-| P7–P8: live, radio and 3D | Not started | Provider-aware live fan-out and same-clock 3D |
+| P5: strategy simulator and lab | Complete (commit 5c87a8a) | 24 tests pass; deterministic simulator, optimizer, MC, calibration, React 3-tab UI, 4 API endpoints; estimation='simulated' everywhere |
+| P6: what-if counterfactual branching | Complete (commit f76d8b6) | 13 tests pass; fork-lap historical/simulated timeline pairs; delta; React WhatIfLab with SVG charts |
+| P7: simulated-live WebSocket fan-out | Complete (commit f3098cb) | 7 async tests pass; LiveSession/LiveRegistry, subscriber queue, reconnect delivery, SIMULATED LIVE badge, React hook with backoff; 167 total Python tests |
+| P8: Three.js/R3F 3D circuit viewer | Complete (commit fbd4b68) | TypeScript build clean; spline track ribbon, CarDot lerp animation, Top/Orbit cameras, lazy Canvas mount; same CircuitGeometry as 2D |
 
 ## Current dependency order
 
@@ -103,3 +105,36 @@ route returns the manifest; the existing `/telemetry/lap-comparison` route now
 accepts `driver_a/lap_a/driver_b/lap_b` query params for library-backed
 comparisons. This advances arbitrary lap selection; cross-year, sector and wider
 driver coverage remain incomplete.
+
+
+## P5–P8 milestone summary (2026-10-17)
+
+All four milestones are implemented and pushed to `origin/feat/foundation`.
+
+### P5 Strategy Simulator — commit 5c87a8a
+Deterministic lap simulator with tyre/fuel/pit physics; traffic heuristic;
+optimizer (0/1/2-stop enumeration + ranking); Monte Carlo with shared worlds;
+OLS calibration from real pack data. All output labelled `estimation='simulated'`.
+4 FastAPI endpoints. React 3-tab Strategy Lab. 24 tests; 147 total.
+
+### P6 What-If Branching — commit f76d8b6
+Fork replay at lap N; historical prefix from measured pack; separate simulated
+suffixes per strategy; cumulative time re-rooted at fork. React WhatIfLab with
+SVG bar + gap charts and simulation limits disclosure. 13 tests.
+
+### P7 Live WebSocket Fan-Out — commit f3098cb
+`LiveSession` asyncio 0.5s tick; SIMULATED LIVE badge mandatory; subscriber
+queue fan-out; last snapshot on reconnect; `LiveRegistry` singleton; exponential
+backoff React hook. 7 async tests; 167 total Python tests.
+
+### P8 Three.js 3D Circuit Viewer — commit fbd4b68
+CatmullRomCurve3 spline from centerline_xy; TubeGeometry track ribbon;
+projectOnSpline nearest-point; CarDot sphere + lerp animation; Top/Orbit
+cameras; lazy Canvas mount. Same CircuitGeometry source as 2D map.
+
+### What remains
+- Walk-forward 2026 evaluation, calibration, provider publication timestamps (M5)
+- Broader physical geometry and rendering performance (P2 gate)
+- Camera follow-mode for 3D; E2E browser tests for P5–P8
+- Real-time OpenF1 live adapter credentials (P7 gate)
+- CI, schema export, storage hardening (P0 gate)

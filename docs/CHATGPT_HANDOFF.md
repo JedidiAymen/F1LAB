@@ -606,3 +606,111 @@ and crowded mobile delta labels. Both are on `origin/feat/foundation`;
 `git ls-remote origin refs/heads/feat/foundation` returned `9a13f6eef679c417fc3bc6a8beddd320504dbc06`. Git
 used Aymen Jedidi's repository identity, with no assistant coauthor. The two
 unrelated user helpers under `ml/features/` remain untracked and untouched.
+
+## Latest milestones — P5 Strategy Lab, P6 What-If, P8 3D Circuit, P7 Live WebSocket
+
+**Status at 2026-10-17 UTC:** P5 through P8 are implemented and pushed to
+`origin/feat/foundation`. The product now has a race strategy simulator,
+what-if counterfactual branching, a Three.js 3D circuit viewer, and a
+simulated-live WebSocket fan-out with React reconnect hook.
+
+### P5 — Race Strategy Simulator and Lab (commit 5c87a8a + docs 9ec138a)
+
+**What is done:**
+- `src/f1_racelab/strategy/models.py`: `TyreCompoundModel` (quadratic
+  degradation + warm-up offset, per-compound), `FuelModel` (linear gain
+  per lap), `PitModel` (fixed cost + variable lane time), `RaceSpec` (driver
+  number, total laps, compounds, pitstop plan); calibrated dicts for
+  monza-2025/monaco-2023/brazil-2024.
+- `simulator.py`: deterministic lap-by-lap `simulate_race()`; traffic heuristic
+  (TRAFFIC_WINDOW_S=2.0, TRAFFIC_PENALTY_S=0.3); all output
+  `estimation='simulated'`; frozen Pydantic `SimulatedLap` model.
+- `optimizer.py`: `enumerate_strategies()` 0/1/2-stop combinations,
+  `compare_strategies()` sorted best-first, `best_strategies(n=5)`.
+- `monte_carlo.py`: `MCWorld` shared-noise-per-world technique;
+  `mc_compare()` P5/P50/P95 + win fraction; seeded random, deterministic.
+- `calibration.py`: OLS tyre degradation after fuel trend removal;
+  pit model stats; `sanity_check_monza()`.
+- API: `GET /api/v1/strategy/{slug}/info`, `POST /compare`, `GET /best`,
+  `POST /montecarlo`.
+- React (`StrategyLab.tsx` + `StrategyLab.css`): 3-tab panel
+  (Best Strategies / Custom Compare / Monte Carlo with compound badges, pit
+  stop editor, results tables, simulation limits disclosure).
+- Tests: 24 tests (all units and integration); 147 Python tests total.
+
+### P6 — What-If Counterfactual Branch (commit f76d8b6)
+
+**What is done:**
+- `src/f1_racelab/strategy/whatif.py`: `BranchLap` (estimation=
+  'historical'|'simulated', is_fork_lap flag), `BranchResult` (paired
+  timeline + delta), `branch()` function.
+- `branch()` algorithm: load measured laps 1..fork_lap from replay pack
+  (historical); run full simulation for each strategy (simulated); discard
+  simulated prefix; re-root cumulative time at fork boundary.
+- API: `POST /api/v1/strategy/{slug}/whatif` → returns full timeline pair,
+  delta, `counterfactual_is_faster`.
+- React (`WhatIfLab.tsx` + `WhatIfLab.css`): fork-lap / driver-number controls,
+  side-by-side strategy editors, summary cards, SVG lap-time bar chart
+  (blue=actual, orange=CF, dashed=fork line), SVG cumulative gap chart
+  (green=CF faster, red=CF slower), simulation limits disclosure.
+- Tests: 13 tests; `test_earlier_pit_is_faster_than_actual_at_monza` fixed to
+  fork_lap=30 (fork_lap=20 is not profitable at Monza due to Hard baseline
+  offset of +0.30s).
+
+### P8 — Three.js / React Three Fiber 3D Circuit Viewer (commit fbd4b68)
+
+**What is done:**
+- `apps/web/src/components/Circuit3D.tsx` + `Circuit3D.css`.
+- `normalizePts()`: provider XY → [-5, 5] Three.js world space.
+- `buildSpline()`: `CatmullRomCurve3` (closed, centripetal alpha=0.5).
+- `TrackRibbon`: `TubeGeometry` (200 segs, radius 0.18, 8-sided) → `#2a2a2a` material.
+- `projectOnSpline()`: 200-sample grid nearest-point; height 0.3 above track.
+- `CarDot`: `sphereGeometry` + `meshStandardMaterial` with team color and
+  emissive glow; `useFrame` lerp animation.
+- Camera: Top (fixed overhead perspective) / Orbit (`OrbitControls`).
+- Lazy Canvas mount: placeholder button → `Canvas` to avoid R3F init cost.
+- Rendered below `TrackMap` in `App.tsx` workspace grid.
+- Dependencies: `three@0.186.1`, `@react-three/fiber@9.8.2`,
+  `@react-three/drei@10.7.9` (added to `package.json`).
+- No official F1 car models; generic spheres per AGENTS.md license guidance.
+- TypeScript fix: `DriverState` in `Circuit3D` uses `[key: string]: unknown`
+  index signature to avoid type collision with `App.tsx`'s own `DriverState`.
+
+### P7 — Simulated-Live WebSocket Fan-Out (commit f3098cb)
+
+**What is done:**
+- `src/f1_racelab/live/__init__.py` (empty), `src/f1_racelab/live/ingest.py`.
+- `LiveSession`: asyncio 0.5s real-tick loop; `SIMULATED_LIVE_BADGE` in every
+  snapshot; subscriber queues (maxsize=4); slow-client drop; last snapshot
+  delivered to reconnecting subscribers; `speed` clamped 0.1–16.0×.
+- `LiveSubscription`: async context manager / async iterator per subscriber.
+- `LiveRegistry` singleton per session slug; `get_or_create()` idempotent.
+- API: `WS /ws/live/{slug}?speed=1.0&start=0.0` WebSocket fan-out;
+  `GET /api/v1/live/{slug}/status` → `{session_slug, running, mode, subscriber_count}`.
+- React hook (`apps/web/src/lib/use-live-session.ts`): `useLiveSession()`;
+  exponential backoff reconnect (1→30s); badge + subscriberCount state;
+  periodic `/api/v1/live/{slug}/status` poll every 5s.
+- Tests: 7 async pytest tests; 167 Python tests total.
+
+### Test summary at P7 commit (f3098cb)
+
+```
+uv run pytest -q        → 167 passed
+cd apps/web && npm run build → clean; ~1,410 KB JS (Three.js bundle)
+```
+
+All four milestone commits are pushed to `origin/feat/foundation`.
+
+### Updated "Not done" list
+
+- After-FP1/after-FP2 live forecasts; per-feature observation-time lineage;
+  probability calibration.
+- Fuller physical circuit geometry and measured rendering performance.
+- Retirement-time handling; cross-year/sector telemetry.
+- Wider driver car_data caching.
+- Walk-forward 2026 evaluation; provider publication timestamps.
+- Camera-follow mode for 3D viewer (currently Top/Orbit only).
+- E2E Playwright tests for Strategy Lab, What-If Lab, 3D, and Live panels
+  (all require backend running with a pack).
+- Real-time OpenF1 live adapter (adapter interface present; no credentials).
+- CI and storage/schema-export hardening; P0 gate.

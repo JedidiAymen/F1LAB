@@ -1190,3 +1190,76 @@ npm run build            →  tsc + vite clean, 469.70 KB JS / 152.24 KB gzip
   `test_real_data_calibration_monza` to skip naturally when pack absent.
 - All simulation limits are explicitly included in every API response and in the
   UI disclosure panel. Simulated results are never mixed with historical data.
+
+## 2026-10-17 UTC — P6 What-If, P8 3D Circuit, P7 Live WebSocket
+
+### P6 — What-If Counterfactual Branch (commit f76d8b6)
+
+**`src/f1_racelab/strategy/whatif.py`**:
+- `BranchLap`: per-lap record, estimation='historical'|'simulated', is_fork_lap
+- `BranchResult`: full paired timeline, delta, simulation_limits
+- `branch()`: shared historical prefix (measured from pack) + separate
+  simulated suffixes; cumulative time re-rooted at fork boundary
+- `_load_measured_laps/_stints/_compound_at_lap`: pack readers
+
+**API**: `POST /api/v1/strategy/{slug}/whatif`
+- Body: driver_number, fork_lap, actual_strategy, counterfactual_strategy
+- Returns full timeline pair, delta, counterfactual_is_faster
+
+**UI** (`WhatIfLab.tsx` + `.css`):
+- Fork-lap / driver number controls
+- Side-by-side strategy editors with add/remove pit stops
+- Summary card (actual vs what-if total + delta)
+- SVG lap-time bar chart (blue=actual, orange=CF, dash=fork)
+- SVG cumulative gap chart (green=CF faster, red=CF slower)
+- Simulation limits disclosure; "What-If" nav button in App.tsx
+
+**Tests** (13, all pass): compound_at_lap logic, historical segment length,
+identical pre-fork laps, estimation labels, fork-lap marker, cumulative
+monotonicity, delta consistency, invalid fork raises, direction on real Monza.
+
+**Fix**: test_earlier_pit_is_faster_than_actual_at_monza used fork_lap=20
+which was wrong (at Monza, Hard baseline is 0.30s slower; early pit without
+degradation benefit doesn't win from lap 21). Corrected to fork_lap=30
+where the CF already pitted at L25 in the simulation past, giving more fresh
+Hard laps and matching the manually verified −25s result.
+
+### P8 — Three.js/React Three Fiber 3D Circuit Viewer (commit fbd4b68)
+
+**`Circuit3D.tsx`** + **`Circuit3D.css`**:
+- Lazy Canvas mount (placeholder → "Open 3D view" avoids R3F init cost)
+- normalizePts(): provider XY → [-5, 5] Three.js world
+- buildSpline(): CatmullRomCurve3 (closed, alpha=0.5)
+- TrackRibbon: TubeGeometry (r=0.18) on spline
+- projectOnSpline(): 200-sample grid nearest-point search
+- CarDot: sphere mesh + lerp animation + team color + emissive glow
+- Two cameras: Top (fixed overhead) / Orbit (OrbitControls)
+- Placed below 2D TrackMap in App.tsx workspace-grid
+- No official car models; generic spheres per AGENTS.md license guidance
+
+**Dependencies**: three@0.186.1, @react-three/fiber@9.8.2, @react-three/drei@10.7.9
+
+### P7 — Simulated-Live WebSocket Fan-Out (commit f3098cb)
+
+**`src/f1_racelab/live/ingest.py`**:
+- `LiveSession`: asyncio 0.5s tick, SIMULATED_LIVE badge, subscriber queues
+  (maxsize=4, drops slow clients)
+- `LiveSubscription`: async context manager / iterator per subscriber
+- `LiveRegistry`: singleton per slug; get_or_create() idempotent
+- Reconnect: last snapshot delivered immediately to new subscriber
+
+**API**:
+- `WS /ws/live/{slug}?speed=1.0&start=0.0`: WebSocket fan-out
+- `GET /api/v1/live/{slug}/status`: running/subscriber_count/mode
+
+**React hook** (`use-live-session.ts`):
+- useLiveSession(): WebSocket connect, exponential backoff (1→30s),
+  badge state, subscriber count polling
+
+**Tests** (7, all pass): snapshot shape, subscriber count, reconnect delivery,
+state keys, stop semantics, registry singleton, HTTP status route.
+
+### Totals at this checkpoint
+- Python tests: 167 passing
+- TypeScript build: clean (Three.js bundle 1.4 MB expected)
+- Commits: f76d8b6 (P6), fbd4b68 (P8), f3098cb (P7) all pushed to feat/foundation
