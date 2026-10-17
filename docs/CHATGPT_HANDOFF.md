@@ -41,7 +41,8 @@ The lap library and selection UI implementation is commit
 `32db149737d56d5e32147fdde5080820cf9eb499`, pushed and remote-verified on
 `origin/feat/foundation`.
 
-The P5 Strategy Lab implementation is **not yet committed** (see below).
+The P5 Strategy Lab implementation is commit `5c87a8a`, pushed and
+remote-verified on `origin/feat/foundation`.
 
 ## What exists and what does not
 
