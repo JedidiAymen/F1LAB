@@ -26,6 +26,7 @@ import { TelemetryPanel } from '@/components/TelemetryPanel'
 import { TelemetrySelection } from '@/components/TelemetrySelection'
 import { initialTelemetrySelection, telemetrySelectionQuery, type TelemetryLapLibrary, type TelemetrySelection as TelemetrySelectionValue } from '@/lib/telemetry-selection'
 import { PredictionLab } from '@/components/PredictionLab'
+import StrategyLab from '@/components/StrategyLab'
 import { TrackMap } from '@/components/TrackMap'
 import type { CircuitGeometry, LocationContext } from '@/lib/circuit-geometry'
 import type { LapComparison } from '@/lib/telemetry-comparison'
@@ -128,11 +129,13 @@ function ReplayWorkspace({
   sessions,
   onSessionChange,
   onOpenPrediction,
+  onOpenStrategy,
 }: {
   slug: string
   sessions: CatalogEntry[]
   onSessionChange: (slug: string) => void
   onOpenPrediction: () => void
+  onOpenStrategy?: () => void
 }) {
   const base = `/api/v1/replay/${slug}`
   const [manifest, setManifest] = useState<Manifest | null>(null)
@@ -374,6 +377,11 @@ function ReplayWorkspace({
           <button className="prediction-nav-button" type="button" onClick={onOpenPrediction}>
             <FlaskConical size={13} /> Prediction Lab
           </button>
+          {onOpenStrategy && (
+            <button className="prediction-nav-button" type="button" onClick={onOpenStrategy}>
+              <FlagTriangleRight size={13} /> Strategy Lab
+            </button>
+          )}
         </div>
         <div className="top-right">
           <span>OPENF1 · PUBLIC HISTORICAL</span>
@@ -791,7 +799,7 @@ function ReplayWorkspace({
 function App() {
   const [sessions, setSessions] = useState<CatalogEntry[]>([])
   const [slug, setSlug] = useState('monza-2025')
-  const [workspace, setWorkspace] = useState<'replay' | 'prediction'>('replay')
+  const [workspace, setWorkspace] = useState<'replay' | 'prediction' | 'strategy'>('replay')
   useEffect(() => {
     const controller = new AbortController()
     fetch('/api/v1/replays', { signal: controller.signal })
@@ -804,12 +812,21 @@ function App() {
     return () => controller.abort()
   }, [])
   if (workspace === 'prediction') return <PredictionLab onBack={() => setWorkspace('replay')} />
+  if (workspace === 'strategy') return (
+    <div style={{ padding: 16 }}>
+      <button onClick={() => setWorkspace('replay')} style={{ marginBottom: 12, background: 'none', border: '1px solid #555', borderRadius: 4, color: '#aaa', cursor: 'pointer', padding: '4px 10px' }}>
+        ← Back
+      </button>
+      <StrategyLab sessionSlug={slug} baseUrl={window.location.origin} />
+    </div>
+  )
   return <ReplayWorkspace
     key={slug}
     slug={slug}
     sessions={sessions}
     onSessionChange={setSlug}
     onOpenPrediction={() => setWorkspace('prediction')}
+    onOpenStrategy={() => setWorkspace('strategy')}
   />
 }
 

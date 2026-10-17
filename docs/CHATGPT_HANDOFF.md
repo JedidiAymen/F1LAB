@@ -18,7 +18,12 @@ from cached source; arbitrary driver/lap pairs can be selected and applied
 through the UI without changing the replay clock. P3/P4 remain partial; a
 three-phase historical qualifying lab is integrated, while exact feature
 publication timestamps, calibration and cross-year sector comparisons remain
-incomplete. The overall product goal is far from complete.
+incomplete. **P5 (Strategy Lab) is now implemented**: deterministic lap
+simulator, optimizer, Monte Carlo (shared-world), calibration module, 4
+FastAPI endpoints, React 3-tab Strategy Lab panel (Best Strategies / Custom
+Compare / Monte Carlo with compound badges, pit stop editor, results tables,
+simulation limits disclosure). 147 Python tests pass. The overall product goal
+is far from complete.
 Telemetry source starts at `89351502ccb6389c25886d18022430f2ce6319f8`, with comparison
 foundation commit `2ac01012c780552f26bd9504f88c9cac87541000` and docs checkpoint
 `10b53fd4905a6a22ad94ac249dc9632ce016845e` pushed and remote-verified. The
@@ -35,6 +40,8 @@ The latest Prediction Lab implementation is commit
 The lap library and selection UI implementation is commit
 `32db149737d56d5e32147fdde5080820cf9eb499`, pushed and remote-verified on
 `origin/feat/foundation`.
+
+The P5 Strategy Lab implementation is **not yet committed** (see below).
 
 ## What exists and what does not
 
@@ -85,12 +92,26 @@ The lap library and selection UI implementation is commit
   cached laps; Monaco and Brazil each have 2 available drivers (VER/SAI or
   VER/OCO) with ~45–61 laps each. Other drivers lack cached car_data; their
   unavailable status is labelled. Distance is speed-integrated and estimated.
+- **P5 Strategy Lab — done:** `src/f1_racelab/strategy/` with `models.py`
+  (TyreCompoundModel, FuelModel, PitModel, RaceSpec; calibrated dicts for
+  monza-2025/monaco-2023/brazil-2024), `simulator.py` (deterministic lap
+  simulator; traffic heuristic; estimation='simulated' everywhere),
+  `optimizer.py` (enumerate_strategies 0/1/2-stop, compare_strategies, best_strategies),
+  `monte_carlo.py` (MCWorld seeded Gaussian, mc_compare shared-world),
+  `calibration.py` (OLS tyre degradation after fuel removal, pit model stats,
+  sanity_check_monza). Four API endpoints: GET/POST
+  `/api/v1/strategy/{slug}/info|compare|best|montecarlo`. React 3-tab Strategy
+  Lab panel (StrategyLab.tsx + StrategyLab.css): Best Strategies (compound +
+  stop picker → ranked table), Custom Compare (side-by-side strategy editors
+  with add/remove pit stops), Monte Carlo (P5/P50/P95 + win fraction). 24 new
+  strategy tests; 147 total passing.
 - **Not done:** after-FP1/after-FP2 forecasts, per-feature observation-time
   lineage and probability calibration; surveyed/full geometry and measured
   rendering performance; retirement-time handling; cross-year/sector
-  telemetry comparisons; wider driver car_data caching; strategy, what-if,
-  live/radio, 3D, CI and storage/schema-export hardening. The full product
-  goal remains active.
+  telemetry comparisons; wider driver car_data caching; P6 what-if branching;
+  P7 live WebSocket; P8 3D viewer; CI and storage/schema-export hardening.
+  The full product goal remains active. E2E Playwright test for Strategy Lab
+  not yet written (requires backend running with pack).
 
 ## Why the provider changed
 

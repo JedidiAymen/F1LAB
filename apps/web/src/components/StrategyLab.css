@@ -1,0 +1,342 @@
+.strategy-lab {
+  background: var(--panel-bg, #111);
+  border: 1px solid var(--border, #333);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.strategy-lab--loading,
+.strategy-lab--error {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted, #888);
+}
+
+/* Header */
+.strategy-lab-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.strategy-lab-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text, #eee);
+}
+
+.strategy-lab-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted, #888);
+}
+
+/* Tabs */
+.strategy-lab-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border, #333);
+  padding-bottom: 4px;
+}
+
+.strategy-lab-tab {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px 4px 0 0;
+  padding: 6px 14px;
+  color: var(--text-muted, #888);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+.strategy-lab-tab:hover {
+  background: var(--hover-bg, #1a1a1a);
+  color: var(--text, #eee);
+}
+
+.strategy-lab-tab--active {
+  background: var(--panel-active-bg, #1e1e1e);
+  border-color: var(--border, #333);
+  border-bottom-color: var(--panel-active-bg, #1e1e1e);
+  color: var(--text, #eee);
+}
+
+/* Panel */
+.strategy-lab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Controls row */
+.strategy-lab-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.strategy-lab-controls label,
+.strategy-lab-worlds {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted, #888);
+}
+
+.strategy-lab-controls select,
+.strategy-lab-worlds select {
+  background: var(--input-bg, #1a1a1a);
+  border: 1px solid var(--border, #333);
+  border-radius: 4px;
+  color: var(--text, #eee);
+  padding: 4px 8px;
+  font-size: 0.8rem;
+}
+
+/* Compound checkboxes */
+.strategy-lab-compounds {
+  border: 1px solid var(--border, #333);
+  border-radius: 4px;
+  padding: 6px 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted, #888);
+}
+
+.strategy-lab-compounds legend {
+  padding: 0 4px;
+  font-size: 0.75rem;
+}
+
+.strategy-lab-compound-check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  color: var(--text, #eee);
+}
+
+/* Run button */
+.strategy-lab-run {
+  background: var(--accent, #e8002d);
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 8px 18px;
+  transition: opacity 0.15s;
+  align-self: flex-end;
+}
+
+.strategy-lab-run:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.strategy-lab-run:not(:disabled):hover {
+  opacity: 0.85;
+}
+
+/* Error */
+.strategy-lab-error {
+  color: #f55;
+  font-size: 0.8rem;
+}
+
+/* Custom compare grid */
+.strategy-lab-custom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .strategy-lab-custom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Strategy editor */
+.strategy-editor {
+  background: var(--panel-inner-bg, #161616);
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.strategy-editor h4 {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text, #eee);
+}
+
+.strategy-editor label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.75rem;
+  color: var(--text-muted, #888);
+}
+
+.strategy-editor select,
+.strategy-editor input[type='number'] {
+  background: var(--input-bg, #1a1a1a);
+  border: 1px solid var(--border, #333);
+  border-radius: 4px;
+  color: var(--text, #eee);
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  width: 100%;
+}
+
+.strategy-editor-pit {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: end;
+  gap: 6px;
+  padding: 6px;
+  background: var(--input-bg, #1a1a1a);
+  border-radius: 4px;
+}
+
+.strategy-editor-remove {
+  background: #2a1010;
+  border: 1px solid #5a2020;
+  border-radius: 4px;
+  color: #f55;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+}
+
+.strategy-editor-add {
+  background: none;
+  border: 1px dashed var(--border, #333);
+  border-radius: 4px;
+  color: var(--text-muted, #888);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 6px;
+  text-align: center;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.strategy-editor-add:hover {
+  border-color: var(--text-muted, #888);
+  color: var(--text, #eee);
+}
+
+/* Compound badge */
+.strategy-compound-badge {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  color: #000;
+}
+
+/* Results table */
+.strategy-table-wrap {
+  overflow-x: auto;
+}
+
+.strategy-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.strategy-table th {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border, #333);
+  color: var(--text-muted, #888);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.strategy-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-subtle, #222);
+  color: var(--text, #eee);
+  white-space: nowrap;
+}
+
+.strategy-table-best td {
+  background: rgba(232, 0, 45, 0.08);
+}
+
+.strategy-table-label {
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+
+.strategy-table-stints {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.strategy-table-time {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+}
+
+.strategy-table-delta {
+  color: var(--text-muted, #888);
+}
+
+.strategy-table-best .strategy-table-delta {
+  color: #6f6;
+  font-weight: 600;
+}
+
+.strategy-table-win {
+  font-variant-numeric: tabular-nums;
+}
+
+.strategy-table-note {
+  font-size: 0.7rem;
+  color: var(--text-muted, #888);
+  margin: 6px 0 0;
+  font-style: italic;
+}
+
+/* Simulation limits */
+.strategy-lab-limits {
+  font-size: 0.75rem;
+  color: var(--text-muted, #888);
+}
+
+.strategy-lab-limits summary {
+  cursor: pointer;
+  user-select: none;
+}
+
+.strategy-lab-limits ul {
+  margin: 6px 0 0 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}

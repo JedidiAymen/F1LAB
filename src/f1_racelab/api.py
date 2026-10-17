@@ -15,6 +15,10 @@ from fastapi import FastAPI, HTTPException, Query
 from pydantic import ValidationError
 
 from f1_racelab.models.prediction_lab import load_prediction_lab, prediction_event
+from f1_racelab.strategy.models import CIRCUIT_COMPOUNDS, RACE_SPECS
+from f1_racelab.strategy.optimizer import best_strategies, compare_strategies
+from f1_racelab.strategy.monte_carlo import mc_compare
+from f1_racelab.strategy.simulator import PitStop, Strategy
 from f1_racelab.models.qualifying_phase_lab import (
     load_phase_prediction_lab,
     phase_prediction_event,
@@ -334,6 +338,171 @@ def create_app(
             raise HTTPException(status_code=404, detail=str(exc)) from exc
         except ValueError as exc:
             raise HTTPException(status_code=503, detail=f"Invalid phase prediction event: {exc}") from exc
+
+    # ------------------------------------------------------------------ #
+    # P5 Strategy Lab endpoints                                            #
+    # ------------------------------------------------------------------ #
+
+    @app.get("/api/v1/strategy/{slug}/info")
+    def strategy_info(slug: str) -> dict:
+        """Return available compounds and race spec for a session."""
+        if slug not in RACE_SPECS:
+            raise HTTPException(status_code=404, detail=f"No strategy model for session {slug!r}")
+        spec = RACE_SPECS[slug]
+        compounds = CIRCUIT_COMPOUNDS[slug]
+        return {
+            "session_slug": slug,
+            "scheduled_laps": spec.scheduled_laps,
+            "base_lap_time_s": spec.base_lap_time_s,
+            "safety_car_laps": list(spec.safety_car_laps),
+            "available_compounds": [
+                {"compound": c, "lap_time_offset_s": m.lap_time_offset_s,
+                 "linear_s_per_lap": m.linear_s_per_lap}
+                for c, m in compounds.items()
+            ],
+            "simulation_limits": [
+                "Tyre coefficients are per-circuit fits; uncertainty grows on long stints.",
+                "Traffic interaction is a heuristic penalty, not aerodynamic simulation.",
+                "Fuel burn rate is assumed constant; no fuel-save modes modelled.",
+                "SC timing is fixed from the replay pack; MC does not sample new SC events.",
+                "Simulated lap times are labelled estimation='simulated' throughout.",
+            ],
+        }
+
+    @app.post("/api/v1/strategy/{slug}/compare")
+    def strategy_compare(slug: str, body: dict) -> dict:
+        """Compare explicit strategies by race time.
+
+        Body: { "strategies": [{"start_compound": "MEDIUM", "pit_stops":
+            [{"lap": 30, "compound": "HARD"}], "driver_number": 1}, ...] }
+        """
+        if slug not in RACE_SPECS:
+            raise HTTPException(status_code=404, detail=f"No strategy model for session {slug!r}")
+        try:
+            raw = body.get("strategies", [])
+            strategies = [
+                Strategy(
+                    driver_number=s.get("driver_number", 1),
+                    start_compound=s["start_compound"],
+                    pit_stops=tuple(
+                        PitStop(lap=p["lap"], compound=p["compound"])
+                        for p in s.get("pit_stops", [])
+                    ),
+                )
+                for s in raw
+            ]
+        except (KeyError, TypeError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail=f"Invalid strategy payload: {exc}") from exc
+        if not strategies:
+            raise HTTPException(status_code=422, detail="At least one strategy is required")
+        results = compare_strategies(slug, strategies)
+        return {
+            "session_slug": slug,
+            "ranked": [
+                {
+                    "label": r.label,
+                    "stops": r.stops,
+                    "total_race_time_s": r.total_race_time_s,
+                    "delta_vs_reference_s": r.delta_vs_reference_s,
+                    "pit_laps": list(r.pit_laps),
+                    "compounds": list(r.compounds),
+                    "simulation_limits": list(r.simulation_limits),
+                }
+                for r in results
+            ],
+        }
+
+    @app.get("/api/v1/strategy/{slug}/best")
+    def strategy_best(
+        slug: str,
+        max_stops: int = Query(default=2, ge=0, le=3),
+        top_n: int = Query(default=10, ge=1, le=30),
+        pit_step: int = Query(default=3, ge=1, le=10),
+        compounds: str = Query(default="SOFT,MEDIUM,HARD",
+                               description="Comma-separated compound names"),
+        driver_number: int = Query(default=1, gt=0),
+    ) -> dict:
+        """Enumerate and rank strategies, returning the top_n fastest."""
+        if slug not in RACE_SPECS:
+            raise HTTPException(status_code=404, detail=f"No strategy model for session {slug!r}")
+        available = [c.strip().upper() for c in compounds.split(",") if c.strip()]
+        if not available:
+            raise HTTPException(status_code=422, detail="At least one compound is required")
+        valid = set(CIRCUIT_COMPOUNDS[slug].keys())
+        unknown = [c for c in available if c not in valid]
+        if unknown:
+            raise HTTPException(status_code=422,
+                                detail=f"Unknown compounds: {unknown}. Available: {sorted(valid)}")
+        results = best_strategies(slug, driver_number, available,
+                                  max_stops=max_stops, top_n=top_n, pit_step=pit_step)
+        return {
+            "session_slug": slug,
+            "driver_number": driver_number,
+            "searched_compounds": available,
+            "ranked": [
+                {
+                    "rank": i + 1,
+                    "label": r.label,
+                    "stops": r.stops,
+                    "total_race_time_s": r.total_race_time_s,
+                    "delta_vs_reference_s": r.delta_vs_reference_s,
+                    "pit_laps": list(r.pit_laps),
+                    "compounds": list(r.compounds),
+                    "simulation_limits": list(r.simulation_limits),
+                }
+                for i, r in enumerate(results)
+            ],
+        }
+
+    @app.post("/api/v1/strategy/{slug}/montecarlo")
+    def strategy_montecarlo(slug: str, body: dict) -> dict:
+        """Monte Carlo comparison of strategies.
+
+        Body: { "strategies": [...same as /compare...], "n_worlds": 200, "seed": 42 }
+        """
+        if slug not in RACE_SPECS:
+            raise HTTPException(status_code=404, detail=f"No strategy model for session {slug!r}")
+        try:
+            raw = body.get("strategies", [])
+            strategies = [
+                Strategy(
+                    driver_number=s.get("driver_number", 1),
+                    start_compound=s["start_compound"],
+                    pit_stops=tuple(
+                        PitStop(lap=p["lap"], compound=p["compound"])
+                        for p in s.get("pit_stops", [])
+                    ),
+                )
+                for s in raw
+            ]
+        except (KeyError, TypeError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail=f"Invalid strategy payload: {exc}") from exc
+        if not strategies:
+            raise HTTPException(status_code=422, detail="At least one strategy is required")
+        n_worlds = min(int(body.get("n_worlds", 200)), 1000)
+        seed = int(body.get("seed", 42))
+        results = mc_compare(slug, strategies, n_worlds=n_worlds, seed=seed)
+        return {
+            "session_slug": slug,
+            "n_worlds": n_worlds,
+            "seed": seed,
+            "ranked": [
+                {
+                    "rank": i + 1,
+                    "strategy_label": r.strategy_label,
+                    "driver_number": r.driver_number,
+                    "mean_race_time_s": r.mean_race_time_s,
+                    "std_race_time_s": r.std_race_time_s,
+                    "p5_race_time_s": r.p5_race_time_s,
+                    "p50_race_time_s": r.p50_race_time_s,
+                    "p95_race_time_s": r.p95_race_time_s,
+                    "mean_delta_vs_fastest_s": r.mean_delta_vs_fastest_s,
+                    "win_fraction": r.win_fraction,
+                    "simulation_limits": list(r.simulation_limits),
+                }
+                for i, r in enumerate(results)
+            ],
+        }
 
     return app
 

@@ -1090,3 +1090,103 @@ unrelated user helpers under `ml/features/` remain untracked and untouched.
   `origin/feat/foundation`; `git ls-remote` returned the identical SHA.
   Author: Aymen Jedidi; no assistant coauthor trailer. The two unrelated
   user helpers under `ml/features/` remain untracked.
+
+## 2026-10-17 UTC — P5 Race Strategy Simulator and Strategy Lab
+
+- **Before:** branch `feat/foundation`, HEAD `a514042` (docs: record lap library
+  and selection UI publication). Four Python files in `src/f1_racelab/strategy/`
+  existed but were unverified and unintegrated.
+- **Objective:** verify the strategy simulator, add the API layer, build the
+  React Strategy Lab panel, write tests, and update all required docs.
+
+### What was built
+
+**`src/f1_racelab/strategy/`** — all files created in the prior (summarized)
+session:
+- `models.py`: `TyreCompoundModel` (degradation_delta, net_pace_offset),
+  `FuelModel` (fuel_remaining, lap_time_delta), `PitModel` (total_pit_loss_s),
+  `RaceSpec`, `DriverModel`; calibrated dicts `CIRCUIT_COMPOUNDS`,
+  `CIRCUIT_FUEL`, `CIRCUIT_PIT`, `RACE_SPECS` for monza-2025 / monaco-2023 /
+  brazil-2024.
+- `simulator.py`: `simulate_race()` — lap-by-lap deterministic simulator;
+  `PitStop`, `Strategy`, `LapState` (frozen), `CarSimulationState` (mutable);
+  traffic heuristic (TRAFFIC_WINDOW_S=2.0s, TRAFFIC_PENALTY_S=0.3s); utilities
+  `race_time`, `gap_history`, `undercut_window`.
+- `optimizer.py`: `evaluate_strategy`, `compare_strategies`,
+  `enumerate_strategies` (0/1/2-stop combinatorial search), `best_strategies`;
+  `StrategyEvaluation` frozen Pydantic model; `SIMULATION_LIMITS` tuple.
+- `monte_carlo.py`: `MCWorld` (seeded Gaussian noise, lap + pit sigma),
+  `MCWorld.apply()`, `MCResult`, `mc_compare()` (shared random worlds technique).
+- `calibration.py`: `calibrate_base_lap_time` (40-60 pct percentile of clean
+  laps from pack), `calibrate_pit_model`, `calibrate_tyre_degradation` (OLS
+  linear after removing fuel trend), `sanity_check_monza`.
+
+**`tests/test_strategy_simulator.py`** — 24 tests across five groups:
+1. Model unit tests: warm-up only on lap 1, fuel delta monotonically decreasing,
+   pit model total loss summation.
+2. Simulator contracts: lap count matches scheduled_laps, cumulative time
+   non-decreasing, pit lap flag and extra time, compound changes after pit,
+   stint_lap resets to 1 after pit, deterministic re-run, all laps labelled
+   `estimation='simulated'`.
+3. Gap and undercut utilities.
+4. Optimizer: evaluate, compare sorted ascending, enumerate no duplicates,
+   best_strategies top_n limit, simulation_limits included in output.
+5. Monte Carlo: count, seed stability, win fraction sums to ~1.0, limits
+   present.
+6. Real-data sanity check (skipped if pack absent): calibration within 1s of
+   model, medium/hard slope < 0.05 s/lap, R² > 0.
+
+**`src/f1_racelab/api.py`** — four new strategy endpoints:
+- `GET /api/v1/strategy/{slug}/info` — compounds, spec, simulation_limits.
+- `POST /api/v1/strategy/{slug}/compare` — deterministic rank of explicit
+  strategies.
+- `GET /api/v1/strategy/{slug}/best` — enumerate + rank with max_stops, top_n,
+  pit_step, compounds query params.
+- `POST /api/v1/strategy/{slug}/montecarlo` — shared-world MC comparison with
+  n_worlds and seed.
+
+**`apps/web/src/components/StrategyLab.tsx`** + **`StrategyLab.css`**:
+- Three tabs: Best Strategies (compound + stop config → ranked table), Custom
+  Compare (two side-by-side strategy editors with add/remove pit stops), Monte
+  Carlo (same editors, world count selector, MC results table with win %, P5/P95).
+- `CompoundBadge` — circular badge with official-ish compound colors.
+- `fmtRaceTime`, `fmtDelta` formatting helpers.
+- Simulation limits disclosure panel.
+
+**`apps/web/src/App.tsx`**:
+- Added `workspace` state value `'strategy'`.
+- Added Strategy Lab nav button (FlagTriangleRight icon) alongside Prediction Lab.
+- Full-page Strategy Lab view when workspace === 'strategy'.
+
+### Verification
+
+```
+uv run pytest tests/ -q  →  147 passed (123 existing + 24 strategy) in 4.7 s
+npm run build            →  tsc + vite clean, 469.70 KB JS / 152.24 KB gzip
+```
+
+- **Fix during development:** `test_tyre_fresh_offset_increases_monotonically`
+  initially failed because the warm-up offset (0.3s at lap 1) is larger than the
+  linear degradation at lap 2 (0.0105s). The test was corrected to check
+  monotonicity only for ages ≥ 2 (post-warm-up); this is the correct semantics.
+
+### Monza calibration values (from prior session, real VER data)
+
+| Parameter | Value | Source |
+|---|---|---|
+| Base lap time | 82.8 s | 40-60 pct percentile, VER clean laps |
+| Medium linear deg | 0.005 s/lap | essentially flat at Monza |
+| Hard offset vs Medium | +0.30 s | measured from stint medians |
+| Pit entry/stationary/exit | 14.5/2.5/8.5 = 25.5 s total | lane/stop data |
+| Fuel 100 kg / 53 laps | 1.887 kg/lap, 0.030 s/kg | FIA standard estimate |
+
+### Limits
+
+- Strategy Lab does not exist in UI if the session slug is not in `RACE_SPECS`.
+  Currently only monza-2025, monaco-2023, brazil-2024 are in the model.
+- No E2E test for Strategy Lab (Playwright); the feature requires the FastAPI
+  server to serve `/api/v1/strategy/{slug}/best` which is not mocked in tests.
+- Calibration sanity check requires a local race pack; marked
+  `test_real_data_calibration_monza` to skip naturally when pack absent.
+- All simulation limits are explicitly included in every API response and in the
+  UI disclosure panel. Simulated results are never mixed with historical data.
