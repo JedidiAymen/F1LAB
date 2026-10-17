@@ -29,6 +29,7 @@ import { PredictionLab } from '@/components/PredictionLab'
 import StrategyLab from '@/components/StrategyLab'
 import WhatIfLab from '@/components/WhatIfLab'
 import { TrackMap } from '@/components/TrackMap'
+import { Circuit3D } from '@/components/Circuit3D'
 import type { CircuitGeometry, LocationContext } from '@/lib/circuit-geometry'
 import type { LapComparison } from '@/lib/telemetry-comparison'
 import {
@@ -559,6 +560,14 @@ function ReplayWorkspace({
                 selectedId={selectedId}
                 onSelect={setSelectedId}
               />
+              {manifest?.geometry && (
+                <Circuit3D
+                  geometry={manifest.geometry}
+                  drivers={manifest.drivers ?? []}
+                  driverStates={state?.drivers ?? {}}
+                  selectedId={selectedId}
+                />
+              )}
               <aside className="right-column">
                 <section
                   className="driver-panel panel"
