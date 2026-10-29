@@ -46,3 +46,20 @@ def test_delta_round_trip_preserves_result(tmp_path):
     out = transforms.run("race_summary", engine_run.sample_frame(), "pandas")
     version = transforms.write_delta(out, tmp_path / "t")
     assert version == 0 and transforms.frames_equal(out, transforms.read_delta(tmp_path / "t"))
+
+
+def test_forecast_review_matches_metrics_module():
+    pytest.importorskip("duckdb")
+    import pandas as pd
+
+    from f1_racelab.engines import forecast_review
+    rng = np.random.default_rng(1)
+    truth = rng.normal(90, 1, 200)
+    pred = truth + rng.normal(0.2, 0.5, 200)
+    df = pd.DataFrame({"year": 2025, "model": "m", "pred_seconds": pred, "next_lap_seconds": truth,
+                       "eligible_green_next": True})
+    row = forecast_review.review(df).iloc[0]
+    assert row.mae_s == pytest.approx(metrics.mae(truth, pred))
+    assert row.bias_s == pytest.approx(metrics.bias(truth, pred))
+    assert row.mape_pct == pytest.approx(metrics.mape(truth, pred))
+    assert "| 2025 | m | 200 |" in forecast_review.to_markdown(forecast_review.review(df))

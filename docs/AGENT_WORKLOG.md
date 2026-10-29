@@ -1341,3 +1341,6 @@ Added `engines/{transforms,run}.py`, portable SQL, `mape`/`bias` metrics, `tests
 
 ## 2026-10-29 (11) — mypy cleared
 `uv run mypy src/f1_racelab`: Success, 85 files. Annotations added in strategy, session, ml/pace, ml/overtake, ml/driver_dna and api; `fastf1_source.load_session` now accepts `event: str | int` (it is called with a round number). 244 tests pass, ruff clean.
+
+## 2026-10-29 (12) — forecast review
+`engines/forecast_review.py` + SQL + test. Finding: 2026 LightGBM bias -0.293 s (persistence -0.031 s); MAPE under 1% everywhere.

@@ -119,3 +119,15 @@ Differences from the conditional benchmark: rows are chosen from decision-time s
 `POST /api/v1/strategy/{slug}/ml-pace` (`strategy/ml_overlay.py`, UI `MlPaceOverlay.tsx`, off by default). It rolls the saved next-lap model forward on its own predictions across one stint and returns it next to the deterministic simulator's curve for the same compound, tyre age and fuel. The simulator code and race-time rankings are not touched. Weather and traffic inputs are explicit assumed defaults returned with the result. Evidence label `ml_prediction_rollout`.
 
 Real-model check (Monza 2025, laps 8-32): the ML curve is flatter than the simulator's. After 24 laps the simulator is -1.4 s (MEDIUM) / -1.6 s (HARD) relative to the first lap (fuel burn outweighs tyre wear) while the ML rollout is about -0.04 s / -0.22 s; mean shape gap 0.72 s (MEDIUM), 0.80 s (HARD). The rollout drifts toward persistence, so it understates the fuel-burn trend. It is an exploratory comparison, not a better strategy model, and the UI says so. Tests: `tests/test_ml_overlay.py` (labelling, baseline untouched, 200/404/422/503) and a Playwright spec (18/18 pass).
+
+## Forecast review: MAPE and bias by season (DuckDB SQL)
+
+`uv run python -m f1_racelab.engines.forecast_review` (SQL `engines/sql/forecast_review.sql`, test checks it against `ml.common.metrics`). Green-eligible laps, out-of-fold; bias = prediction minus truth.
+
+| Season | LightGBM MAE / MAPE / bias | Persistence MAE / MAPE / bias |
+|---|---|---|
+| 2024 | 0.491 s / 0.55% / -0.048 s | 0.498 s / 0.56% / +0.047 s |
+| 2025 | 0.489 s / 0.52% / +0.033 s | 0.478 s / 0.52% / +0.093 s |
+| 2026 | 0.849 s / 0.90% / **-0.293 s** | 0.923 s / 0.98% / -0.031 s |
+
+MAPE is under 1% for every model because lap times are about 90 s, so MAE in seconds is the more informative figure. The notable result is the 2026 bias: LightGBM forecasts laps about 0.29 s too fast on average while persistence is nearly unbiased, consistent with a model trained mostly on 2023-2025 pace levels meeting a new regulation era. This is a diagnosis from one season, not a tested fix.
