@@ -134,11 +134,7 @@ export default function StrategyLab({ sessionSlug, baseUrl }: StrategyLabProps) 
 
   // Load info on session change
   useEffect(() => {
-    setInfo(null)
-    setInfoError(null)
-    setBestResults(null)
-    setCompareResults(null)
-    setMcResults(null)
+    // State resets on session change by remounting (parent passes key={slug}).
     const ctrl = new AbortController()
     fetch(`${baseUrl}/api/v1/strategy/${sessionSlug}/info`, { signal: ctrl.signal })
       .then(r => r.ok ? r.json() : r.json().then((e: { detail: string }) => Promise.reject(e.detail)))

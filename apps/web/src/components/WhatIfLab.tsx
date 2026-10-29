@@ -268,9 +268,7 @@ export default function WhatIfLab({ sessionSlug, baseUrl }: WhatIfLabProps) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    setInfo(null)
-    setInfoError(null)
-    setResult(null)
+    // State resets on session change by remounting (parent passes key={slug}).
     const ctrl = new AbortController()
     fetch(`${baseUrl}/api/v1/strategy/${sessionSlug}/info`, { signal: ctrl.signal })
       .then(r => r.ok ? r.json() : r.json().then((e: { detail: string }) => Promise.reject(e.detail)))

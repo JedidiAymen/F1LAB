@@ -53,7 +53,7 @@ export function StintPanel({
           <h2>{driverName ? `${driverName} · stint history` : 'Stint history'}</h2>
         </div>
         <span className="panel-tag">
-          {driverName && tyreAge != null ? `AGE ${tyreAge} LAPS` : 'SOURCE DATA'}
+          {driverName && tyreAge != null ? `AGE ${tyreAge} LAPS` : 'SOURCE'}
         </span>
       </div>
       {!available ? (

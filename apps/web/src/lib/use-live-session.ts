@@ -40,6 +40,8 @@ export function useLiveSession({
   onSnapshot,
   enabled = true,
 }: UseLiveSessionOptions) {
+  const snapshotRef = useRef(onSnapshot)
+  useEffect(() => { snapshotRef.current = onSnapshot })
   const [status, setStatus] = useState<LiveStatus>('closed')
   const [badge, setBadge] = useState<string | null>(null)
   const [subscriberCount, setSubscriberCount] = useState<number | null>(null)
@@ -70,7 +72,6 @@ export function useLiveSession({
   useEffect(() => {
     if (!enabled) {
       disconnect()
-      setStatus('closed')
       return
     }
 
@@ -96,7 +97,7 @@ export function useLiveSession({
         try {
           const msg = JSON.parse(ev.data) as LiveSnapshot
           if (msg.badge != null) setBadge(msg.badge)
-          onSnapshot(msg)
+          snapshotRef.current(msg)
         } catch { /* ignore parse errors */ }
       }
 
@@ -138,5 +139,5 @@ export function useLiveSession({
     return () => clearInterval(interval)
   }, [sessionSlug, enabled])
 
-  return { status, badge, subscriberCount }
+  return { status: enabled ? status : ('closed' as LiveStatus), badge, subscriberCount }
 }
