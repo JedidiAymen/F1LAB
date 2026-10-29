@@ -1329,3 +1329,6 @@ Added `strategy/ml_overlay.py` + `MlPaceOverlay.tsx` (gate G); `ml/driver_dna/{d
 
 ## 2026-10-29 (7) — RaceVision (blocked) and Overtake Intelligence
 RaceVision: no licensed camera dataset available, nothing implemented, documented as BLOCKED in `docs/research/RACEVISION.md`. Overtake: `ml/overtake/{dataset,benchmark}.py`, `GET /api/v1/overtake/summary`, `tests/test_overtake.py`, `docs/research/OVERTAKE_INTELLIGENCE.md`. Real data: 29,608 pairs, 1,595 passes, 22,637 scored. LightGBM raw Brier 0.0329 vs gap-only logistic 0.0407, paired -0.0079 [-0.0105, -0.0056]; isotonic calibration did not help. Bug found in own test data (in-lap flag placed on the wrong row), fixed. Not done: UI.
+
+## 2026-10-29 (8) — Neural Qualifying extension (exploratory)
+`models/neural_qualifying.py`, `tests/test_neural_qualifying.py`, `docs/research/NEURAL_QUALIFYING.md`. 48 real events; no variant significantly better than the existing ensemble (all paired intervals include zero); regime shrinkage removes the 2026 loss but gives no gain. Labelled exploratory because the 2026 outcome was known.
