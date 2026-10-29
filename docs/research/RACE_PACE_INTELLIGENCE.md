@@ -96,3 +96,20 @@ Command: `uv run python -m f1_racelab.ml.pace.audit` (reads `data/processed/race
 `POST /api/v1/pace/predict` (`src/f1_racelab/ml/pace/inference.py`): strict pydantic schema (`extra="forbid"`, range-checked, compound enum) over the card's feature list plus `anchor_seconds`; returns forecast = anchor + median delta, raw q10/q90, model id/version, dataset fingerprint and warnings (rain, neutralised laps). Load path: SHA-256 check (`load_artifact`), card-vs-schema equality check, and exact match of lightgbm/numpy/pandas/scikit-learn versions against the card; any failure is HTTP 503 with the reproduction command. The artifact is local and trusted only; joblib is never loaded from user input.
 
 **Bug found by this work:** the artifact had been pickled with `LgbmBundle` defined in `__main__` (benchmark run via `python -m`), so it could not be loaded by any other process. The class moved to `ml/pace/bundle.py`, and `python -m f1_racelab.ml.pace.benchmark --refit-only` re-saved the artifact from `pace_frame.parquet` without rerunning the walk-forward. New artifact SHA-256 `98b611f3…adf8c2`. Tests: `tests/test_pace_inference.py` (schema rejection, tamper, version mismatch, HTTP 422/503/200). Full suite: 210 passed.
+
+## Strict decision-time protocol (Milestone 1, gate B)
+
+Command: `uv run python -m f1_racelab.ml.pace.strict` -> `data/processed/race_pace/strict_protocol.json`. Code `ml/pace/strict.py`, tests `tests/test_pace_strict.py` (synthetic, including a check that lap L+1's tyre is not visible). Real data, 65 scored races, 59,414 scored rows.
+
+Differences from the conditional benchmark: rows are chosen from decision-time state only (no neutralisation in the last 3 laps, no yellow on lap L), never from the outcome of lap L+1; tyre inputs are rebuilt "as if the car stays out" from lap L; targets include out-laps, in-laps and neutralisations; training uses the same population with L1 loss.
+
+| MAE (s) | LightGBM | naive persistence | persistence + post-pit rule | anchor |
+|---|---|---|---|---|
+| all rows | 0.886 | 1.289 | 0.944 | 1.359 |
+| green-clean outcome only | 0.539 | - | 0.535 | 0.601 |
+
+**Finding.** Against naive persistence LightGBM wins by 0.40 s [-0.46, -0.33], but that comparison is unfair: persistence predicts 0 after an in-lap, which every pit-wall tool knows to be an out-lap. Against the fair rule (persistence, except after an in-lap predict the training median out-lap delta) the difference is -0.059 s [-0.133, +0.017], not significant, and on green-clean laps the two are tied (+0.005 [-0.041, +0.063]). Out-lap error falls from 13.5 to 4.1 s with the rule + model but the rule alone gets 5.0 s. Median absolute error is marginally better for persistence (0.264 vs 0.280 s). Conclusion: the lap-time model adds little beyond persistence at decision time; the gain it shows is in pit-related laps. Reports should quote the fair baseline, not naive persistence.
+
+## Outlier audit (Milestone 1, gate D)
+
+`audit.outlier_audit`: 593 of 74,077 green rows (0.8%) have |delta| > 8 s. Independent evidence (rainfall flag or INTERMEDIATE/WET compound on at least 5% of a race's rows; no lap-time information) explains 231 of them in 9 races (Dutch 2026, British 2024, Monaco 2023, Dutch 2023, ...). 362 are unexplained: Belgian 2025 (83), Barcelona 2026 (56), Singapore 2026 (53), Canadian 2026 (49). They may be unflagged rain, red-flag restarts or timing artefacts; this is not established. Nothing was removed. Sensitivity excluding the 9 wet-evidence races: LightGBM 0.529 vs persistence 0.559 s, -0.030 [-0.068, +0.017], 59 races; conclusion unchanged.

@@ -735,9 +735,16 @@ Done and verified: `data/pipeline.py` (+manifest, quality gate), 2026 ingestion 
 −0.192 [−0.404, −0.015] comes from 2024–2025. Not tuned on 2026 by decision. Still not done:
 race model, sprint weekends, `observed_at`, router refactor, regime-aware model.
 
-## ML/DL/CV mandate — status (2026-10-29)
-Completed: `src/f1_racelab/ml/common/*`, `ml/pace/{fetch,dataset,benchmark,service}.py`, `/api/v1/pace/*`.
-Partial: Race Pace Intelligence (no React workspace, no Strategy Lab integration, no multi-lap, no CatBoost).
-Not started: Driver DNA (needs PyTorch; RTX 3050 6 GB), RaceVision (dataset rights unverified),
-Overtake Intelligence, Neural Qualifying extension, Radio Intelligence. Results: see research doc.
-Remaining risk: wet-race outliers, 2026 regime shift, unaudited unneutralised "green" laps.
+## ML/DL/CV mandate — status (2026-10-29, updated)
+**Done and verified:** shared ML infrastructure (`ml/common/*`); Race Pace dataset/benchmark/UI/service; audit
+(`ml/pace/audit.py`), strict decision-time protocol (`strict.py`), versioned `POST /api/v1/pace/predict` with
+SHA-256, schema and library-version checks; CI workflow; README status table; ruff clean; 214 tests pass.
+**Honest result:** LightGBM's pooled gain over last-lap persistence is -0.018 s, CI [-0.057, +0.029]: not
+significant. Against a fair decision-time baseline (persistence + post-in-lap rule) it is -0.059 [-0.133, +0.017]
+and tied on green-clean laps. Raw 80% intervals cover 75%; chronological conformal correction reaches 80%;
+safety-car laps are unusable (5% coverage). 362 of 593 large green-lap errors are unexplained and kept.
+**Bug found/fixed:** the served model could not be unpickled outside the benchmark process.
+**Not done:** Strategy Lab opt-in ML pace (gate G), per-race inference UI for the new endpoint, Driver DNA (needs
+PyTorch), RaceVision (dataset rights unverified), Overtake Intelligence, Neural Qualifying extension, Radio
+Intelligence. mypy has 72 pre-existing errors (advisory in CI). 8 older commits carry assistant co-author
+trailers; history is not rewritten. Reproduce: commands in `docs/research/RACE_PACE_INTELLIGENCE.md`.

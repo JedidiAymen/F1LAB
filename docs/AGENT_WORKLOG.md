@@ -1319,3 +1319,7 @@ Audit: 8 earlier commits carry `Co-Authored-By` trailers (pre-existing; history 
 `RacePaceLab.tsx/.css`, `onOpenPace` navigation, driver list in `/api/v1/pace/races`, e2e test.
 Verified: `npx tsc -b`, `npm run lint` clean, `npm run build`, Playwright 17/17. Chart axis uses an IQR range so
 undetected neutralised laps do not flatten it. Still open: Strategy Lab hook, multi-lap forecast, other five modules.
+
+## 2026-10-29 (5) — Race Pace quality gates (A-D, F, H) and CI
+Source SHA before: c051276. Added `ml/pace/{audit,strict,inference,bundle}.py`, `POST /api/v1/pace/predict`, `.github/workflows/ci.yml`, README status table; `benchmark.py --refit-only`. Inputs: `data/processed/race_pace/{predictions,pace_frame}.parquet`. Outputs: `audit.json`, `strict_protocol.json`. Method and numbers: `docs/research/RACE_PACE_INTELLIGENCE.md`.
+**Bug found:** the served artifact was pickled with `LgbmBundle` in `__main__`, so it could not be loaded outside the benchmark process; fixed by moving the class to `bundle.py` and refitting (new SHA-256 `98b611f3…adf8c2`). **Findings:** gain over persistence not significant (-0.018 s [-0.057, +0.029]); strict protocol vs fair baseline -0.059 [-0.133, +0.017]. Caveats: gate G (Strategy Lab opt-in) not done; 2026 is not an untouched holdout for the race model.

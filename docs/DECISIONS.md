@@ -329,3 +329,6 @@ phase-aware lab is kept unchanged.
 The 2026 result is an out-of-regime test. Changing features/weights after seeing it would
 turn it into training data. Decision: publish as-is, pre-declare a regime-aware variant,
 and score it only on rounds that complete after it is fixed.
+
+## 2026-10-29 — Report the fair baseline; do not claim a race-pace win
+Naive last-lap persistence is a straw man at decision time (it ignores that the lap after an in-lap is an out-lap). The headline comparison is against persistence plus that rule, and pooled differences whose race-clustered interval includes zero are reported as no significant gain. mypy is advisory in CI until its 72 pre-existing errors are triaged.

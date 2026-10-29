@@ -38,3 +38,19 @@ def test_cqr_reaches_nominal_coverage():
     report = audit.interval_report(_frame())
     assert report["raw"]["coverage"] < 0.6
     assert abs(report["cqr"]["coverage"] - 0.8) < 0.05
+
+
+def test_outlier_audit_flags_wet_races_from_independent_evidence_and_removes_nothing():
+    predictions = _frame(folds=8, per_fold=100)
+    rows = []
+    for race in predictions.race_id.unique():
+        wet = race.startswith("r0")
+        rows.append(pd.DataFrame({"race_id": race, "driver_number": 1, "lap": range(60), "eligible_green_next": True,
+                                  "rainfall": 1.0 if wet else 0.0, "compound_next": "HARD",
+                                  "delta_seconds": [12.0] * 3 + [0.1] * 57}))
+    frame = pd.concat(rows, ignore_index=True).assign(year=2024, event="x")
+    report = audit.outlier_audit(predictions, frame)
+    assert report["outlier_rows"] == 3 * frame.race_id.nunique()
+    assert report["wet_evidence_races"] == sum(r.startswith("r0") for r in frame.race_id.unique())
+    assert report["explained_by_wet_evidence"] + report["unexplained"] == report["outlier_rows"]
+    assert report["green_rows"] == len(frame)  # nothing was removed from the audited population

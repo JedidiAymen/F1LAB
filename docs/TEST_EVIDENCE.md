@@ -429,3 +429,6 @@ Classification: **real** data for metrics, **synthetic** fixtures for unit tests
 
 ## 2026-10-29 (4) — Race Pace workspace
 `npx playwright test` — 17 passed (new: race pace lab). `npx tsc -b`, `npm run lint`, `npm run build` clean.
+
+## 2026-10-29 (5) — Race Pace quality gates
+`uv run pytest -q -W ignore` — **214 passed** (real: audit/strict/benchmark runs on 65 races; synthetic: unit tests). `uv run ruff check src tests scripts` clean (46 -> 0). `npm run lint`, `npm run test:unit` (16), `npm run build` clean. A fresh `git clone` run found one environment-dependent test (Monza pack); it now skips when the git-ignored pack is absent. mypy: 72 pre-existing errors, run as advisory in CI. Commands: `python -m f1_racelab.ml.pace.audit`, `python -m f1_racelab.ml.pace.strict`, `python -m f1_racelab.ml.pace.benchmark --refit-only`.

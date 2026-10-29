@@ -116,9 +116,38 @@ def season_skill(predictions: pd.DataFrame) -> list[dict]:
     return table.reset_index().to_dict("records")
 
 
+OUTLIER_SECONDS = 8.0
+
+
+def outlier_audit(predictions: pd.DataFrame, frame: pd.DataFrame) -> dict:
+    """Explain large 'green' laps with evidence that does not use the target; nothing is removed.
+
+    Independent evidence per race: rainfall flag at the cutoff or an INTERMEDIATE/WET compound on the next lap.
+    A race is 'wet-evidence' if either occurs on at least 5% of its rows. The headline comparison is then
+    repeated with those races excluded as a sensitivity check (the rule uses no lap-time information).
+    """
+    green = frame[frame.eligible_green_next].copy()
+    green["wet_evidence_row"] = (green.rainfall > 0) | green.compound_next.isin(["INTERMEDIATE", "WET"])
+    share = green.groupby("race_id").wet_evidence_row.mean()
+    wet_races = set(share[share >= 0.05].index)
+    big = green[green.delta_seconds.abs() > OUTLIER_SECONDS]
+    explained = big.wet_evidence_row | big.race_id.isin(wet_races)
+    per_race = big.groupby("race_id").size().sort_values(ascending=False)
+    meta = green.drop_duplicates("race_id").set_index("race_id")[["year", "event"]]
+    top = [{"race_id": r, "event": meta.loc[r, "event"], "year": int(meta.loc[r, "year"]), "outliers": int(n),
+            "wet_evidence_race": r in wet_races} for r, n in per_race.head(8).items()]
+    kept = predictions[~predictions.race_id.isin(wet_races)]
+    return {"threshold_seconds": OUTLIER_SECONDS, "green_rows": len(green), "outlier_rows": len(big),
+            "outlier_share": float(len(big) / len(green)), "explained_by_wet_evidence": int(explained.sum()),
+            "unexplained": int((~explained).sum()), "wet_evidence_races": len(wet_races),
+            "top_races": top, "sensitivity_excluding_wet_evidence_races": compare_to_persistence(kept)
+            if kept.race_id.nunique() > 5 else None,}
+
+
 def run(root: Path = OUT) -> dict:
     predictions = pd.read_parquet(root / "predictions.parquet")
-    report = {"vs_persistence": compare_to_persistence(predictions), "intervals": interval_report(predictions),
+    frame = pd.read_parquet(root / "pace_frame.parquet")
+    report = {"outliers": outlier_audit(predictions, frame), "vs_persistence": compare_to_persistence(predictions), "intervals": interval_report(predictions),
               "season_skill": season_skill(predictions)}
     (root / "audit.json").write_text(json.dumps(report, indent=2, default=float))
     return report
