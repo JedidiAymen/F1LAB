@@ -29,6 +29,7 @@ import { PredictionLab } from '@/components/PredictionLab'
 import StrategyLab from '@/components/StrategyLab'
 import WhatIfLab from '@/components/WhatIfLab'
 import { TrackMap } from '@/components/TrackMap'
+import { PositionChart } from '@/components/PositionChart'
 import { Circuit3D } from '@/components/Circuit3D'
 import type { CircuitGeometry, LocationContext } from '@/lib/circuit-geometry'
 import type { LapComparison } from '@/lib/telemetry-comparison'
@@ -682,6 +683,14 @@ function ReplayWorkspace({
                 </section>
               </aside>
             </div>
+            <PositionChart
+              slug={slug}
+              drivers={manifest.drivers ?? []}
+              seconds={state?.session_time_seconds ?? 0}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onSeek={(target) => seek(target, true)}
+            />
             <TelemetryPanel
               seconds={state?.session_time_seconds ?? 0}
               clockOriginUtc={manifest.clock_origin_utc}
@@ -834,7 +843,7 @@ function App() {
       <button onClick={() => setWorkspace('replay')} style={{ marginBottom: 12, background: 'none', border: '1px solid #555', borderRadius: 4, color: '#aaa', cursor: 'pointer', padding: '4px 10px' }}>
         ← Back
       </button>
-      <StrategyLab sessionSlug={slug} baseUrl={window.location.origin} />
+      <StrategyLab key={slug} sessionSlug={slug} baseUrl={window.location.origin} />
     </div>
   )
   if (workspace === 'whatif') return (
@@ -842,7 +851,7 @@ function App() {
       <button onClick={() => setWorkspace('replay')} style={{ marginBottom: 12, background: 'none', border: '1px solid #555', borderRadius: 4, color: '#aaa', cursor: 'pointer', padding: '4px 10px' }}>
         ← Back
       </button>
-      <WhatIfLab sessionSlug={slug} baseUrl={window.location.origin} />
+      <WhatIfLab key={slug} sessionSlug={slug} baseUrl={window.location.origin} />
     </div>
   )
   return <ReplayWorkspace

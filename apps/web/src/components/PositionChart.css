@@ -1,0 +1,14 @@
+.position-chart { padding: 14px 16px 10px; margin-top: 12px; }
+.pc-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 8px; }
+.pc-heading h2 { margin: 5px 0 0; font-size: 15px; font-weight: 630; }
+.pc-toggle { display: inline-flex; gap: 3px; padding: 3px; background: #0f1519; border: 1px solid #28343c; }
+.pc-toggle button { border: 0; background: transparent; color: #91a0a8; padding: 7px 11px; font-size: 9px; font-weight: 750; letter-spacing: .08em; cursor: pointer; }
+.pc-toggle button.active { background: #303b42; color: #f1f4f5; box-shadow: inset 0 -2px #ef5651; }
+.position-chart svg { width: 100%; height: auto; cursor: crosshair; background: #0f1519; border: 1px solid #28343c; }
+.pc-grid { stroke: #1f2a31; stroke-width: 1; }
+.pc-axis { fill: #7f8d96; font-size: 9px; }
+.pc-line { vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.pc-cursor { stroke: #ef5651; stroke-width: 1.2; stroke-dasharray: 3 3; pointer-events: none; }
+.pc-label { fill: #8a98a1; font-size: 8px; cursor: pointer; }
+.pc-label.active { fill: #fff; font-weight: 700; }
+.pc-note { margin: 8px 0 0; color: #7f8d96; font-size: 10px; }

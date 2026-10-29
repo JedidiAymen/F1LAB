@@ -30,6 +30,7 @@ from f1_racelab.session.catalog import DEFAULT_SESSION, SESSIONS
 from f1_racelab.session.contracts import WeatherPayload
 from f1_racelab.session.location_history import build_location_context
 from f1_racelab.session.replay_source import ReplaySource
+from f1_racelab.session.timeline import MAX_STEP, MIN_STEP, build_timeline
 from f1_racelab.telemetry.artifacts import COMPARISONS
 from f1_racelab.telemetry.contracts import LapComparison
 from f1_racelab.telemetry.lap_library import (
@@ -164,6 +165,14 @@ def create_app(
                 source_times=replay.location_times.get(focus_driver, []),
             ).model_dump(mode="json")
         return payload
+
+    @lru_cache(maxsize=8)
+    def cached_timeline(slug: str, step: float) -> dict:
+        return build_timeline(source(slug), step)
+
+    @app.get("/api/v1/replay/{slug}/timeline")
+    def timeline(slug: str, step: float = Query(default=30.0, ge=MIN_STEP, le=MAX_STEP)) -> dict:
+        return cached_timeline(slug, step)
 
     def telemetry_library(slug: str):
         if slug not in SESSIONS:

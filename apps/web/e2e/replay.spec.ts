@@ -519,3 +519,22 @@ test('telemetry selection UI shows available drivers and applies a different lap
   await expect(panel).toHaveAttribute('data-cursor-visible', 'true')
   await page.screenshot({ path: testInfo.outputPath('telemetry-selection.png'), fullPage: true })
 })
+
+test('race history chart seeks the shared clock and toggles to gap view', async ({ page }) => {
+  await page.goto('/')
+  const chart = page.getByTestId('position-chart')
+  await expect(chart).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Position by session time' })).toBeVisible()
+  const box = (await chart.boundingBox())!
+  // 50% across the plotted width: padding is 38/1000 left and 46/1000 right.
+  await chart.click({ position: { x: box.width * (0.038 + 0.916 * 0.5), y: box.height / 2 } })
+  const clock = page.getByTestId('state-clock')
+  await expect
+    .poll(async () => Number(await clock.getAttribute('data-seconds')))
+    .toBeGreaterThan(2000)
+  const seconds = Number(await clock.getAttribute('data-seconds'))
+  expect(seconds).toBeLessThan(3000) // about half of the 5,014 s Monza pack
+  await expectSynchronized(page)
+  await page.getByRole('button', { name: 'GAP', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Gap to leader' })).toBeVisible()
+})
