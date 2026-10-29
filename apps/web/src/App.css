@@ -241,6 +241,22 @@ main {
   gap: 12px;
   align-items: stretch;
 }
+/* Timing tower and the focus/tyre/control column span both rows; the track map
+   and the 3D card stack in the middle column. Without explicit placement the
+   fourth child wrapped under the tower and left a dead right column. */
+.workspace-grid > .timing-panel {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+.workspace-grid > .right-column {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+.workspace-grid > .circuit3d,
+.workspace-grid > .circuit3d--placeholder {
+  grid-column: 2;
+  grid-row: 2;
+}
 .panel-heading {
   height: 68px;
   display: flex;
@@ -957,8 +973,18 @@ button:focus-visible {
   .workspace-grid {
     grid-template-columns: 245px minmax(360px, 1fr);
   }
-  .right-column {
+  .workspace-grid > .timing-panel,
+  .workspace-grid > .circuit3d,
+  .workspace-grid > .circuit3d--placeholder {
+    grid-row: auto;
+  }
+  .workspace-grid > .circuit3d,
+  .workspace-grid > .circuit3d--placeholder {
+    grid-column: 2;
+  }
+  .workspace-grid > .right-column {
     grid-column: 1/-1;
+    grid-row: auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
   }
@@ -1059,7 +1085,7 @@ button:focus-visible {
     order: 1;
     min-height: 0;
   }
-  .right-column {
+  .workspace-grid > .right-column {
     order: 2;
     display: flex;
   }
@@ -1164,7 +1190,17 @@ button:focus-visible {
     font-size: 12px;
   }
   .topbar {
-    gap: 12px;
+    gap: 8px 12px;
+    height: auto;
+    min-height: 58px;
+    padding: 8px 14px;
+    flex-wrap: wrap;
+  }
+  /* Selector plus three lab links must wrap, not push the page wider. */
+  .session-id {
+    flex-wrap: wrap;
+    flex: 1 1 100%;
+    gap: 8px;
   }
   .panel-heading h2 {
     white-space: normal;
