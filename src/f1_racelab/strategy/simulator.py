@@ -124,7 +124,6 @@ def simulate_race(
         is_sc = lap in sc_laps
 
         for driver_number, car in cars.items():
-            fuel_at = car.fuel_at_lap(lap)
             tyre = compounds[car.compound]
             driver = driver_models.get(driver_number)
             pace_offset = driver.pace_offset_s if driver else 0.0

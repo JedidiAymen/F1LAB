@@ -7,7 +7,8 @@ import pandas as pd
 from lightgbm import LGBMRegressor
 
 SEED = 42
-LGBM_PARAMS = dict(n_estimators=400, learning_rate=0.05, num_leaves=31, min_child_samples=40,
+LGBM_PARAMS = dict(  # noqa: C408 - keyword form mirrors LGBMRegressor arguments
+    n_estimators=400, learning_rate=0.05, num_leaves=31, min_child_samples=40,
                    subsample=0.7, subsample_freq=1, colsample_bytree=0.8, reg_lambda=5.0,
                    verbosity=-1, n_jobs=4)
 

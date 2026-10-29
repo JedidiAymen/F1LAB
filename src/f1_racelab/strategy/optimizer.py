@@ -20,9 +20,7 @@ Limitations recorded in every output:
 """
 from __future__ import annotations
 
-import itertools
-
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 from f1_racelab.strategy.models import (
     CIRCUIT_COMPOUNDS,
@@ -33,9 +31,9 @@ from f1_racelab.strategy.models import (
     DriverModel,
 )
 from f1_racelab.strategy.simulator import (
+    LapState,
     PitStop,
     Strategy,
-    LapState,
     race_time,
     simulate_race,
 )

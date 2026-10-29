@@ -9,7 +9,6 @@ produces well-formed snapshots via ASGI test client.
 from __future__ import annotations
 
 import asyncio
-import json
 from pathlib import Path
 
 import pytest
@@ -124,7 +123,8 @@ async def test_live_registry_creates_session_once():
 @pytest.mark.asyncio
 @pytest.mark.skipif(not HAS_MONZA, reason='Monza 2025 pack not present')
 async def test_websocket_live_route_sends_snapshot():
-    from httpx import AsyncClient, ASGITransport
+    from httpx import ASGITransport, AsyncClient
+
     from f1_racelab.api import create_app
     app = create_app()
 

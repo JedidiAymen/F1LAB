@@ -3,11 +3,11 @@ import json
 import numpy as np
 import pytest
 from fastapi.testclient import TestClient
+from test_qualifying_walkforward import synthetic
 
 from f1_racelab.api import create_app
 from f1_racelab.models import qualifying_walkforward as wf
 from f1_racelab.models.walkforward_lab import load_walkforward_lab, walkforward_event
-from test_qualifying_walkforward import synthetic
 
 
 @pytest.fixture(scope="module")

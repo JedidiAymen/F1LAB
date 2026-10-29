@@ -14,26 +14,26 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
-from f1_racelab.models.prediction_lab import load_prediction_lab, prediction_event
-from f1_racelab.strategy.models import CIRCUIT_COMPOUNDS, RACE_SPECS
-from f1_racelab.strategy.optimizer import best_strategies, compare_strategies
-from f1_racelab.strategy.monte_carlo import mc_compare
-from f1_racelab.strategy.simulator import PitStop, Strategy
-from f1_racelab.strategy.whatif import branch as whatif_branch
 from f1_racelab.live.ingest import _registry as live_registry
+from f1_racelab.ml.common.registry import ArtifactUnavailable
+from f1_racelab.ml.pace import inference as pace_inference
+from f1_racelab.ml.pace import service as pace_service
+from f1_racelab.models.prediction_lab import load_prediction_lab, prediction_event
 from f1_racelab.models.qualifying_phase_lab import (
     load_phase_prediction_lab,
     phase_prediction_event,
 )
-from f1_racelab.ml.common.registry import ArtifactUnavailable
-from f1_racelab.ml.pace import inference as pace_inference
-from f1_racelab.ml.pace import service as pace_service
 from f1_racelab.models.walkforward_lab import load_walkforward_lab, walkforward_event
 from f1_racelab.session.catalog import DEFAULT_SESSION, SESSIONS
 from f1_racelab.session.contracts import WeatherPayload
 from f1_racelab.session.location_history import build_location_context
 from f1_racelab.session.replay_source import ReplaySource
 from f1_racelab.session.timeline import MAX_STEP, MIN_STEP, build_timeline
+from f1_racelab.strategy.models import CIRCUIT_COMPOUNDS, RACE_SPECS
+from f1_racelab.strategy.monte_carlo import mc_compare
+from f1_racelab.strategy.optimizer import best_strategies, compare_strategies
+from f1_racelab.strategy.simulator import PitStop, Strategy
+from f1_racelab.strategy.whatif import branch as whatif_branch
 from f1_racelab.telemetry.artifacts import COMPARISONS
 from f1_racelab.telemetry.contracts import LapComparison
 from f1_racelab.telemetry.lap_library import (
@@ -683,23 +683,23 @@ def create_app(
                 async for snapshot in sub:
                     try:
                         await websocket.send_json(snapshot)
-                    except Exception:
+                    except Exception:  # noqa: BLE001 - client went away mid-send
                         break
         except WebSocketDisconnect:
             pass
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - report any ingest failure to the client
             try:
                 await websocket.send_json({
                     'type': 'error',
                     'session_slug': slug,
                     'detail': str(exc),
                 })
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 - socket already closed
                 pass
         finally:
             try:
                 await websocket.close()
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 - socket already closed
                 pass
 
     @app.get("/api/v1/live/{slug}/status")

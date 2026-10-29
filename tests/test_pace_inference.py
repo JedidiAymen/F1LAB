@@ -10,7 +10,8 @@ from f1_racelab.ml.pace import dataset as ds
 from f1_racelab.ml.pace import inference
 from f1_racelab.ml.pace.benchmark import LgbmBundle
 
-VALID = dict(anchor_seconds=92.0, lap=20, laps_remaining=30, tyre_age_next=10, stint_number_next=1,
+VALID = dict(  # noqa: C408
+    anchor_seconds=92.0, lap=20, laps_remaining=30, tyre_age_next=10, stint_number_next=1,
              compound_next="MEDIUM", laps_in_stint=10, last1=0.2, last2=0.1, last3=0.0, slope5=0.03,
              stint_best_delta=-0.1, n_clean_history=8, track_temp=40, air_temp=25, humidity=50, wind_speed=2,
              rainfall=0, weather_age_s=30, interval_ahead=1.5, gap_to_leader=12, intervals_age_s=5,

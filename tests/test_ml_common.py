@@ -20,7 +20,7 @@ from f1_racelab.ml.common.registry import (
 
 
 def card(**kw):
-    base = dict(model_id="m", version="1", task="t", target="y", dataset_fingerprint="f" * 64,
+    base = dict(model_id="m", version="1", task="t", target="y", dataset_fingerprint="f" * 64,  # noqa: C408
                 dataset_rows=3, features=[FeatureSpec(name="a", unit="s", available_at="prior lap")],
                 split=SplitSpec(policy="chrono", train_groups=2, test_groups=1, group_key="race"),
                 hyperparameters={}, seed=1, metrics={"mae": 1.0}, dependencies=dependency_versions("numpy"),

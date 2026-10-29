@@ -19,15 +19,12 @@ from __future__ import annotations
 
 import gzip
 import json
-import math
 from pathlib import Path
 from statistics import median
 
 from f1_racelab.strategy.models import (
     Compound,
     FuelModel,
-    PitModel,
-    TyreCompoundModel,
 )
 
 PACK_ROOT = Path(__file__).resolve().parents[3] / 'data/processed/replay_packs'

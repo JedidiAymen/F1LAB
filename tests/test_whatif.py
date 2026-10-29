@@ -5,16 +5,12 @@ fallback to synthetic fixtures when no pack exists.
 """
 from __future__ import annotations
 
-import gzip
-import json
-import math
 from pathlib import Path
 
 import pytest
 
 from f1_racelab.strategy.simulator import PitStop, Strategy
 from f1_racelab.strategy.whatif import (
-    BranchResult,
     _compound_at_lap,
     _load_measured_laps,
     branch,

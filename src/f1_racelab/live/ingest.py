@@ -21,11 +21,9 @@ Limitations (included in every snapshot):
 from __future__ import annotations
 
 import asyncio
-import gzip
-import json
 import time
 from pathlib import Path
-from typing import AsyncIterator, Literal
+from typing import Literal, Self
 
 from f1_racelab.session.replay_source import ReplaySource
 
@@ -146,7 +144,7 @@ class LiveSession:
             except asyncio.CancelledError:
                 pass
 
-    def subscribe(self) -> 'LiveSubscription':
+    def subscribe(self) -> LiveSubscription:
         """Return a context-manager that yields snapshots from this session."""
         q: asyncio.Queue = asyncio.Queue(maxsize=4)
         self._subscribers.append(q)
@@ -172,13 +170,13 @@ class LiveSubscription:
         self._q = queue
         self._session = session
 
-    async def __aenter__(self) -> 'LiveSubscription':
+    async def __aenter__(self) -> Self:
         return self
 
     async def __aexit__(self, *args) -> None:
         self._session.unsubscribe(self._q)
 
-    def __aiter__(self) -> 'LiveSubscription':
+    def __aiter__(self) -> LiveSubscription:
         return self
 
     async def __anext__(self) -> dict:

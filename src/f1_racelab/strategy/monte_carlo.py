@@ -33,18 +33,13 @@ from f1_racelab.strategy.models import (
     CIRCUIT_FUEL,
     CIRCUIT_PIT,
     RACE_SPECS,
-    Compound,
     DriverModel,
 )
 from f1_racelab.strategy.optimizer import (
     SIMULATION_LIMITS,
-    StrategyEvaluation,
-    evaluate_strategy,
 )
 from f1_racelab.strategy.simulator import (
-    CarSimulationState,
     LapState,
-    PitStop,
     Strategy,
     race_time,
     simulate_race,
@@ -140,7 +135,6 @@ def mc_compare(
         for strategy in strategies:
             noisy = world.apply(base_results[strategy.label])
             world_totals[strategy.label] = race_time(noisy)
-        fastest_label = min(world_totals, key=world_totals.__getitem__)
         for label, t in world_totals.items():
             world_times[label].append(t)
 

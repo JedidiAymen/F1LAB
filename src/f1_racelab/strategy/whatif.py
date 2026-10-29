@@ -39,10 +39,7 @@ from f1_racelab.strategy.models import (
     Compound,
 )
 from f1_racelab.strategy.simulator import (
-    LapState,
-    PitStop,
     Strategy,
-    race_time,
     simulate_race,
 )
 

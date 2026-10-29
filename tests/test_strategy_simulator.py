@@ -10,31 +10,25 @@ import pytest
 
 from f1_racelab.strategy.models import (
     CIRCUIT_COMPOUNDS,
-    CIRCUIT_FUEL,
-    CIRCUIT_PIT,
-    RACE_SPECS,
     FuelModel,
     PitModel,
     RaceSpec,
     TyreCompoundModel,
 )
-from f1_racelab.strategy.simulator import (
-    LapState,
-    PitStop,
-    Strategy,
-    gap_history,
-    race_time,
-    simulate_race,
-    undercut_window,
-)
+from f1_racelab.strategy.monte_carlo import mc_compare
 from f1_racelab.strategy.optimizer import (
     best_strategies,
     compare_strategies,
     enumerate_strategies,
     evaluate_strategy,
 )
-from f1_racelab.strategy.monte_carlo import mc_compare
-
+from f1_racelab.strategy.simulator import (
+    PitStop,
+    Strategy,
+    gap_history,
+    simulate_race,
+    undercut_window,
+)
 
 # ---------------------------------------------------------------------------
 # Model unit tests
