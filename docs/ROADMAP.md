@@ -139,3 +139,8 @@ cameras; lazy Canvas mount. Same CircuitGeometry source as 2D map.
 - Camera follow-mode for 3D; E2E browser tests for P5–P8
 - Real-time OpenF1 live adapter credentials (P7 gate)
 - CI, schema export, storage hardening (P0 gate)
+
+**Update 2026-10-29:** M6 evidence extended to 2026 — ensemble does not beat latest practice
+under the new regulations (+0.052 [−0.030, +0.136], 12 events); pooled 48-event gain −0.192
+[−0.404, −0.015]. Added: one-command ingestion pipeline with quality gate, race-history
+chart, 2026 data (12 weekends). See `ENHANCEMENT_PLAN.md`.

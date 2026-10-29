@@ -1288,3 +1288,19 @@ column); mobile top bar overflowed (2 e2e tests failed on the baseline); stale
 
 **Caveats**: ensemble 2025 pole-hit 0.167 is below baseline 0.222 (noisy, 18 events);
 rank-interval coverage 89.5% vs 80% nominal; 3 React lint errors predate this work.
+
+## 2026-10-29 (2) — plan items executed: pipeline, 2026 data, race history, lint
+
+* `data/pipeline.py`: one command, OpenF1 sync → provider merge → quality gate →
+  `pipeline_manifest_<years>.json` (args, step results, dataset SHA, versions).
+  Offline run reproduced the existing 2023–2025 dataset byte-for-byte
+  (SHA `eef5a727…37fd8`). `mixed_qualifying.combine` generalised to any OpenF1 years.
+* Live sync of 2026 (polite 2.1 s pacing): +12 weekends, 259 rows, gate passed
+  (0 errors, 39 warnings across 83 weekends). 404 results are `NOT_PUBLISHED`, not `ERROR`.
+* `session/timeline.py` + `GET /api/v1/replay/{slug}/timeline` + `PositionChart.tsx`:
+  position / gap history from canonical `state_at`, click-to-seek on the shared clock.
+* ML: teammate-correlated Monte Carlo; 2026 evaluated → **no transfer** (see `ML_WALKFORWARD.md`).
+* Lint: the 3 pre-existing errors fixed (`key={slug}` remount for Strategy/What-If labs,
+  derived closed status and snapshot ref in `use-live-session`).
+* Not done: race-finishing model, sprint weekends, per-feature `observed_at`, router/shell
+  refactor, regime-aware model (pre-declared only).

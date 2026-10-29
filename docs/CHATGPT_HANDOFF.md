@@ -726,3 +726,11 @@ Brier pole 0.0374 vs 0.0484 uniform; coverage 89.5% vs 80% nominal.
 **Not done / caveats**: pole-hit not improved (0.167 vs 0.222 in 2025); no race
 model; sprint weekends excluded; publication time still unproven; 3 pre-existing
 lint errors. **Reproduce**: commands in `ML_WALKFORWARD.md`. **Plan**: `ENHANCEMENT_PLAN.md`.
+
+### Addendum (2026-10-29, later): pipeline, 2026 data, race-history chart
+Done and verified: `data/pipeline.py` (+manifest, quality gate), 2026 ingestion (12 weekends),
+`/timeline` endpoint and `PositionChart`, lint clean, 191 Python tests, 16/16 Playwright.
+**Key finding:** the walk-forward models do **not** beat latest-practice ranking in 2026
+(new regulations): ensemble +0.052 [−0.030, +0.136] MAE over 12 events. Pooled 48-event gain
+−0.192 [−0.404, −0.015] comes from 2024–2025. Not tuned on 2026 by decision. Still not done:
+race model, sprint weekends, `observed_at`, router refactor, regime-aware model.

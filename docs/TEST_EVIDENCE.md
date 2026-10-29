@@ -412,3 +412,12 @@ Classification: **real** data for metrics, **synthetic** fixtures for unit tests
   also failed on the untouched baseline (topbar overflow) and now pass.
 * `npm run lint`: 3 errors + 1 warning in `StrategyLab`, `WhatIfLab`, `use-live-session`;
   identical with this work stashed (pre-existing, not fixed here).
+
+## 2026-10-29 (2) — pipeline, timeline, 2026 extension
+
+* `uv run pytest -q` — 191 passed (+7: pipeline 2, timeline 3, walk-forward 2).
+* `uv run python -m f1_racelab.data.pipeline --offline` (scratch dir) — real; dataset SHA identical to the committed-era dataset.
+* `uv run python -m f1_racelab.data.pipeline --years 2023 2024 2025 2026` — real live sync; manifest `data/processed/pipeline_manifest_2023_2024_2025_2026.json`.
+* Walk-forward re-run on 48 events — real; 2026 result is negative, see `ML_WALKFORWARD.md`.
+* `npx tsc -b`, `npm run lint` (clean, was 3 errors), `npm run test:unit` 16 pass,
+  `npx playwright test` **16 passed** (new: race-history chart seeks the shared clock).

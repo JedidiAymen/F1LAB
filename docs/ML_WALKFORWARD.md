@@ -81,3 +81,42 @@ dataset SHA-256 `eef5a7277d2f62fdf263e94cadbc7a5f5c38cd6acdbea9dc00549d5caef37fd
 Python 3.12.13, lightgbm 4.7.0, scikit-learn 1.9.1, pandas 2.3.3.
 API: `GET /api/v1/predictions/qualifying/walkforward[/event?year=&round=]`
 (SHA-256 verified, 503 with reproduction command when missing).
+
+## 2026 extension (added 2026-10-29): the regime-change test
+OpenF1 now serves the 2026 season (new technical regulations). The pipeline
+(`python -m f1_racelab.data.pipeline --years 2023 2024 2025 2026`) added 12
+completed conventional weekends / 259 rows (dataset SHA-256
+`74455574ca019db651187061ab617344528846169f1f49c9134f453b4bc2d3e4`; 5 later 2026
+races have no published results yet and are recorded as `NOT_PUBLISHED`). The
+walk-forward run was repeated unchanged: no hyper-parameter or feature was
+touched after seeing 2026.
+
+| model | 2026 MAE (12 events) | Δ vs latest_practice [95% CI] |
+|---|---|---|
+| latest_practice | 1.842 | — |
+| **ensemble** | 1.894 | +0.052 [−0.030, +0.136] |
+| lightgbm | 2.012 | +0.170 [−0.018, +0.371] |
+| ridge | 2.026 | +0.183 [+0.092, +0.274] |
+| lambdarank | 2.178 | +0.336 [+0.180, +0.510] |
+
+**Finding: the models do not transfer to the 2026 regime.** Ensemble is neutral;
+Ridge and LambdaRank are significantly *worse* than ranking by latest practice.
+Likely cause (hypothesis, not tested): lagged team/driver form and track history
+describe the 2022–2025 cars; under new regulations the pecking order reset.
+Pooled over all 48 evaluated events the ensemble is still −0.192 [−0.404, −0.015]
+and Brier(pole) 0.0378 vs 0.0473 uniform, Brier(top-3) 0.0835 vs 0.1269,
+interval coverage 89.4% (80% nominal) — but the pooled gain is carried by
+2024–2025. Pole-hit: ensemble 0.417 vs baseline 0.583 in 2026.
+
+**Pre-declared next experiment (not run):** a regime-aware variant that discounts
+or resets lagged form at a regulation change (e.g. recency weights or
+within-season-only form) with the variant fixed *before* more 2026 rounds
+complete, then scored on rounds not yet run.
+
+## Teammate-correlated noise
+Monte Carlo now shares a team shock between teammates with correlation `rho`
+learned from earlier events' teammate residuals (mean 0.53, range 0.32–0.79).
+Single-driver Brier scores are unchanged (pole 0.03751 vs 0.03741 before), as
+expected: correlation affects joint events (team double top-3), which are not
+yet scored. `test_teammate_correlation_changes_joint_not_marginal_probabilities`
+covers the mechanism.

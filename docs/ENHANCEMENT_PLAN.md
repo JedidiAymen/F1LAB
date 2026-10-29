@@ -38,3 +38,12 @@ is still open. Inspection on 2026-10-29 found three concrete problems:
    "SOURCE DATA" tag on the tyre panel; keep one clock for all panels.
 7. **Quality gates.** Fix the 3 pre-existing React-hooks lint errors
    (`StrategyLab`, `WhatIfLab`, `use-live-session`), add CI.
+
+## Status update 2026-10-29 (second pass)
+Done since the table above: one-command ingestion pipeline with quality gate and run
+manifest; 2026 data ingested (12 weekends); teammate-correlated Monte Carlo; race-history
+position/gap chart (`/timeline`); the 3 lint errors fixed; clipped tyre tag shortened.
+**Negative result:** models do not beat latest practice in 2026 (see `ML_WALKFORWARD.md`),
+so priority 1 below becomes a *regime-aware* variant pre-declared before further scoring.
+Still open: race-finishing model, sprint weekends and `observed_at`, router/shell refactor,
+sector/corner telemetry panels.

@@ -446,3 +446,8 @@ evaluated 2024–2025 (36 events); dataset SHA `eef5a727…37fd8`; predictions S
 `4f2b5521…133a2`; seed 42; 4,000 draws. Pooled MAE delta −0.274 [−0.544, −0.042];
 Brier pole 0.0374 vs 0.0484; top-3 0.0807 vs 0.1295; interval coverage 89.5% (80% nominal).
 Pole-hit not improved in 2025. Details: `ML_WALKFORWARD.md`.
+
+## EXP-WF-02 — 2026 regime-change evaluation (2026-10-29)
+Same frozen pipeline as EXP-WF-01, 12 completed 2026 events. Ensemble vs latest practice
++0.052 [−0.030, +0.136] (neutral); Ridge/LambdaRank worse. Pooled 48 events −0.192 [−0.404, −0.015].
+Dataset SHA `74455574…2d3e4`. Negative transfer result retained deliberately.

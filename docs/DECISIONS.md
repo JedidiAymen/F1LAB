@@ -324,3 +324,8 @@ the candidate before evaluation. Rationale: fixed 2024 selection with 18 events 
 noisy and the earlier Ridge/LightGBM did not separate from FP3. Consequence: more
 compute (~16 s) and a documented conservative interval (89.5% vs 80%). The older
 phase-aware lab is kept unchanged.
+
+## 2026-10-29 — Do not tune on 2026; report negative transfer
+The 2026 result is an out-of-regime test. Changing features/weights after seeing it would
+turn it into training data. Decision: publish as-is, pre-declare a regime-aware variant,
+and score it only on rounds that complete after it is fixed.
