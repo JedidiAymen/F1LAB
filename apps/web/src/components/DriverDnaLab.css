@@ -1,0 +1,16 @@
+.dna { max-width: 980px; margin: 0 auto; padding: 24px 20px 40px; }
+.dna h2 { margin: 6px 0 8px; font-size: 24px; letter-spacing: -.03em; }
+.dna h3 { margin: 22px 0 8px; font-size: 14px; }
+.dna-lede, .dna-note { color: #96a4ad; font-size: 12px; line-height: 1.5; max-width: 760px; }
+.dna-note { padding-left: 10px; border-left: 2px solid #e7c47a; }
+.dna-bars { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.dna-bars li { display: grid; grid-template-columns: 210px minmax(0, 1fr) 56px; gap: 10px; align-items: center; font-size: 12px; }
+.dna-track { position: relative; height: 14px; background: #172026; border: 1px solid #28343c; }
+.dna-track i { position: absolute; inset: 0 auto 0 0; background: #4f8fd6; opacity: .7; }
+.dna-track b { position: absolute; top: 5px; height: 4px; background: #dce4e8; }
+.dna-track u { position: absolute; top: -3px; bottom: -3px; width: 0; border-left: 2px dashed #e7c47a; }
+.dna-bars strong { text-align: right; font-variant-numeric: tabular-nums; }
+.dna-controls, .dna-limits { margin: 12px 0 0; padding-left: 18px; color: #96a4ad; font-size: 11px; line-height: 1.6; }
+.dna-controls { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.dna-controls li { display: flex; gap: 8px; }
+@media (max-width: 700px) { .dna-bars li { grid-template-columns: 1fr 56px; } .dna-bars li .dna-track { grid-column: 1 / -1; grid-row: 2; } }

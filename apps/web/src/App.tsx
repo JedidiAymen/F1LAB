@@ -4,6 +4,7 @@ import {
   ChevronRight,
   CircleAlert,
   FlaskConical,
+  Fingerprint,
   Gauge,
   FlagTriangleRight,
   Pause,
@@ -27,6 +28,7 @@ import { TelemetryPanel } from '@/components/TelemetryPanel'
 import { TelemetrySelection } from '@/components/TelemetrySelection'
 import { initialTelemetrySelection, telemetrySelectionQuery, type TelemetryLapLibrary, type TelemetrySelection as TelemetrySelectionValue } from '@/lib/telemetry-selection'
 import { PredictionLab } from '@/components/PredictionLab'
+import { DriverDnaLab } from '@/components/DriverDnaLab'
 import { RacePaceLab } from '@/components/RacePaceLab'
 import StrategyLab from '@/components/StrategyLab'
 import WhatIfLab from '@/components/WhatIfLab'
@@ -137,6 +139,7 @@ function ReplayWorkspace({
   onOpenStrategy,
   onOpenWhatIf,
   onOpenPace,
+  onOpenDna,
 }: {
   slug: string
   sessions: CatalogEntry[]
@@ -145,6 +148,7 @@ function ReplayWorkspace({
   onOpenStrategy?: () => void
   onOpenWhatIf?: () => void
   onOpenPace?: () => void
+  onOpenDna?: () => void
 }) {
   const base = `/api/v1/replay/${slug}`
   const [manifest, setManifest] = useState<Manifest | null>(null)
@@ -394,6 +398,11 @@ function ReplayWorkspace({
           {onOpenPace && (
             <button className="prediction-nav-button" type="button" onClick={onOpenPace}>
               <Gauge size={13} /> Race Pace
+            </button>
+          )}
+          {onOpenDna && (
+            <button className="prediction-nav-button" type="button" onClick={onOpenDna}>
+              <Fingerprint size={13} /> Driver DNA
             </button>
           )}
           {onOpenWhatIf && (
@@ -834,7 +843,7 @@ function ReplayWorkspace({
 function App() {
   const [sessions, setSessions] = useState<CatalogEntry[]>([])
   const [slug, setSlug] = useState('monza-2025')
-  const [workspace, setWorkspace] = useState<'replay' | 'prediction' | 'strategy' | 'whatif' | 'pace'>('replay')
+  const [workspace, setWorkspace] = useState<'replay' | 'prediction' | 'strategy' | 'whatif' | 'pace' | 'dna'>('replay')
   useEffect(() => {
     const controller = new AbortController()
     fetch('/api/v1/replays', { signal: controller.signal })
@@ -846,6 +855,7 @@ function App() {
       .catch(() => {})
     return () => controller.abort()
   }, [])
+  if (workspace === 'dna') return <DriverDnaLab onBack={() => setWorkspace('replay')} />
   if (workspace === 'pace') return <RacePaceLab onBack={() => setWorkspace('replay')} />
   if (workspace === 'prediction') return <PredictionLab onBack={() => setWorkspace('replay')} />
   if (workspace === 'strategy') return (
@@ -873,6 +883,7 @@ function App() {
     onOpenStrategy={() => setWorkspace('strategy')}
     onOpenWhatIf={() => setWorkspace('whatif')}
     onOpenPace={() => setWorkspace('pace')}
+    onOpenDna={() => setWorkspace('dna')}
   />
 }
 

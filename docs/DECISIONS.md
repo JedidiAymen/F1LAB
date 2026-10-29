@@ -332,3 +332,6 @@ and score it only on rounds that complete after it is fixed.
 
 ## 2026-10-29 — Report the fair baseline; do not claim a race-pace win
 Naive last-lap persistence is a straw man at decision time (it ignores that the lap after an in-lap is an out-lap). The headline comparison is against persistence plus that rule, and pooled differences whose race-clustered interval includes zero are reported as no significant gain. mypy is advisory in CI until its 72 pre-existing errors are triaged.
+
+## 2026-10-29 — Report Driver DNA as separability, not style; torch stays optional
+Neural models did not clearly beat handcrafted features, so no deployed model or live endpoint was built. torch is an optional `dl` extra so CI and the core install stay light.

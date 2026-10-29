@@ -35,6 +35,11 @@ dependencies = [
 [project.scripts]
 f1-racelab = "f1_racelab:main"
 
+[project.optional-dependencies]
+dl = [
+    "torch>=2.15.0",
+]
+
 [build-system]
 requires = ["uv_build>=0.12.17,<0.13.0"]
 build-backend = "uv_build"

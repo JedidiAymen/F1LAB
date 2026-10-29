@@ -566,3 +566,12 @@ test('strategy lab ML pace overlay is opt-in and keeps the simulator as baseline
   await expect(overlay.getByText('simulator (deterministic baseline)')).toBeVisible()
   await expect(overlay).toContainText('errors compound')
 })
+
+test('driver dna lab shows evaluation, chance markers and confound controls', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: /Driver DNA/ }).click()
+  await expect(page.getByRole('heading', { name: /tell drivers apart/ })).toBeVisible()
+  await expect(page.getByText('NOT A LIVE MODEL')).toBeVisible()
+  await expect(page.getByLabel('Cross-circuit identification')).toContainText('tcn')
+  await expect(page.getByLabel('Confound controls')).toContainText('metadata only')
+})

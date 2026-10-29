@@ -16,6 +16,7 @@ from pydantic import ValidationError
 
 from f1_racelab.live.ingest import _registry as live_registry
 from f1_racelab.ml.common.registry import ArtifactUnavailable
+from f1_racelab.ml.driver_dna import service as dna_service
 from f1_racelab.ml.pace import inference as pace_inference
 from f1_racelab.ml.pace import service as pace_service
 from f1_racelab.models.prediction_lab import load_prediction_lab, prediction_event
@@ -406,6 +407,13 @@ def create_app(
             return pace_service.forecast(pace_lab(), race_id, driver)
         except KeyError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/v1/driver-dna/summary")
+    def driver_dna_summary() -> dict:
+        try:
+            return dna_service.summary()
+        except (dna_service.DnaUnavailable, OSError, ValueError) as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     @app.post("/api/v1/pace/predict")
     def pace_predict(features: pace_inference.PaceFeatures) -> dict:

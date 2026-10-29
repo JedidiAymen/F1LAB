@@ -749,3 +749,9 @@ safety-car laps are unusable (5% coverage). 362 of 593 large green-lap errors ar
 PyTorch), RaceVision (dataset rights unverified), Overtake Intelligence, Neural Qualifying extension, Radio
 Intelligence. mypy has 72 pre-existing errors (advisory in CI). 8 older commits carry assistant co-author
 trailers; history is not rewritten. Reproduce: commands in `docs/research/RACE_PACE_INTELLIGENCE.md`.
+
+## Driver DNA (2026-10-29)
+Done: dataset (1,749 laps, 3 races), protocol, handcrafted/LightGBM/TCN/contrastive evaluations, read-only API and UI,
+`docs/research/DRIVER_DNA.md`. Result: teammates separable at about 0.80-0.90 vs 0.51 majority (controls ruled out pace
+and stint position); cross-circuit identity 23-40% vs 9% chance (TCN 39.8%); TCN not clearly better than logistic on handcrafted
+features. Not done: more sessions, a deployed model, embedding explorer. torch is optional: `uv sync --extra dl`.
