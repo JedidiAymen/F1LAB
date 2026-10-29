@@ -766,3 +766,7 @@ the new modules, mypy triage.
 ## Neural Qualifying (2026-10-29, exploratory)
 MLP and regime-shrinkage variants evaluated on the same 48 events: none significantly beats the existing ensemble; in 2026
 nothing beats latest practice. Not served. See `docs/research/NEURAL_QUALIFYING.md`.
+
+## Radio Intelligence and model cards (2026-10-29)
+Radio: **blocked** (protected audio, nothing downloaded), `docs/research/RADIO_INTELLIGENCE.md`. Consolidated model/dataset cards:
+`docs/research/MODEL_CARDS.md`.
