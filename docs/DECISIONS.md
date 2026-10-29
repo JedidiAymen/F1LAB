@@ -316,3 +316,11 @@ and crowded mobile delta labels. Both are on `origin/feat/foundation`;
 `git ls-remote origin refs/heads/feat/foundation` returned `9a13f6eef679c417fc3bc6a8beddd320504dbc06`. Git
 used Aymen Jedidi's repository identity, with no assistant coauthor. The two
 unrelated user helpers under `ml/features/` remain untracked and untouched.
+
+## 2026-10-29 — Walk-forward evaluation replaces fixed splits for the headline model
+
+Decision: retrain per event on strictly earlier events; fix hyper-parameters; declare
+the candidate before evaluation. Rationale: fixed 2024 selection with 18 events was
+noisy and the earlier Ridge/LightGBM did not separate from FP3. Consequence: more
+compute (~16 s) and a documented conservative interval (89.5% vs 80%). The older
+phase-aware lab is kept unchanged.

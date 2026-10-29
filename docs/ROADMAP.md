@@ -18,6 +18,7 @@ is in `SOL61_MASTER_EXECUTION.md`; this page tracks execution.
 | P6: what-if counterfactual branching | Complete (commit f76d8b6) | 13 tests pass; fork-lap historical/simulated timeline pairs; delta; React WhatIfLab with SVG charts |
 | P7: simulated-live WebSocket fan-out | Complete (commit f3098cb) | 7 async tests pass; LiveSession/LiveRegistry, subscriber queue, reconnect delivery, SIMULATED LIVE badge, React hook with backoff; 167 total Python tests |
 | P8: Three.js/R3F 3D circuit viewer | Complete (commit fbd4b68) | TypeScript build clean; spline track ribbon, CarDot lerp animation, Top/Orbit cameras, lazy Canvas mount; same CircuitGeometry as 2D |
+| M6: walk-forward ML with probabilities | Complete as a research benchmark (2026-10-29) | Pooled 2024–2025 MAE −0.274 [−0.544, −0.042] vs latest practice; Brier beats uniform; intervals conservative; pole-hit not improved. See `ML_WALKFORWARD.md`, plan in `ENHANCEMENT_PLAN.md` |
 
 ## Current dependency order
 

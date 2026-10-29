@@ -268,3 +268,9 @@ and crowded mobile delta labels. Both are on `origin/feat/foundation`;
 `git ls-remote origin refs/heads/feat/foundation` returned `9a13f6eef679c417fc3bc6a8beddd320504dbc06`. Git
 used Aymen Jedidi's repository identity, with no assistant coauthor. The two
 unrelated user helpers under `ml/features/` remain untracked and untouched.
+
+- **Walk-forward validation**: score each event with a model trained only on earlier events.
+- **LambdaRank**: gradient boosting that optimises a ranking metric within groups (events).
+- **Brier score**: mean squared error of probabilities; lower is better; compare to a uniform baseline.
+- **Reliability diagram**: forecast probability vs observed frequency; points on the diagonal are calibrated.
+- **Interval coverage**: share of actual outcomes inside the forecast interval; should match nominal (80%).

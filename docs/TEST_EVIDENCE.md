@@ -400,3 +400,15 @@ and crowded mobile delta labels. Both are on `origin/feat/foundation`;
 `git ls-remote origin refs/heads/feat/foundation` returned `9a13f6eef679c417fc3bc6a8beddd320504dbc06`. Git
 used Aymen Jedidi's repository identity, with no assistant coauthor. The two
 unrelated user helpers under `ml/features/` remain untracked and untouched.
+
+## 2026-10-29 — walk-forward ML, quality audit, client hardening, layout
+
+Classification: **real** data for metrics, **synthetic** fixtures for unit tests.
+* `uv run pytest -q` — 184 passed (167 before; +17: 5 walk-forward, 6 quality, 3 client, 3 lab/API).
+* `uv run python -m f1_racelab.models.qualifying_walkforward` — real, 36 evaluated events, numbers in `ML_WALKFORWARD.md`.
+* `uv run python -m f1_racelab.data.quality` — real, 1,418 rows / 71 weekends: 0 errors, 37 warnings.
+* `cd apps/web && npx tsc -b` clean; `npm run test:unit` 16 passed; `npm run build` ok;
+  `npx playwright test` **15 passed** (44 s). Two scenarios (`mobile keeps…`, `monaco-2023 six…`)
+  also failed on the untouched baseline (topbar overflow) and now pass.
+* `npm run lint`: 3 errors + 1 warning in `StrategyLab`, `WhatIfLab`, `use-live-session`;
+  identical with this work stashed (pre-existing, not fixed here).

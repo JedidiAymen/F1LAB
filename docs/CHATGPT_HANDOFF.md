@@ -714,3 +714,15 @@ All four milestone commits are pushed to `origin/feat/foundation`.
   (all require backend running with a pack).
 - Real-time OpenF1 live adapter (adapter interface present; no credentials).
 - CI and storage/schema-export hardening; P0 gate.
+
+## Latest milestone — walk-forward ML, data-quality audit, layout repair (2026-10-29)
+
+**Done (verified)**: walk-forward ensemble with Monte Carlo rank probabilities
+(`ML_WALKFORWARD.md`), API + Prediction Lab `ForecastPanel`, `data/quality.py`
+audit, hardened OpenF1 client, replay grid and mobile top-bar fixes.
+**Evidence**: 184 Python tests, 16 web unit tests, 15/15 Playwright, real-data
+run of 36 evaluated events. Pooled MAE −0.274 [−0.544, −0.042] vs latest practice;
+Brier pole 0.0374 vs 0.0484 uniform; coverage 89.5% vs 80% nominal.
+**Not done / caveats**: pole-hit not improved (0.167 vs 0.222 in 2025); no race
+model; sprint weekends excluded; publication time still unproven; 3 pre-existing
+lint errors. **Reproduce**: commands in `ML_WALKFORWARD.md`. **Plan**: `ENHANCEMENT_PLAN.md`.

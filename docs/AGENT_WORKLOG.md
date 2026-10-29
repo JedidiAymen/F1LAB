@@ -1263,3 +1263,28 @@ state keys, stop semantics, registry singleton, HTTP status route.
 - Python tests: 167 passing
 - TypeScript build: clean (Three.js bundle 1.4 MB expected)
 - Commits: f76d8b6 (P6), fbd4b68 (P8), f3098cb (P7) all pushed to feat/foundation
+
+## 2026-10-29 — Walk-forward ML, ingestion hardening, layout repair
+
+Base SHA `bd00ddf` (feat/foundation). Plan: `docs/ENHANCEMENT_PLAN.md`.
+
+**Paths**: `models/qualifying_walkforward.py` (`build_frame`, `add_weekend_context_features`,
+`walk_forward`, `ResidualScale`, `monte_carlo_ranks`, `probability_audit`),
+`models/walkforward_lab.py`, `data/quality.py` (`audit`, `coverage_matrix`),
+`data/openf1_qualifying.py` (`OpenF1Client._fetch/_read_cached`), `api.py`
+(2 endpoints), `apps/web/src/components/ForecastPanel.{tsx,css}`,
+`PredictionLab.tsx`, `App.css`.
+
+**Algorithm/units**: see `ML_WALKFORWARD.md` (gap in percent of event-best lap;
+ranks 1-based; seeded 4,000-draw Monte Carlo).
+
+**Why**: LambdaRank optimises the ordering directly; the ensemble gives a gap scale
+for sigma; sigma/multiplier use only earlier events. Quality audit reports instead
+of editing data. Client retries are bounded (5 attempts, capped jittered backoff).
+
+**Bugs found and fixed**: replay grid placed 4 children in 3 columns (dead right
+column); mobile top bar overflowed (2 e2e tests failed on the baseline); stale
+`Ensemble` test year in my own test.
+
+**Caveats**: ensemble 2025 pole-hit 0.167 is below baseline 0.222 (noisy, 18 events);
+rank-interval coverage 89.5% vs 80% nominal; 3 React lint errors predate this work.

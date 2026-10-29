@@ -358,3 +358,8 @@ and crowded mobile delta labels. Both are on `origin/feat/foundation`;
 `git ls-remote origin refs/heads/feat/foundation` returned `9a13f6eef679c417fc3bc6a8beddd320504dbc06`. Git
 used Aymen Jedidi's repository identity, with no assistant coauthor. The two
 unrelated user helpers under `ml/features/` remain untracked and untouched.
+
+## Walk-forward forecaster (2026-10-29)
+`qualifying_walkforward.py` → artifacts → `walkforward_lab.py` (SHA check) → `api.py`
+`/api/v1/predictions/qualifying/walkforward[/event]` → `ForecastPanel.tsx`.
+Data audit: `data/quality.py`. Client hardening: `OpenF1Client._fetch`.

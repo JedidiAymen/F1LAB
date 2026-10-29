@@ -438,3 +438,11 @@ and crowded mobile delta labels. Both are on `origin/feat/foundation`;
 `git ls-remote origin refs/heads/feat/foundation` returned `9a13f6eef679c417fc3bc6a8beddd320504dbc06`. Git
 used Aymen Jedidi's repository identity, with no assistant coauthor. The two
 unrelated user helpers under `ml/features/` remain untracked and untouched.
+
+## EXP-WF-01 — walk-forward ensemble with rank probabilities (2026-10-29)
+
+Candidate `ensemble` pre-declared; baseline `latest_practice`; 12 warm-up events,
+evaluated 2024–2025 (36 events); dataset SHA `eef5a727…37fd8`; predictions SHA
+`4f2b5521…133a2`; seed 42; 4,000 draws. Pooled MAE delta −0.274 [−0.544, −0.042];
+Brier pole 0.0374 vs 0.0484; top-3 0.0807 vs 0.1295; interval coverage 89.5% (80% nominal).
+Pole-hit not improved in 2025. Details: `ML_WALKFORWARD.md`.
