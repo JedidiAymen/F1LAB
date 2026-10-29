@@ -40,7 +40,7 @@ def compare_to_persistence(predictions: pd.DataFrame) -> dict:
     by_year = per_race.groupby("year").agg(races=("delta", "size"), lgbm=("lgbm", "mean"), pers=("pers", "mean"),
                                            share_lgbm_better=("delta", lambda d: float((d < 0).mean())))
     worst = per_race.sort_values("delta", ascending=False).head(5)
-    return {"n_laps": int(len(joined)), "mae_lgbm": float(joined.lgbm.mean()), "mae_persistence": float(joined.pers.mean()),
+    return {"n_laps": len(joined), "mae_lgbm": float(joined.lgbm.mean()), "mae_persistence": float(joined.pers.mean()),
             "abs_diff": boot["mean_delta"], "relative_diff": boot["mean_delta"] / float(joined.pers.mean()),
             "ci": [boot["ci_low"], boot["ci_high"]], "races": boot["clusters"],
             "share_races_lgbm_better": float((per_race.delta < 0).mean()),
@@ -91,14 +91,14 @@ def interval_report(predictions: pd.DataFrame) -> dict:
         for value, part in pool.groupby(name):
             if len(part) < 200:
                 continue
-            rows.append({"value": str(value), "n": int(len(part)), "raw_coverage": cov(part, "q10_seconds", "q90_seconds"),
+            rows.append({"value": str(value), "n": len(part), "raw_coverage": cov(part, "q10_seconds", "q90_seconds"),
                          "cqr_coverage": cov(part, "cal_q10", "cal_q90"),
                          "raw_width": float((part.q90_seconds - part.q10_seconds).mean()),
                          "cqr_width": float((part.cal_q90 - part.cal_q10).mean())})
         slices[name] = rows
     per_race = scored.groupby("race_id").apply(lambda g: pd.Series({"raw": cov(g, "q10_seconds", "q90_seconds"),
                                                                     "cqr": cov(g, "cal_q10", "cal_q90")}), include_groups=False)
-    return {"target": TARGET_COVERAGE, "calibrated_rows": int(len(scored)),
+    return {"target": TARGET_COVERAGE, "calibrated_rows": len(scored),
             "raw": {"coverage": cov(scored, "q10_seconds", "q90_seconds"), "pinball": pinball_pair(scored, "q10_seconds", "q90_seconds"),
                     "width": float((scored.q90_seconds - scored.q10_seconds).mean())},
             "cqr": {"coverage": cov(scored, "cal_q10", "cal_q90"), "pinball": pinball_pair(scored, "cal_q10", "cal_q90"),

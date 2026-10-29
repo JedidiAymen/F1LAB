@@ -19,7 +19,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from lightgbm import LGBMRegressor
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression, Ridge
@@ -42,11 +41,16 @@ from f1_racelab.ml.common.guards import (
 )
 from f1_racelab.ml.common.registry import save_artifact
 from f1_racelab.ml.pace import dataset as ds
+from f1_racelab.ml.pace.bundle import (  # noqa: F401
+    LGBM_PARAMS,
+    SEED,
+    LgbmBundle,
+    _lgbm_frame,
+)
 
 ROOT = Path(__file__).resolve().parents[4]
 OUT = ROOT / "data/processed/race_pace"
 ARTIFACTS = ROOT / "data/processed/models/race_pace"
-SEED = 42
 MIN_TRAIN_RACES = 20
 STEP = 3
 TARGET = "delta_seconds"
@@ -58,10 +62,6 @@ GROUPS = {
     "regime_history": ["neutral_in_last3", "yellow_in_last1", "laps_since_neutral"],
     "race_progress": ["lap", "laps_remaining"],
 }
-LGBM_PARAMS = dict(n_estimators=400, learning_rate=0.05, num_leaves=31, min_child_samples=40,
-                   subsample=0.7, subsample_freq=1, colsample_bytree=0.8, reg_lambda=5.0,
-                   verbosity=-1, n_jobs=4)
-
 
 def _columns(drop: list[str] | None = None, identity: bool = False) -> tuple[list[str], list[str]]:
     drop = set(drop or [])
@@ -78,46 +78,6 @@ def _prep(numeric: list[str], categorical: list[str]) -> ColumnTransformer:
                           ("scale", StandardScaler())]), numeric),
         ("cat", OneHotEncoder(handle_unknown="ignore"), categorical),
     ])
-
-
-def _lgbm_frame(frame: pd.DataFrame, numeric: list[str], categorical: list[str],
-                categories: dict[str, list] | None = None) -> pd.DataFrame:
-    out = frame[numeric].astype(float).copy()
-    for col in categorical:
-        known = categories[col] if categories else sorted(frame[col].astype(str).unique())
-        out[col] = pd.Categorical(frame[col].astype(str), categories=known)
-    return out
-
-
-class LgbmBundle:
-    """Median + 10%/90% quantile LightGBM models sharing one feature schema."""
-
-    def __init__(self, numeric: list[str], categorical: list[str], seed: int = SEED, quantiles: bool = True):
-        self.numeric, self.categorical, self.seed, self.quantiles = numeric, categorical, seed, quantiles
-
-    def fit(self, frame: pd.DataFrame, y: np.ndarray) -> LgbmBundle:
-        self.categories = {c: sorted(frame[c].astype(str).unique()) for c in self.categorical}
-        x = _lgbm_frame(frame, self.numeric, self.categorical, self.categories)
-        self.median = LGBMRegressor(objective="l1", random_state=self.seed, **LGBM_PARAMS).fit(x, y)
-        if self.quantiles:
-            self.q10 = LGBMRegressor(objective="quantile", alpha=0.1, random_state=self.seed, **LGBM_PARAMS).fit(x, y)
-            self.q90 = LGBMRegressor(objective="quantile", alpha=0.9, random_state=self.seed, **LGBM_PARAMS).fit(x, y)
-        return self
-
-    def _x(self, frame: pd.DataFrame) -> pd.DataFrame:
-        return _lgbm_frame(frame, self.numeric, self.categorical, self.categories)
-
-    def predict(self, frame: pd.DataFrame) -> dict[str, np.ndarray]:
-        x = self._x(frame)
-        out = {"median": self.median.predict(x)}
-        if self.quantiles:
-            low, high = self.q10.predict(x), self.q90.predict(x)
-            out["q10"], out["q90"] = np.minimum(low, out["median"]), np.maximum(high, out["median"])
-        return out
-
-    def contributions(self, frame: pd.DataFrame) -> np.ndarray:
-        """Per-feature additive contributions to the median delta (LightGBM TreeSHAP) + bias last."""
-        return self.median.predict(self._x(frame), pred_contrib=True)
 
 
 def _fit_ols(train: pd.DataFrame) -> Pipeline:
@@ -268,29 +228,8 @@ def final_model(frame: pd.DataFrame) -> tuple[LgbmBundle, pd.DataFrame]:
     return LgbmBundle(numeric, categorical).fit(train, train[TARGET].to_numpy()), train
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--years", type=int, nargs="+", default=[2023, 2024, 2025, 2026])
-    parser.add_argument("--out", type=Path, default=OUT)
-    parser.add_argument("--no-ablations", action="store_true")
-    args = parser.parse_args()
-    raw, coverage = ds.build_dataset(args.years)
-    frame = prepare(raw)
-    args.out.mkdir(parents=True, exist_ok=True)
-    frame.to_parquet(args.out / "pace_frame.parquet", index=False)
-    (args.out / "coverage.json").write_text(json.dumps(coverage, indent=2, default=str))
-    result = walk_forward(frame, ablations=not args.no_ablations)
-    predictions = result["predictions"]
-    predictions.to_parquet(args.out / "predictions.parquet", index=False)
-    contrib = result["contributions"]
-    if len(contrib):
-        contrib.assign(race_id=frame.loc[contrib.index, "race_id"], driver_number=frame.loc[contrib.index, "driver_number"],
-                       lap=frame.loc[contrib.index, "lap"]).to_parquet(args.out / "contributions.parquet")
-    summary = summarise(predictions, result["ablations"], result["seeds"])
-    summary["timings"] = result["timings"]
-    summary["dataset"] = {"rows": len(frame), "races": int(frame.race_id.nunique()),
-                          "fingerprint": fingerprint_frame(frame[ds.NUMERIC + ds.CATEGORICAL + [TARGET]])}
-    (args.out / "summary.json").write_text(json.dumps(summary, indent=2, default=float))
+def save_served(frame: pd.DataFrame, summary: dict) -> None:
+    """Fit the served bundle on all green rows and save it with its card; records hashes in ``summary``."""
     bundle, train = final_model(frame)
     card = ModelCard(
         model_id="race_pace_lightgbm", version="1", task="next-lap pace forecast (green-flag clean laps)",
@@ -310,6 +249,45 @@ def main() -> None:
         created_at_utc=now_utc())
     hashes = save_artifact(ARTIFACTS, "race_pace_lightgbm", bundle, card)
     summary["artifact"] = hashes
+
+
+def refit(out: Path) -> None:
+    """Re-save the served artifact from the saved frame/summary without rerunning the walk-forward."""
+    frame = pd.read_parquet(out / "pace_frame.parquet")
+    summary = json.loads((out / "summary.json").read_text())
+    save_served(frame, summary)
+    (out / "summary.json").write_text(json.dumps(summary, indent=2, default=float))
+    print(summary["artifact"])
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--years", type=int, nargs="+", default=[2023, 2024, 2025, 2026])
+    parser.add_argument("--out", type=Path, default=OUT)
+    parser.add_argument("--no-ablations", action="store_true")
+    parser.add_argument("--refit-only", action="store_true", help="re-save the served artifact from the saved frame")
+    args = parser.parse_args()
+    if args.refit_only:
+        refit(args.out)
+        return
+    raw, coverage = ds.build_dataset(args.years)
+    frame = prepare(raw)
+    args.out.mkdir(parents=True, exist_ok=True)
+    frame.to_parquet(args.out / "pace_frame.parquet", index=False)
+    (args.out / "coverage.json").write_text(json.dumps(coverage, indent=2, default=str))
+    result = walk_forward(frame, ablations=not args.no_ablations)
+    predictions = result["predictions"]
+    predictions.to_parquet(args.out / "predictions.parquet", index=False)
+    contrib = result["contributions"]
+    if len(contrib):
+        contrib.assign(race_id=frame.loc[contrib.index, "race_id"], driver_number=frame.loc[contrib.index, "driver_number"],
+                       lap=frame.loc[contrib.index, "lap"]).to_parquet(args.out / "contributions.parquet")
+    summary = summarise(predictions, result["ablations"], result["seeds"])
+    summary["timings"] = result["timings"]
+    summary["dataset"] = {"rows": len(frame), "races": int(frame.race_id.nunique()),
+                          "fingerprint": fingerprint_frame(frame[ds.NUMERIC + ds.CATEGORICAL + [TARGET]])}
+    (args.out / "summary.json").write_text(json.dumps(summary, indent=2, default=float))
+    save_served(frame, summary)
     (args.out / "summary.json").write_text(json.dumps(summary, indent=2, default=float))
     print(pd.DataFrame(summary["green_table"]).to_string(index=False))
     print(json.dumps(summary["paired_vs_anchor"], indent=1)[:1500])

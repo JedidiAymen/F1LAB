@@ -25,6 +25,8 @@ from f1_racelab.models.qualifying_phase_lab import (
     load_phase_prediction_lab,
     phase_prediction_event,
 )
+from f1_racelab.ml.common.registry import ArtifactUnavailable
+from f1_racelab.ml.pace import inference as pace_inference
 from f1_racelab.ml.pace import service as pace_service
 from f1_racelab.models.walkforward_lab import load_walkforward_lab, walkforward_event
 from f1_racelab.session.catalog import DEFAULT_SESSION, SESSIONS
@@ -403,6 +405,13 @@ def create_app(
             return pace_service.forecast(pace_lab(), race_id, driver)
         except KeyError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.post("/api/v1/pace/predict")
+    def pace_predict(features: pace_inference.PaceFeatures) -> dict:
+        try:
+            return pace_inference.predict(features)
+        except (ArtifactUnavailable, OSError, ValueError) as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     # ------------------------------------------------------------------ #
     # P5 Strategy Lab endpoints                                            #
