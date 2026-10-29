@@ -62,3 +62,63 @@ def test_normalization_uses_q1_phase_and_event_scoped_practice_reference():
     assert frame.loc[0, "source_session_key"] == 99
     assert frame.loc[0, "available_at"] == "2025-03-01T12:00:00+00:00"
     assert pd.notna(frame.loc[9, "fp3_gap_pct"])
+
+
+def _client(tmp_path):
+    client = OpenF1Client(tmp_path, interval=0)
+    client._sleep = lambda _seconds: None
+    return client
+
+
+def test_client_retries_transport_errors_and_rate_limits_then_succeeds(tmp_path, monkeypatch):
+    outcomes = [
+        httpx.ConnectTimeout("slow"),
+        httpx.Response(429, headers={"Retry-After": "1"}, request=httpx.Request("GET", "u")),
+        httpx.Response(200, json=[{"ok": 1}], request=httpx.Request("GET", "u")),
+    ]
+    waited = []
+
+    def reply(url, params):
+        outcome = outcomes.pop(0)
+        if isinstance(outcome, Exception):
+            raise outcome
+        return outcome
+
+    with _client(tmp_path) as client:
+        client._sleep = waited.append
+        monkeypatch.setattr(client._http, "get", reply)
+        assert client.get("meetings", year=2025) == [{"ok": 1}]
+    assert not outcomes and 1.0 in waited  # Retry-After honoured
+
+
+def test_client_gives_up_after_bounded_attempts(tmp_path, monkeypatch):
+    calls = []
+
+    def reply(url, params):
+        calls.append(1)
+        raise httpx.ReadTimeout("down")
+
+    with _client(tmp_path) as client:
+        monkeypatch.setattr(client._http, "get", reply)
+        try:
+            client.get("meetings", year=2025)
+        except httpx.ReadTimeout:
+            pass
+        else:
+            raise AssertionError("expected the last transport error")
+    assert len(calls) == 5
+    assert not list(tmp_path.rglob("*.json"))  # nothing cached on failure
+
+
+def test_corrupt_cache_file_is_quarantined_and_refetched(tmp_path, monkeypatch):
+    def reply(url, params):
+        return httpx.Response(200, json=[{"fresh": True}], request=httpx.Request("GET", url))
+
+    with _client(tmp_path) as client:
+        monkeypatch.setattr(client._http, "get", reply)
+        client.get("meetings", year=1)
+        cached = next(tmp_path.rglob("*.json"))
+        cached.write_bytes(b'[{"truncated"')
+        assert client.get("meetings", year=1) == [{"fresh": True}]
+    assert len(list(tmp_path.rglob("*.corrupt"))) == 1
+    assert len(list(tmp_path.rglob("*.json"))) == 1

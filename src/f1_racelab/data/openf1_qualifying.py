@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import random
 import time
 from datetime import UTC, datetime
 from pathlib import Path
@@ -24,6 +25,8 @@ RAW_ROOT = ROOT / "data/raw/openf1"
 BASE_URL = "https://api.openf1.org/v1"
 MIN_REQUEST_INTERVAL_SECONDS = 2.1  # below the public 30 requests/minute ceiling
 RETRIABLE_STATUS = {429, 500, 502, 503, 504}
+MAX_ATTEMPTS = 5
+BACKOFF_CAP_SECONDS = 30.0
 PRACTICE_NAMES = ("Practice 1", "Practice 2", "Practice 3")
 
 
@@ -36,6 +39,8 @@ class OpenF1Client:
         self.interval = interval
         self.offline = offline
         self._last_request = 0.0
+        self._sleep = time.sleep  # injectable so retry tests do not wait
+        self._rng = random.Random(0)
         self._http = httpx.Client(timeout=30.0, headers={"User-Agent": "F1LAB/0.1 research"})
         self.hashes: dict[str, str] = {}
 
@@ -45,36 +50,66 @@ class OpenF1Client:
     def __exit__(self, *_):
         self._http.close()
 
+    def _read_cached(self, destination: Path) -> bytes | None:
+        """Return a cached payload only if it is a JSON list; quarantine otherwise.
+
+        A crashed or truncated write must not poison every later run, so an
+        unreadable file is renamed ``*.corrupt`` and the resource is refetched.
+        """
+        if not destination.exists():
+            return None
+        payload = destination.read_bytes()
+        try:
+            if isinstance(json.loads(payload), list):
+                return payload
+        except ValueError:
+            pass
+        destination.replace(destination.with_suffix(".corrupt"))
+        return None
+
+    def _fetch(self, endpoint: str, params: dict) -> bytes:
+        last_error: Exception | None = None
+        for attempt in range(MAX_ATTEMPTS):
+            delay = self.interval - (time.monotonic() - self._last_request)
+            if delay > 0:
+                self._sleep(delay)
+            self._last_request = time.monotonic()
+            try:
+                response = self._http.get(f"{BASE_URL}/{endpoint}", params=params)
+            except httpx.TransportError as exc:  # timeouts, resets, DNS blips
+                last_error = exc
+            else:
+                if response.status_code not in RETRIABLE_STATUS:
+                    response.raise_for_status()
+                    return response.content
+                retry_after = response.headers.get("Retry-After")
+                last_error = httpx.HTTPStatusError(
+                    f"HTTP {response.status_code}", request=response.request, response=response)
+                if retry_after:
+                    self._sleep(float(retry_after))
+            if attempt < MAX_ATTEMPTS - 1:
+                # Exponential backoff with full jitter, capped.
+                self._sleep(self._rng.uniform(0, min(BACKOFF_CAP_SECONDS, 2 ** attempt)))
+        assert last_error is not None
+        raise last_error
+
     def get(self, endpoint: str, **params: int | str) -> list[dict]:
         query = "&".join(f"{key}={value}" for key, value in sorted(params.items()))
         resource = f"{endpoint}?{query}"
         key = hashlib.sha256(resource.encode()).hexdigest()[:20]
         destination = self.cache_root / endpoint / f"{key}.json"
-        if destination.exists():
-            payload = destination.read_bytes()
-        else:
+        payload = self._read_cached(destination)
+        if payload is None:
             if self.offline:
                 raise FileNotFoundError(f"Offline OpenF1 resource is not cached: {resource}")
-            for attempt in range(4):
-                delay = self.interval - (time.monotonic() - self._last_request)
-                if delay > 0:
-                    time.sleep(delay)
-                self._last_request = time.monotonic()
-                response = self._http.get(f"{BASE_URL}/{endpoint}", params=params)
-                if response.status_code in RETRIABLE_STATUS and attempt < 3:
-                    retry_after = response.headers.get("Retry-After")
-                    time.sleep(max(float(retry_after) if retry_after else 0.0, 2 ** attempt))
-                    continue
-                response.raise_for_status()
-                payload = response.content
-                break
+            payload = self._fetch(endpoint, params)
+            if not isinstance(json.loads(payload), list):
+                raise TypeError(f"OpenF1 {resource} returned a non-list payload")
             self.cache_root.joinpath(endpoint).mkdir(parents=True, exist_ok=True)
             temporary = destination.with_suffix(".tmp")
             temporary.write_bytes(payload)
             temporary.replace(destination)
         rows = json.loads(payload)
-        if not isinstance(rows, list):
-            raise TypeError(f"OpenF1 {resource} returned a non-list payload")
         self.hashes[resource] = hashlib.sha256(payload).hexdigest()
         return rows
 
