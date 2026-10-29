@@ -8,6 +8,18 @@ def mae(y: np.ndarray, p: np.ndarray) -> float:
     return float(np.mean(np.abs(np.asarray(y) - np.asarray(p))))
 
 
+def mape(y: np.ndarray, p: np.ndarray) -> float:
+    """Mean absolute percentage error in percent; zero targets are excluded (undefined)."""
+    y, p = np.asarray(y, float), np.asarray(p, float)
+    keep = y != 0
+    return float(np.mean(np.abs((y[keep] - p[keep]) / y[keep])) * 100)
+
+
+def bias(y: np.ndarray, p: np.ndarray) -> float:
+    """Mean signed error, prediction minus truth (positive = over-forecast), in the target's units."""
+    return float(np.mean(np.asarray(p, float) - np.asarray(y, float)))
+
+
 def rmse(y: np.ndarray, p: np.ndarray) -> float:
     return float(np.sqrt(np.mean((np.asarray(y) - np.asarray(p)) ** 2)))
 

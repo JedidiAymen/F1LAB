@@ -770,3 +770,7 @@ nothing beats latest practice. Not served. See `docs/research/NEURAL_QUALIFYING.
 ## Radio Intelligence and model cards (2026-10-29)
 Radio: **blocked** (protected audio, nothing downloaded), `docs/research/RADIO_INTELLIGENCE.md`. Consolidated model/dataset cards:
 `docs/research/MODEL_CARDS.md`.
+
+## Engines layer (2026-10-29)
+DuckDB/Spark/pandas run the same SQL transformations with equivalence tests, engine-declaring registry, one-command CLI, Delta
+round trip, MAPE/bias. pandas is fastest at 83k rows. Databricks not tested. See `docs/research/ENGINES.md`.

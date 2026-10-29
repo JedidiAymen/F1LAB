@@ -1332,3 +1332,6 @@ RaceVision: no licensed camera dataset available, nothing implemented, documente
 
 ## 2026-10-29 (8) — Neural Qualifying extension (exploratory)
 `models/neural_qualifying.py`, `tests/test_neural_qualifying.py`, `docs/research/NEURAL_QUALIFYING.md`. 48 real events; no variant significantly better than the existing ensemble (all paired intervals include zero); regime shrinkage removes the 2026 loss but gives no gain. Labelled exploratory because the 2026 outcome was known.
+
+## 2026-10-29 (9) — Engines layer (DuckDB, Spark, Delta)
+Added `engines/{transforms,run}.py`, portable SQL, `mape`/`bias` metrics, `tests/test_engines.py`, `docs/research/ENGINES.md`; optional extra `engines`. Real data: all engines identical on 83,523 rows; pandas fastest at this size. Databricks untested.
