@@ -554,3 +554,15 @@ test('race pace lab shows out-of-fold forecasts, evidence and lap contributions'
   await expect(page.getByTestId('pace-chart')).toBeVisible()
   await expect.poll(async () => detail.locator('h2').innerText()).not.toBe(before)
 })
+
+test('strategy lab ML pace overlay is opt-in and keeps the simulator as baseline', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: /Strategy Lab/ }).click()
+  const overlay = page.getByLabel('Experimental ML pace overlay')
+  await expect(overlay).toBeVisible()
+  await expect(overlay.getByRole('button', { name: 'Roll model forward' })).toHaveCount(0) // off by default
+  await overlay.getByRole('checkbox').check()
+  await overlay.getByRole('button', { name: 'Roll model forward' }).click()
+  await expect(overlay.getByText('simulator (deterministic baseline)')).toBeVisible()
+  await expect(overlay).toContainText('errors compound')
+})

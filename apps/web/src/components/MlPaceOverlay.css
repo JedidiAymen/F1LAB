@@ -1,0 +1,20 @@
+.mlp { border: 1px dashed #39464f; padding: 10px 12px; }
+.mlp-toggle { display: flex; gap: 8px; align-items: center; font-size: 12px; cursor: pointer; }
+.mlp-toggle em { color: #7f8d96; font-size: 10px; font-style: normal; margin-left: 6px; }
+.mlp-body { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.mlp-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.mlp-controls label { display: flex; flex-direction: column; gap: 3px; color: #8e9ca5; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+.mlp-controls select, .mlp-controls input { padding: 5px 8px; background: #172026; border: 1px solid #39464f; color: #e5eaed; font: inherit; font-size: 12px; width: 110px; }
+.mlp-controls button { padding: 6px 12px; background: #1d2a32; border: 1px solid #4a5962; color: #e5eaed; cursor: pointer; }
+.mlp-controls button:disabled { opacity: .6; cursor: progress; }
+.mlp-result svg { width: 100%; max-width: 480px; background: #0f1519; border: 1px solid #28343c; }
+.mlp-result svg text { fill: #7f8d96; font-size: 7px; }
+.mlp-axis { stroke: #4a5962; stroke-dasharray: 3 3; }
+path.mlp-sim { fill: none; stroke: #8fa3ad; stroke-width: 1.6; }
+path.mlp-ml { fill: none; stroke: #e10600; stroke-width: 1.6; }
+i.mlp-sim, i.mlp-ml { display: inline-block; width: 14px; height: 3px; vertical-align: middle; }
+i.mlp-sim { background: #8fa3ad; }
+i.mlp-ml { background: #e10600; }
+.mlp-legend, .mlp-caveat { margin: 4px 0 0; color: #96a4ad; font-size: 11px; line-height: 1.5; }
+.mlp-caveat { padding-left: 8px; border-left: 2px solid #e7c47a; }
+.mlp-error { color: #ef8a85; font-size: 12px; }

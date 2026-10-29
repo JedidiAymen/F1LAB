@@ -29,6 +29,7 @@ from f1_racelab.session.contracts import WeatherPayload
 from f1_racelab.session.location_history import build_location_context
 from f1_racelab.session.replay_source import ReplaySource
 from f1_racelab.session.timeline import MAX_STEP, MIN_STEP, build_timeline
+from f1_racelab.strategy import ml_overlay
 from f1_racelab.strategy.models import CIRCUIT_COMPOUNDS, RACE_SPECS
 from f1_racelab.strategy.monte_carlo import mc_compare
 from f1_racelab.strategy.optimizer import best_strategies, compare_strategies
@@ -442,6 +443,18 @@ def create_app(
                 "Simulated lap times are labelled estimation='simulated' throughout.",
             ],
         }
+
+    @app.post("/api/v1/strategy/{slug}/ml-pace")
+    def strategy_ml_pace(slug: str, body: ml_overlay.StintRequest) -> dict:
+        """Opt-in ML pace curve for one stint next to the deterministic simulator curve (baseline unchanged)."""
+        if slug not in RACE_SPECS:
+            raise HTTPException(status_code=404, detail=f"No strategy model for session {slug!r}")
+        try:
+            return ml_overlay.stint_overlay(slug, body)
+        except ArtifactUnavailable as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     @app.post("/api/v1/strategy/{slug}/compare")
     def strategy_compare(slug: str, body: dict) -> dict:

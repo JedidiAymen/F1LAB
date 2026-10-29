@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './StrategyLab.css'
+import MlPaceOverlay from './MlPaceOverlay'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -385,6 +386,9 @@ export default function StrategyLab({ sessionSlug, baseUrl }: StrategyLabProps) 
           {mcResults && <MCTable rows={mcResults} />}
         </div>
       )}
+
+      <MlPaceOverlay sessionSlug={sessionSlug} baseUrl={baseUrl}
+        compounds={info.available_compounds.map((c) => c.compound)} scheduledLaps={info.scheduled_laps} />
 
       <details className="strategy-lab-limits">
         <summary>Simulation limits</summary>

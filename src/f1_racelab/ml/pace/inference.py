@@ -16,6 +16,7 @@ from importlib import metadata
 from pathlib import Path
 from typing import Literal
 
+import numpy as np
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -41,11 +42,11 @@ class PaceFeatures(BaseModel):
     stint_number_next: float = Field(ge=1, le=8)
     compound_next: Compound
     laps_in_stint: float = Field(ge=0, le=80)
-    last1: float = Field(ge=-30, le=60)
-    last2: float = Field(ge=-30, le=60)
-    last3: float = Field(ge=-30, le=60)
-    slope5: float = Field(ge=-5, le=5)
-    stint_best_delta: float = Field(ge=-30, le=60)
+    last1: float | None = Field(default=None, ge=-30, le=60, description="null = not enough clean history")
+    last2: float | None = Field(default=None, ge=-30, le=60, description="null = not enough clean history")
+    last3: float | None = Field(default=None, ge=-30, le=60, description="null = not enough clean history")
+    slope5: float | None = Field(default=None, ge=-5, le=5, description="null = not enough clean history")
+    stint_best_delta: float | None = Field(default=None, ge=-30, le=60, description="null = not enough clean history")
     n_clean_history: float = Field(ge=0, le=100)
     track_temp: float = Field(ge=-10, le=80)
     air_temp: float = Field(ge=-10, le=60)
@@ -92,7 +93,7 @@ def load(model_dir: Path = MODEL_DIR):
 
 def predict(features: PaceFeatures, model_dir: Path | None = None) -> dict:
     bundle, card = load(model_dir or MODEL_DIR)
-    row = features.model_dump()
+    row = {k: (np.nan if v is None else v) for k, v in features.model_dump().items()}
     anchor = row.pop("anchor_seconds")
     out = bundle.predict(pd.DataFrame([row]))
     delta, low, high = (float(out[k][0]) for k in ("median", "q10", "q90"))

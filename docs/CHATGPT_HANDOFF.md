@@ -744,7 +744,8 @@ significant. Against a fair decision-time baseline (persistence + post-in-lap ru
 and tied on green-clean laps. Raw 80% intervals cover 75%; chronological conformal correction reaches 80%;
 safety-car laps are unusable (5% coverage). 362 of 593 large green-lap errors are unexplained and kept.
 **Bug found/fixed:** the served model could not be unpickled outside the benchmark process.
-**Not done:** Strategy Lab opt-in ML pace (gate G), per-race inference UI for the new endpoint, Driver DNA (needs
+**Strategy Lab opt-in ML pace overlay (gate G) is done, with a flat rollout caveat.
+**Not done:** a UI for the prediction endpoint itself, Driver DNA (needs
 PyTorch), RaceVision (dataset rights unverified), Overtake Intelligence, Neural Qualifying extension, Radio
 Intelligence. mypy has 72 pre-existing errors (advisory in CI). 8 older commits carry assistant co-author
 trailers; history is not rewritten. Reproduce: commands in `docs/research/RACE_PACE_INTELLIGENCE.md`.

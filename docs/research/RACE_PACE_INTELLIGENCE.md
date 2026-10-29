@@ -113,3 +113,9 @@ Differences from the conditional benchmark: rows are chosen from decision-time s
 ## Outlier audit (Milestone 1, gate D)
 
 `audit.outlier_audit`: 593 of 74,077 green rows (0.8%) have |delta| > 8 s. Independent evidence (rainfall flag or INTERMEDIATE/WET compound on at least 5% of a race's rows; no lap-time information) explains 231 of them in 9 races (Dutch 2026, British 2024, Monaco 2023, Dutch 2023, ...). 362 are unexplained: Belgian 2025 (83), Barcelona 2026 (56), Singapore 2026 (53), Canadian 2026 (49). They may be unflagged rain, red-flag restarts or timing artefacts; this is not established. Nothing was removed. Sensitivity excluding the 9 wet-evidence races: LightGBM 0.529 vs persistence 0.559 s, -0.030 [-0.068, +0.017], 59 races; conclusion unchanged.
+
+## Opt-in ML pace in Strategy Lab (Milestone 1, gate G)
+
+`POST /api/v1/strategy/{slug}/ml-pace` (`strategy/ml_overlay.py`, UI `MlPaceOverlay.tsx`, off by default). It rolls the saved next-lap model forward on its own predictions across one stint and returns it next to the deterministic simulator's curve for the same compound, tyre age and fuel. The simulator code and race-time rankings are not touched. Weather and traffic inputs are explicit assumed defaults returned with the result. Evidence label `ml_prediction_rollout`.
+
+Real-model check (Monza 2025, laps 8-32): the ML curve is flatter than the simulator's. After 24 laps the simulator is -1.4 s (MEDIUM) / -1.6 s (HARD) relative to the first lap (fuel burn outweighs tyre wear) while the ML rollout is about -0.04 s / -0.22 s; mean shape gap 0.72 s (MEDIUM), 0.80 s (HARD). The rollout drifts toward persistence, so it understates the fuel-burn trend. It is an exploratory comparison, not a better strategy model, and the UI says so. Tests: `tests/test_ml_overlay.py` (labelling, baseline untouched, 200/404/422/503) and a Playwright spec (18/18 pass).
