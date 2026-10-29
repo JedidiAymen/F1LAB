@@ -4,6 +4,7 @@ import {
   ChevronRight,
   CircleAlert,
   FlaskConical,
+  Gauge,
   FlagTriangleRight,
   Pause,
   Play,
@@ -26,6 +27,7 @@ import { TelemetryPanel } from '@/components/TelemetryPanel'
 import { TelemetrySelection } from '@/components/TelemetrySelection'
 import { initialTelemetrySelection, telemetrySelectionQuery, type TelemetryLapLibrary, type TelemetrySelection as TelemetrySelectionValue } from '@/lib/telemetry-selection'
 import { PredictionLab } from '@/components/PredictionLab'
+import { RacePaceLab } from '@/components/RacePaceLab'
 import StrategyLab from '@/components/StrategyLab'
 import WhatIfLab from '@/components/WhatIfLab'
 import { TrackMap } from '@/components/TrackMap'
@@ -134,6 +136,7 @@ function ReplayWorkspace({
   onOpenPrediction,
   onOpenStrategy,
   onOpenWhatIf,
+  onOpenPace,
 }: {
   slug: string
   sessions: CatalogEntry[]
@@ -141,6 +144,7 @@ function ReplayWorkspace({
   onOpenPrediction: () => void
   onOpenStrategy?: () => void
   onOpenWhatIf?: () => void
+  onOpenPace?: () => void
 }) {
   const base = `/api/v1/replay/${slug}`
   const [manifest, setManifest] = useState<Manifest | null>(null)
@@ -385,6 +389,11 @@ function ReplayWorkspace({
           {onOpenStrategy && (
             <button className="prediction-nav-button" type="button" onClick={onOpenStrategy}>
               <FlagTriangleRight size={13} /> Strategy Lab
+            </button>
+          )}
+          {onOpenPace && (
+            <button className="prediction-nav-button" type="button" onClick={onOpenPace}>
+              <Gauge size={13} /> Race Pace
             </button>
           )}
           {onOpenWhatIf && (
@@ -825,7 +834,7 @@ function ReplayWorkspace({
 function App() {
   const [sessions, setSessions] = useState<CatalogEntry[]>([])
   const [slug, setSlug] = useState('monza-2025')
-  const [workspace, setWorkspace] = useState<'replay' | 'prediction' | 'strategy' | 'whatif'>('replay')
+  const [workspace, setWorkspace] = useState<'replay' | 'prediction' | 'strategy' | 'whatif' | 'pace'>('replay')
   useEffect(() => {
     const controller = new AbortController()
     fetch('/api/v1/replays', { signal: controller.signal })
@@ -837,6 +846,7 @@ function App() {
       .catch(() => {})
     return () => controller.abort()
   }, [])
+  if (workspace === 'pace') return <RacePaceLab onBack={() => setWorkspace('replay')} />
   if (workspace === 'prediction') return <PredictionLab onBack={() => setWorkspace('replay')} />
   if (workspace === 'strategy') return (
     <div style={{ padding: 16 }}>
@@ -862,6 +872,7 @@ function App() {
     onOpenPrediction={() => setWorkspace('prediction')}
     onOpenStrategy={() => setWorkspace('strategy')}
     onOpenWhatIf={() => setWorkspace('whatif')}
+    onOpenPace={() => setWorkspace('pace')}
   />
 }
 

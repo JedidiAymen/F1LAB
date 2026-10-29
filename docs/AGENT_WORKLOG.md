@@ -1314,3 +1314,8 @@ persistence 0.593 s is a strong baseline; weather features did not help.
 Not done: React workspace, Strategy Lab hook, multi-lap forecast, Driver DNA (PyTorch not installed),
 RaceVision, Overtake Intelligence, Neural Qualifying extension, Radio Intelligence, MLflow.
 Audit: 8 earlier commits carry `Co-Authored-By` trailers (pre-existing; history not rewritten).
+
+## 2026-10-29 (4) — Race Pace workspace
+`RacePaceLab.tsx/.css`, `onOpenPace` navigation, driver list in `/api/v1/pace/races`, e2e test.
+Verified: `npx tsc -b`, `npm run lint` clean, `npm run build`, Playwright 17/17. Chart axis uses an IQR range so
+undetected neutralised laps do not flatten it. Still open: Strategy Lab hook, multi-lap forecast, other five modules.

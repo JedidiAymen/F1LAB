@@ -59,9 +59,12 @@ Seed std of MAE over 3 seeds: 0.0026. LightGBM fit 3.0 s/fold, 0.018 ms/row infe
   British 2024, Monaco 2023). They were not filtered (target-based filtering would leak).
 
 ## 7. Integration
-FastAPI endpoints above (503 with reproduction command if artifacts are missing). **React
-workspace not built yet.** Strategy Lab is not yet wired to this forecast; the existing
-deterministic model is untouched. Comparison against the Strategy Lab tyre model is not done.
+FastAPI endpoints above (503 with reproduction command if artifacts are missing). React
+workspace `apps/web/src/components/RacePaceLab.tsx` (nav button "Race Pace"): race/driver
+selectors, benchmark evidence strip, actual vs forecast chart with 10–90% band and rolling-median
+baseline, per-lap forecast with TreeSHAP contributions, evidence labels ("ML PREDICTION · NOT LIVE").
+Browser test: `race pace lab shows out-of-fold forecasts…` (e2e 17/17). Strategy Lab is **not** wired to
+this forecast; the deterministic model is untouched and no comparison against its tyre model exists.
 
 ## 8. Reproduction
 ```

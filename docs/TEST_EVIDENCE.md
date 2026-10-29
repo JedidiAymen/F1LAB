@@ -426,3 +426,6 @@ Classification: **real** data for metrics, **synthetic** fixtures for unit tests
 `pytest tests/test_ml_common.py tests/test_pace_dataset.py tests/test_pace_service.py` — 12 passed
 (synthetic fixtures incl. future-poisoning leakage test). Real run: `python -m f1_racelab.ml.pace.benchmark`
 (65 races, 57,679 green laps, 5 min 48 s). Full-suite and browser runs were not repeated after these additions.
+
+## 2026-10-29 (4) — Race Pace workspace
+`npx playwright test` — 17 passed (new: race pace lab). `npx tsc -b`, `npm run lint`, `npm run build` clean.

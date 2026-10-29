@@ -31,9 +31,10 @@ def load(root: Path = OUT, card_path: Path = CARD) -> dict:
 
 def races(lab: dict) -> list[dict]:
     p = lab["predictions"]
-    return (p.groupby("race_id", as_index=False).agg(year=("year", "first"), event=("event", "first"),
-            circuit=("circuit", "first"), laps=("lap", "max"), drivers=("driver_number", "nunique"))
-            .sort_values(["year", "event"]).to_dict("records"))
+    table = (p.groupby("race_id", as_index=False)
+             .agg(year=("year", "first"), event=("event", "first"), circuit=("circuit", "first"),
+                  laps=("lap", "max"), drivers=("driver_number", lambda v: sorted(int(x) for x in v.unique()))))
+    return table.sort_values(["year", "event"]).to_dict("records")
 
 
 def forecast(lab: dict, race_id: str, driver: int) -> dict:
