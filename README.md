@@ -1,9 +1,29 @@
 # F1LAB
 
-F1LAB is an in-progress Formula 1 race intelligence workstation. The current
-verified slices are a historical pre-qualifying benchmark and three historical
-race replays with a local 2D Race Control UI. Live timing, strategy,
-telemetry and broader race coverage remain future work.
+F1LAB is an in-progress Formula 1 race-intelligence workstation: historical
+race replay on one shared clock, walk-forward qualifying and race-pace
+forecasting with honest baselines and uncertainty, a deterministic strategy
+simulator and what-if branches, behind a FastAPI backend and a React/Vite
+front end. Live timing and the deep-learning and computer-vision modules are
+not built yet.
+
+## Status at a glance
+
+Real data is OpenF1 (2023-2026) and FastF1 (2022); raw data stays local and
+git-ignored (OpenF1 terms are non-commercial, see
+[the data contract](docs/DATA_CONTRACTS.md)).
+
+| Area | State | Measured result (real data) |
+| --- | --- | --- |
+| Qualifying forecast | Walk-forward ensemble with rank probabilities (`/api/v1/predictions/qualifying/walkforward`) | 2024-25 pooled: 0.27 positions better than latest practice (interval excludes zero). **2026: no transfer** (+0.05, interval includes zero). |
+| Race-pace forecast | Next-lap LightGBM, out-of-fold UI (`/api/v1/pace/*`), versioned prediction endpoint (`POST /api/v1/pace/predict`) | 65 scored races, 57,679 green laps. 0.575 s MAE vs 0.593 s for last-lap persistence: **difference -0.018 s, race-clustered 95% CI [-0.057, +0.029], not significant**; persistence is better in 2025. Raw 80% interval covers 75%; a chronological conformal correction reaches 80%. Safety-car laps are out of distribution. |
+| Replay and Race Control | Three historical races, shared clock, 2D map, race control | Deterministic seek; see [replay docs](docs/RACE_CONTROL_UI.md) |
+| Strategy and What-If | Deterministic simulator, seeded Monte Carlo | Assumption-driven, calibrated on Monza 2025 only |
+| Driver DNA, RaceVision, Overtake, Neural Qualifying, Radio | Not started | None. No claims are made. |
+
+Model cards, hashes and the research notes are in
+[docs/research](docs/research/RACE_PACE_INTELLIGENCE.md); CI runs ruff, pytest
+and the web lint, unit tests and build (`.github/workflows/ci.yml`).
 
 Start with [the project status](docs/START_HERE.md), [the execution roadmap](docs/ROADMAP.md)
 and [the latest handoff](docs/CHATGPT_HANDOFF.md). The full product scope is in
