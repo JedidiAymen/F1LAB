@@ -575,3 +575,12 @@ test('driver dna lab shows evaluation, chance markers and confound controls', as
   await expect(page.getByLabel('Cross-circuit identification')).toContainText('tcn')
   await expect(page.getByLabel('Confound controls')).toContainText('metadata only')
 })
+
+test('overtake lab shows model comparison, paired gains and calibration', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: /Overtakes/ }).click()
+  await expect(page.getByRole('heading', { name: /pass next lap/ })).toBeVisible()
+  await expect(page.getByLabel('Model comparison')).toContainText('lightgbm')
+  await expect(page.getByLabel('Paired Brier difference')).toContainText('gap-only')
+  await expect(page.getByRole('img', { name: /Reliability/ })).toBeVisible()
+})

@@ -1,0 +1,18 @@
+.ot { max-width: 980px; margin: 0 auto; padding: 24px 20px 40px; }
+.ot h2 { margin: 6px 0 8px; font-size: 24px; letter-spacing: -.03em; }
+.ot h3 { margin: 18px 0 8px; font-size: 14px; }
+.ot-lede, .ot-note { color: #96a4ad; font-size: 12px; line-height: 1.5; max-width: 760px; }
+.ot-note { padding-left: 10px; border-left: 2px solid #e7c47a; }
+.ot-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 12px; font-variant-numeric: tabular-nums; }
+.ot-table th { text-align: left; padding: 7px 8px; color: #7e8d96; font-size: 9px; letter-spacing: .08em; border-bottom: 1px solid #28343c; }
+.ot-table td { padding: 6px 8px; border-bottom: 1px solid #1b262d; }
+.ot-grid { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 24px; align-items: start; }
+.ot-paired { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+.ot-paired li { display: grid; grid-template-columns: 170px 70px 1fr; gap: 8px; }
+.ot-paired em { color: #8e9ca5; font-style: normal; }
+.ot-rel { width: 100%; background: #0f1519; border: 1px solid #28343c; }
+.ot-rel .axis { stroke: #4a5962; }
+.ot-rel .ideal { stroke: #6e7d86; stroke-dasharray: 3 3; }
+.ot-rel circle { fill: #e10600; fill-opacity: .75; }
+.ot-rel text { fill: #7f8d96; font-size: 8px; }
+@media (max-width: 800px) { .ot-grid { grid-template-columns: 1fr; } .ot-paired li { grid-template-columns: 1fr; } }

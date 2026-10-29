@@ -23,4 +23,9 @@ DuckDB equals pandas and Spark equals pandas and DuckDB for each transformation 
 ## Not verified
 * **Databricks:** nothing was run on a Databricks cluster. The intended route is `%pip install duckdb` on the cluster and reading Parquet from a Unity Catalog Volume path with the same `.sql` files; compute type, dependency pinning and storage access remain to be tested there.
 * Remote object-storage reads need the DuckDB `httpfs` extension and credentials; not exercised.
-* Pipeline orchestration here is the registry only; wiring `REGISTRY` into a scheduler is not done.
+* No external scheduler (Airflow/Databricks Jobs) integration; `engines/pipeline.py` is a local runner only.
+
+## Pipeline and feed check (added)
+`uv run python -m f1_racelab.engines.pipeline` runs `engines/feed_check.py` first, then each registered step on its **declared engine** (`--engine-override` to force one), writing Parquet outputs and `manifest.json` (engine, rows, seconds, SHA-256) under git-ignored `data/processed/engines/`. Real run on 83,523 rows: `race_summary` 0.07 s and `compound_wear` 0.02 s on DuckDB.
+
+The feed check (completeness, compound/regime mappings, unique key, target consistency, plausibility) found one real issue on first run: 53 rows with next-lap times of 468-2,588 s, 51 of them red-flag laps and none green-eligible. The rule is now an error only for green-eligible rows and a warning otherwise, so red-flag stoppages cannot fail the pipeline but remain visible.

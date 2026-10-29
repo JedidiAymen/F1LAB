@@ -1335,3 +1335,6 @@ RaceVision: no licensed camera dataset available, nothing implemented, documente
 
 ## 2026-10-29 (9) — Engines layer (DuckDB, Spark, Delta)
 Added `engines/{transforms,run}.py`, portable SQL, `mape`/`bias` metrics, `tests/test_engines.py`, `docs/research/ENGINES.md`; optional extra `engines`. Real data: all engines identical on 83,523 rows; pandas fastest at this size. Databricks untested.
+
+## 2026-10-29 (10) — pipeline runner, feed check, Overtake UI
+`engines/{pipeline,feed_check}.py`, `tests/test_feed_and_pipeline.py`, `OvertakeLab.tsx` + e2e. Feed check found 53 red-flag rows >400 s (non-green); rule narrowed to green-eligible rows. 20/20 Playwright.

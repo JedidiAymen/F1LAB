@@ -1,6 +1,6 @@
 # Overtake Intelligence: next-lap on-track pass probability
 
-Status: evaluated on real data; read-only API `GET /api/v1/overtake/summary`; **no UI yet**; not a live system.
+Status: evaluated on real data; read-only API `GET /api/v1/overtake/summary`; UI workspace "Overtakes" (model table, paired gains, reliability, per-season); not a live system.
 
 ## Data and label
 Built from the race-pace frame (OpenF1 laps, intervals, stints; 85 races 2023-2026). Unit: follower F directly behind leader A by gap-to-leader at the end of lap L with interval at most 3 s. Label: F is ahead of A at the end of lap L+1. Pairs are **dropped** (not labelled 0) if either car had an in-lap or out-lap at L or L+1, or if a safety car/VSC/yellow affected L+1 or the last 3 laps. Result: **29,608 pairs, 1,595 passes (5.4%)**. Command: `uv run python -m f1_racelab.ml.overtake.dataset`.
@@ -28,4 +28,4 @@ Paired race-clustered Brier difference against the gap-only logistic: logistic a
 * Not a prediction of who will win a duel under strategy changes: pit stops and neutralisations are excluded by design.
 * One-lap horizon; no multi-lap or lap-by-lap sequence model.
 * Possible dependence between consecutive laps of the same pair is handled only by race-level bootstrap.
-* Needs a UI panel and an as-of live feed before any decision use.
+* Needs an as-of live feed before any decision use.
