@@ -755,3 +755,10 @@ Done: dataset (1,749 laps, 3 races), protocol, handcrafted/LightGBM/TCN/contrast
 `docs/research/DRIVER_DNA.md`. Result: teammates separable at about 0.80-0.90 vs 0.51 majority (controls ruled out pace
 and stint position); cross-circuit identity 23-40% vs 9% chance (TCN 39.8%); TCN not clearly better than logistic on handcrafted
 features. Not done: more sessions, a deployed model, embedding explorer. torch is optional: `uv sync --extra dl`.
+
+## RaceVision and Overtake Intelligence (2026-10-29)
+RaceVision: **blocked**, no licensed camera dataset, no code, no results (`docs/research/RACEVISION.md`).
+Overtake Intelligence: done and evaluated (not UI): LightGBM beats a gap-only logistic on Brier by 0.0079 [0.0056, 0.0105]
+with AUC 0.936 on 22,637 scored pairs; most skill is the gap itself; isotonic calibration did not help.
+Remaining mandate items: Neural Qualifying extension, Radio Intelligence, UI for Overtake, model/dataset cards for
+the new modules, mypy triage.

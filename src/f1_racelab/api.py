@@ -6,6 +6,7 @@ browser owns the playback clock; every visible panel consumes that response.
 
 from __future__ import annotations
 
+import json
 import math
 import os
 from functools import lru_cache
@@ -17,6 +18,7 @@ from pydantic import ValidationError
 from f1_racelab.live.ingest import _registry as live_registry
 from f1_racelab.ml.common.registry import ArtifactUnavailable
 from f1_racelab.ml.driver_dna import service as dna_service
+from f1_racelab.ml.overtake import benchmark as overtake_benchmark
 from f1_racelab.ml.pace import inference as pace_inference
 from f1_racelab.ml.pace import service as pace_service
 from f1_racelab.models.prediction_lab import load_prediction_lab, prediction_event
@@ -414,6 +416,15 @@ def create_app(
             return dna_service.summary()
         except (dna_service.DnaUnavailable, OSError, ValueError) as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    @app.get("/api/v1/overtake/summary")
+    def overtake_summary() -> dict:
+        path = overtake_benchmark.OUT / "summary.json"
+        if not path.is_file():
+            raise HTTPException(status_code=503, detail="Overtake results missing. Run: "
+                                "uv run python -m f1_racelab.ml.overtake.dataset && "
+                                "uv run python -m f1_racelab.ml.overtake.benchmark")
+        return {"evidence": "ml_evaluation_real", **json.loads(path.read_text())}
 
     @app.post("/api/v1/pace/predict")
     def pace_predict(features: pace_inference.PaceFeatures) -> dict:

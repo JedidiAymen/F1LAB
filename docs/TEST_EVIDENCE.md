@@ -435,3 +435,6 @@ Classification: **real** data for metrics, **synthetic** fixtures for unit tests
 
 ## 2026-10-29 (6) — ML pace overlay and Driver DNA
 `uv run pytest -q -W ignore` and `npx playwright test` (20 specs incl. ML overlay and Driver DNA). Driver DNA runs are real data (1,749 laps, 3 seeds, GPU); unit tests are synthetic. torch 2.15.0+cu132 is an optional extra (`uv sync --extra dl`); CI does not install it, so the network test skips there via `importorskip`.
+
+## 2026-10-29 (7) — Overtake
+`uv run pytest -q -W ignore` — 231 passed; ruff clean. Real runs: `python -m f1_racelab.ml.overtake.dataset`, `python -m f1_racelab.ml.overtake.benchmark` (artifacts in git-ignored `data/processed/overtake/`).

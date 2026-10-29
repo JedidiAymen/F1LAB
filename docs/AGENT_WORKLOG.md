@@ -1326,3 +1326,6 @@ Source SHA before: c051276. Added `ml/pace/{audit,strict,inference,bundle}.py`, 
 
 ## 2026-10-29 (6) — Milestone 1 completion and Driver DNA
 Added `strategy/ml_overlay.py` + `MlPaceOverlay.tsx` (gate G); `ml/driver_dna/{dataset,protocol,handcrafted,baselines,nets,evaluate_nets,service}.py`, `DriverDnaLab.tsx`, `/api/v1/driver-dna/summary`, `docs/research/DRIVER_DNA.md`. Artifacts under `data/processed/driver_dna/` (git-ignored). Bug fixed on the way: car_data cache files are compact JSON, so a spaced-key matcher found no files. Caveats: three races only; neural models not clearly better.
+
+## 2026-10-29 (7) — RaceVision (blocked) and Overtake Intelligence
+RaceVision: no licensed camera dataset available, nothing implemented, documented as BLOCKED in `docs/research/RACEVISION.md`. Overtake: `ml/overtake/{dataset,benchmark}.py`, `GET /api/v1/overtake/summary`, `tests/test_overtake.py`, `docs/research/OVERTAKE_INTELLIGENCE.md`. Real data: 29,608 pairs, 1,595 passes, 22,637 scored. LightGBM raw Brier 0.0329 vs gap-only logistic 0.0407, paired -0.0079 [-0.0105, -0.0056]; isotonic calibration did not help. Bug found in own test data (in-lap flag placed on the wrong row), fixed. Not done: UI.
