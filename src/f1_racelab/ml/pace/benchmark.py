@@ -28,10 +28,17 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from f1_racelab.ml.common import metrics
 from f1_racelab.ml.common.contracts import (
-    ModelCard, SplitSpec, dependency_versions, fingerprint_frame, now_utc,
+    ModelCard,
+    SplitSpec,
+    dependency_versions,
+    fingerprint_frame,
+    now_utc,
 )
 from f1_racelab.ml.common.guards import (
-    assert_chronological, assert_disjoint_groups, assert_no_forbidden_columns, chronological_group_folds,
+    assert_chronological,
+    assert_disjoint_groups,
+    assert_no_forbidden_columns,
+    chronological_group_folds,
 )
 from f1_racelab.ml.common.registry import save_artifact
 from f1_racelab.ml.pace import dataset as ds
@@ -240,7 +247,7 @@ def summarise(predictions: pd.DataFrame, ablations: pd.DataFrame, seeds: pd.Data
         .groupby(["circuit", "model"]).abs_err.mean().unstack().assign(n=green[green.model == "lightgbm"]
         .groupby("circuit").size()).reset_index().to_dict("records")
     out = {"green_table": table.to_dict("records"), "paired_vs_anchor": deltas, "interval": coverage,
-           "slices": slices, "green_rows": int(len(green[green.model == "lightgbm"])),
+           "slices": slices, "green_rows": len(green[green.model == "lightgbm"]),
            "races_scored": int(green.race_id.nunique())}
     if len(ablations):
         full = green[green.model == "lightgbm"].set_index(["race_id", "driver_number", "lap"])["abs_err"]

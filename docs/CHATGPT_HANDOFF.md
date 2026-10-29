@@ -734,3 +734,10 @@ Done and verified: `data/pipeline.py` (+manifest, quality gate), 2026 ingestion 
 (new regulations): ensemble +0.052 [−0.030, +0.136] MAE over 12 events. Pooled 48-event gain
 −0.192 [−0.404, −0.015] comes from 2024–2025. Not tuned on 2026 by decision. Still not done:
 race model, sprint weekends, `observed_at`, router refactor, regime-aware model.
+
+## ML/DL/CV mandate — status (2026-10-29)
+Completed: `src/f1_racelab/ml/common/*`, `ml/pace/{fetch,dataset,benchmark,service}.py`, `/api/v1/pace/*`.
+Partial: Race Pace Intelligence (no React workspace, no Strategy Lab integration, no multi-lap, no CatBoost).
+Not started: Driver DNA (needs PyTorch; RTX 3050 6 GB), RaceVision (dataset rights unverified),
+Overtake Intelligence, Neural Qualifying extension, Radio Intelligence. Results: see research doc.
+Remaining risk: wet-race outliers, 2026 regime shift, unaudited unneutralised "green" laps.

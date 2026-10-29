@@ -1304,3 +1304,13 @@ rank-interval coverage 89.5% vs 80% nominal; 3 React lint errors predate this wo
   derived closed status and snapshot ref in `use-live-session`).
 * Not done: race-finishing model, sprint weekends, per-feature `observed_at`, router/shell
   refactor, regime-aware model (pre-declared only).
+
+## 2026-10-29 (3) — ML/DL/CV mandate: infrastructure and Race Pace Intelligence
+
+Done: `ml/common` (cards, fingerprints, guards, registry, metrics), `ml/pace` (fetch, dataset,
+benchmark, service), 3 API routes, research doc `docs/research/RACE_PACE_INTELLIGENCE.md`.
+Real result: LightGBM MAE 0.575 s vs 0.682 s anchor over 65 held-out races (−0.107 [−0.138, −0.076]);
+persistence 0.593 s is a strong baseline; weather features did not help.
+Not done: React workspace, Strategy Lab hook, multi-lap forecast, Driver DNA (PyTorch not installed),
+RaceVision, Overtake Intelligence, Neural Qualifying extension, Radio Intelligence, MLflow.
+Audit: 8 earlier commits carry `Co-Authored-By` trailers (pre-existing; history not rewritten).

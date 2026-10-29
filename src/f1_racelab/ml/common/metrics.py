@@ -37,5 +37,5 @@ def cluster_bootstrap_delta(errors_a: np.ndarray, errors_b: np.ndarray, clusters
     pick = rng.integers(0, len(labels), size=(draws, len(labels)))
     means = sums[pick].sum(axis=1) / counts[pick].sum(axis=1)
     return {"mean_delta": float((errors_a - errors_b).mean()), "ci_low": float(np.quantile(means, 0.025)),
-            "ci_high": float(np.quantile(means, 0.975)), "clusters": int(len(labels)),
+            "ci_high": float(np.quantile(means, 0.975)), "clusters": len(labels),
             "draws": draws, "seed": seed}

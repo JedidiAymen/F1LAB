@@ -25,6 +25,7 @@ from f1_racelab.models.qualifying_phase_lab import (
     load_phase_prediction_lab,
     phase_prediction_event,
 )
+from f1_racelab.ml.pace import service as pace_service
 from f1_racelab.models.walkforward_lab import load_walkforward_lab, walkforward_event
 from f1_racelab.session.catalog import DEFAULT_SESSION, SESSIONS
 from f1_racelab.session.contracts import WeatherPayload
@@ -379,6 +380,27 @@ def create_app(
     ) -> dict:
         try:
             return walkforward_event(walkforward_artifacts(), year=year, round_no=round_no)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @lru_cache(maxsize=1)
+    def pace_lab() -> dict:
+        try:
+            return pace_service.load()
+        except (pace_service.PaceUnavailable, OSError, ValueError) as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    @app.get("/api/v1/pace/races")
+    def pace_races() -> dict:
+        lab = pace_lab()
+        return {"model": lab["card"].model_dump(mode="json", include={"model_id", "version", "limitations", "metrics"}),
+                "summary": {k: lab["summary"][k] for k in ("green_table", "paired_vs_anchor", "interval", "ablations")
+                            if k in lab["summary"]}, "races": pace_service.races(lab)}
+
+    @app.get("/api/v1/pace/forecast")
+    def pace_forecast(race_id: str = Query(min_length=1, max_length=16), driver: int = Query(ge=1, le=99)) -> dict:
+        try:
+            return pace_service.forecast(pace_lab(), race_id, driver)
         except KeyError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
 

@@ -4,9 +4,19 @@ import pytest
 
 from f1_racelab.ml.common import guards, metrics
 from f1_racelab.ml.common.contracts import (
-    FeatureSpec, ModelCard, SplitSpec, dependency_versions, fingerprint_frame, now_utc, read_card,
+    FeatureSpec,
+    ModelCard,
+    SplitSpec,
+    dependency_versions,
+    fingerprint_frame,
+    now_utc,
+    read_card,
 )
-from f1_racelab.ml.common.registry import ArtifactUnavailable, load_artifact, save_artifact
+from f1_racelab.ml.common.registry import (
+    ArtifactUnavailable,
+    load_artifact,
+    save_artifact,
+)
 
 
 def card(**kw):

@@ -451,3 +451,7 @@ Pole-hit not improved in 2025. Details: `ML_WALKFORWARD.md`.
 Same frozen pipeline as EXP-WF-01, 12 completed 2026 events. Ensemble vs latest practice
 +0.052 [−0.030, +0.136] (neutral); Ridge/LambdaRank worse. Pooled 48 events −0.192 [−0.404, −0.015].
 Dataset SHA `74455574…2d3e4`. Negative transfer result retained deliberately.
+
+## EXP-PACE-01 — next-lap pace, expanding-window by race (2026-10-29)
+Dataset fingerprint in `data/processed/race_pace/summary.json`; seed 42; LightGBM MAE 0.575 vs anchor 0.682;
+interval coverage 75.2% (80% nominal). See `docs/research/RACE_PACE_INTELLIGENCE.md`.

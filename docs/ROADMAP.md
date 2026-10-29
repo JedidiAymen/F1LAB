@@ -144,3 +144,6 @@ cameras; lazy Canvas mount. Same CircuitGeometry source as 2D map.
 under the new regulations (+0.052 [−0.030, +0.136], 12 events); pooled 48-event gain −0.192
 [−0.404, −0.015]. Added: one-command ingestion pipeline with quality gate, race-history
 chart, 2026 data (12 weekends). See `ENHANCEMENT_PLAN.md`.
+
+**ML/DL/CV mandate status (2026-10-29):** shared infrastructure done; Race Pace Intelligence partial
+(trained, evaluated, API; no UI/Strategy Lab hook/multi-lap). Other five modules not started.

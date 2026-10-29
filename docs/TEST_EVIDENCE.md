@@ -421,3 +421,8 @@ Classification: **real** data for metrics, **synthetic** fixtures for unit tests
 * Walk-forward re-run on 48 events — real; 2026 result is negative, see `ML_WALKFORWARD.md`.
 * `npx tsc -b`, `npm run lint` (clean, was 3 errors), `npm run test:unit` 16 pass,
   `npx playwright test` **16 passed** (new: race-history chart seeks the shared clock).
+
+## 2026-10-29 (3) — race pace
+`pytest tests/test_ml_common.py tests/test_pace_dataset.py tests/test_pace_service.py` — 12 passed
+(synthetic fixtures incl. future-poisoning leakage test). Real run: `python -m f1_racelab.ml.pace.benchmark`
+(65 races, 57,679 green laps, 5 min 48 s). Full-suite and browser runs were not repeated after these additions.
