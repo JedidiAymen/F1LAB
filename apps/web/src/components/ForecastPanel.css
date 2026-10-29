@@ -1,0 +1,52 @@
+.forecast { padding: 20px 20px 16px; margin-bottom: 13px; border-top: 2px solid #e10600; }
+.forecast-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 16px; }
+.forecast-heading h2 { margin: 6px 0 6px; font-size: 22px; letter-spacing: -.03em; }
+.forecast-heading p { margin: 0; max-width: 760px; color: #96a4ad; font-size: 12px; line-height: 1.5; }
+.forecast-select { display: flex; flex-direction: column; gap: 6px; }
+.forecast-select select { min-width: 260px; padding: 9px 12px; border: 1px solid #39464f; background: #172026; color: #e5eaed; font: inherit; font-size: 11px; }
+.forecast-evidence { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin-bottom: 16px; background: #28343c; border: 1px solid #28343c; }
+.forecast-evidence > div { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #121a1f; min-width: 0; }
+.forecast-evidence span { color: #8e9ca5; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
+.forecast-evidence strong { font-size: 22px; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.forecast-evidence strong small { color: #7f8d96; font-size: 10px; font-weight: 500; letter-spacing: 0; }
+.forecast-evidence em { color: #9bd3b1; font-size: 10px; font-style: normal; }
+.forecast-body { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 18px; align-items: start; }
+.forecast-table-wrap { min-width: 0; }
+.forecast-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.forecast-table th { padding: 8px 8px; color: #7e8d96; font-size: 9px; font-weight: 700; letter-spacing: .08em; text-align: left; border-bottom: 1px solid #28343c; }
+.forecast-table td { padding: 5px 8px; border-bottom: 1px solid #1b262d; font-variant-numeric: tabular-nums; }
+.forecast-order { color: #e86a63; font-weight: 700; }
+.forecast-driver { font-weight: 750; letter-spacing: .04em; }
+.forecast-actual { color: #e7c47a; font-weight: 700; text-align: right; }
+.bar-cell { position: relative; display: block; min-width: 86px; height: 18px; line-height: 18px; padding-left: 6px; }
+.bar-cell .bar { position: absolute; inset: 0 auto 0 0; z-index: 0; max-width: 100%; opacity: .55; }
+.bar-cell { z-index: 1; }
+.bar.pole { background: #e10600; }
+.bar.top3 { background: #4f8fd6; }
+.rank-col { width: 36%; }
+.rank-track { position: relative; height: 16px; background: linear-gradient(#1c272e, #1c272e) center / 100% 1px no-repeat; }
+.rank-range { position: absolute; top: 4px; height: 8px; background: #3a5566; border-radius: 4px; }
+.rank-mean { position: absolute; top: 2px; width: 2px; height: 12px; background: #dce4e8; }
+.rank-actual { position: absolute; top: 3px; width: 10px; height: 10px; margin-left: -5px; transform: rotate(45deg); }
+.rank-actual.hit { background: #73c292; }
+.rank-actual.miss { background: #ef5651; }
+.inline { position: static; display: inline-block; vertical-align: middle; margin: 0 4px 0 8px; }
+.rank-mean.inline { height: 10px; }
+.forecast-legend { margin: 10px 0 0; color: #7f8d96; font-size: 10px; }
+.forecast-legend .bar { display: inline-block; width: 14px; height: 6px; vertical-align: middle; position: static; }
+.forecast-reliability { display: flex; flex-direction: column; gap: 12px; }
+.reliability { margin: 0; }
+.reliability svg { width: 100%; background: #0f1519; border: 1px solid #28343c; }
+.reliability .axis { stroke: #4a5962; stroke-width: 1; }
+.reliability .ideal { stroke: #6e7d86; stroke-width: 1; stroke-dasharray: 3 3; }
+.reliability circle { fill: #e10600; fill-opacity: .75; }
+.reliability text { fill: #7f8d96; font-size: 7px; }
+.reliability figcaption { margin-top: 4px; color: #7f8d96; font-size: 9px; }
+.forecast-note { margin: 14px 0 0; padding-left: 10px; border-left: 2px solid #e7c47a; color: #96a4ad; font-size: 11px; line-height: 1.5; }
+@media (max-width: 1100px) {
+  .forecast-evidence { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .forecast-body { grid-template-columns: 1fr; }
+  .forecast-reliability { flex-direction: row; }
+  .forecast-reliability .reliability { flex: 1; }
+  .forecast-heading { flex-direction: column; align-items: flex-start; }
+}

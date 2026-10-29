@@ -25,6 +25,7 @@ from f1_racelab.models.qualifying_phase_lab import (
     load_phase_prediction_lab,
     phase_prediction_event,
 )
+from f1_racelab.models.walkforward_lab import load_walkforward_lab, walkforward_event
 from f1_racelab.session.catalog import DEFAULT_SESSION, SESSIONS
 from f1_racelab.session.contracts import WeatherPayload
 from f1_racelab.session.location_history import build_location_context
@@ -42,6 +43,7 @@ DEFAULT_PACK = DEFAULT_SESSION.pack_path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PREDICTION_ARTIFACTS = PROJECT_ROOT / "data/processed/qualifying_backtest"
 DEFAULT_PHASE_PREDICTION_ARTIFACTS = PROJECT_ROOT / "data/processed/qualifying_phases"
+DEFAULT_WALKFORWARD_ARTIFACTS = PROJECT_ROOT / "data/processed/qualifying_walkforward"
 
 
 def _rainfall_changes(replay: ReplaySource) -> list[dict]:
@@ -67,6 +69,7 @@ def create_app(
     telemetry_library_roots: dict[str, Path] | None = None,
     qualifying_prediction_path: Path | None = None,
     qualifying_phase_prediction_path: Path | None = None,
+    qualifying_walkforward_path: Path | None = None,
 ) -> FastAPI:
     """Create an API bound to a local replay pack, allowing isolated fixtures."""
     paths = {slug: spec.pack_path for slug, spec in SESSIONS.items()}
@@ -79,6 +82,7 @@ def create_app(
     phase_prediction_path = Path(
         qualifying_phase_prediction_path or DEFAULT_PHASE_PREDICTION_ARTIFACTS
     )
+    walkforward_path = Path(qualifying_walkforward_path or DEFAULT_WALKFORWARD_ARTIFACTS)
     if pack_path or os.environ.get("F1LAB_REPLAY_PACK"):
         paths[DEFAULT_SESSION.slug] = pack_path or Path(os.environ["F1LAB_REPLAY_PACK"])
     app = FastAPI(title="F1LAB local replay API", version="0.1.0")
@@ -340,6 +344,34 @@ def create_app(
             raise HTTPException(status_code=404, detail=str(exc)) from exc
         except ValueError as exc:
             raise HTTPException(status_code=503, detail=f"Invalid phase prediction event: {exc}") from exc
+
+    @lru_cache(maxsize=1)
+    def walkforward_artifacts() -> dict:
+        try:
+            return load_walkforward_lab(walkforward_path)
+        except FileNotFoundError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="Walk-forward artifacts unavailable. Run python -m "
+                "f1_racelab.models.qualifying_walkforward.",
+            ) from exc
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(status_code=503, detail=f"Invalid walk-forward artifacts: {exc}") from exc
+
+    @app.get("/api/v1/predictions/qualifying/walkforward")
+    def qualifying_walkforward_manifest() -> dict:
+        lab = walkforward_artifacts()
+        return {key: lab[key] for key in ("experiment", "summary", "bootstrap", "reliability", "events")}
+
+    @app.get("/api/v1/predictions/qualifying/walkforward/event")
+    def qualifying_walkforward_weekend(
+        year: int = Query(ge=2022, le=2035),
+        round_no: int = Query(alias="round", ge=1, le=30),
+    ) -> dict:
+        try:
+            return walkforward_event(walkforward_artifacts(), year=year, round_no=round_no)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     # ------------------------------------------------------------------ #
     # P5 Strategy Lab endpoints                                            #

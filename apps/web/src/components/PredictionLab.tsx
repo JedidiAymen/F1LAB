@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ChevronDown, CircleAlert, FlaskConical } from 'lucide-react'
+import { ForecastPanel } from './ForecastPanel'
 import './PredictionLab.css'
 
 type Split = 'validation' | 'test'
@@ -160,6 +161,8 @@ export function PredictionLab({ onBack }: { onBack: () => void }) {
           <div className="prediction-stamp"><span /> OFFLINE · HISTORICAL</div>
         </div>
 
+        <ForecastPanel />
+
         {loading && <div className="prediction-state">Loading the local experiment artifacts…</div>}
         {error && (
           <div className="prediction-error" role="alert">
@@ -281,7 +284,7 @@ export function PredictionLab({ onBack }: { onBack: () => void }) {
                 <div><span>TRAINING WINDOW</span><strong>2023</strong><small>{phase.training.n_training_events} events · {phase.training.n_training_rows} drivers</small></div>
                 <div><span>VALIDATION / TEST</span><strong>2024 / 2025</strong><small>{phase.training.n_validation_events} / {phase.training.n_test_events} events</small></div>
               </div>
-              <p className="prediction-caveat">Paired event bootstrap intervals describe historical spread and may cross zero. Q1 pace is the model target; final qualifying order is the evaluation label. Scheduled practice end does not prove result publication time. No probability or confidence estimate is shown.</p>
+              <p className="prediction-caveat">Paired event bootstrap intervals describe historical spread and may cross zero. Q1 pace is the model target; final qualifying order is the evaluation label. Scheduled practice end does not prove result publication time. Phase-aware models below show ranks only; calibrated probabilities are in the walk-forward forecast above.</p>
             </section>
 
             <details className="feature-registry panel">
