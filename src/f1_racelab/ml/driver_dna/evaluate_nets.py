@@ -26,7 +26,7 @@ def task_a(xn: np.ndarray, meta: pd.DataFrame, seed: int) -> dict:
     drivers = protocol.shared_drivers(meta)
     code = {d: i for i, d in enumerate(drivers)}
     y = meta.driver.map(code).to_numpy()
-    out = {"tcn": [], "contrastive": []}
+    out: dict[str, list] = {"tcn": [], "contrastive": []}
     for train, test, circuit in protocol.circuit_folds(meta, drivers):
         model = nets.fit_classifier(xn[train], y[train], len(drivers), seed=seed)
         out["tcn"].append(pd.DataFrame({"circuit": circuit, "driver": meta.driver.iloc[test].to_numpy(),
@@ -40,7 +40,7 @@ def task_a(xn: np.ndarray, meta: pd.DataFrame, seed: int) -> dict:
 
 def task_b(xn: np.ndarray, meta: pd.DataFrame, seed: int) -> dict:
     splits = protocol.teammate_splits(meta)
-    out = {"tcn": [], "contrastive": []}
+    out: dict[str, list] = {"tcn": [], "contrastive": []}
     for session in sorted({s["session_key"] for s in splits}):
         group = [s for s in splits if s["session_key"] == session]
         train_idx = np.unique(np.concatenate([s["train"] for s in group]))

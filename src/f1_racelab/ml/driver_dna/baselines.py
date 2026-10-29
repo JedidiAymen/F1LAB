@@ -5,6 +5,7 @@ Command: ``uv run python -m f1_racelab.ml.driver_dna.baselines`` -> ``data/proce
 from __future__ import annotations
 
 import json
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -89,7 +90,7 @@ def main() -> None:
     feat = features(x, meta)
     extra = {k: {"mean_accuracy": v["mean_accuracy"], "ci": v["ci"], "pairs": v["pairs"]}
              for k, v in controls(feat, meta).items()}
-    report = {"laps": len(meta), "feature_names": handcrafted.NAMES, "task_b_controls": extra,
+    report: dict[str, Any] = {"laps": len(meta), "feature_names": handcrafted.NAMES, "task_b_controls": extra,
               "models": {name: {"task_a": task_a(feat, meta, make), "task_b": task_b(feat, meta, make)}
                          for name, make in MODELS.items()}}
     (OUT / "baselines.json").write_text(json.dumps(report, indent=2, default=float))

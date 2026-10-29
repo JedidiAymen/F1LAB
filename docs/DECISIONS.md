@@ -335,3 +335,6 @@ Naive last-lap persistence is a straw man at decision time (it ignores that the 
 
 ## 2026-10-29 — Report Driver DNA as separability, not style; torch stays optional
 Neural models did not clearly beat handcrafted features, so no deployed model or live endpoint was built. torch is an optional `dl` extra so CI and the core install stay light.
+
+## 2026-10-29 — mypy is blocking in CI
+All 102 errors cleared: 74 were missing type information for third-party libraries (configured as `ignore_missing_imports` for those modules only, in `pyproject.toml`), 28 were fixed in code. The earlier advisory setting is removed. Not yet run on GitHub Actions.

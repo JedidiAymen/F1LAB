@@ -11,6 +11,7 @@ import math
 import os
 from functools import lru_cache
 from pathlib import Path
+from typing import cast
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
@@ -33,7 +34,7 @@ from f1_racelab.session.location_history import build_location_context
 from f1_racelab.session.replay_source import ReplaySource
 from f1_racelab.session.timeline import MAX_STEP, MIN_STEP, build_timeline
 from f1_racelab.strategy import ml_overlay
-from f1_racelab.strategy.models import CIRCUIT_COMPOUNDS, RACE_SPECS
+from f1_racelab.strategy.models import CIRCUIT_COMPOUNDS, RACE_SPECS, Compound
 from f1_racelab.strategy.monte_carlo import mc_compare
 from f1_racelab.strategy.optimizer import best_strategies, compare_strategies
 from f1_racelab.strategy.simulator import PitStop, Strategy
@@ -539,7 +540,7 @@ def create_app(
         if unknown:
             raise HTTPException(status_code=422,
                                 detail=f"Unknown compounds: {unknown}. Available: {sorted(valid)}")
-        results = best_strategies(slug, driver_number, available,
+        results = best_strategies(slug, driver_number, cast("list[Compound]", available),
                                   max_stops=max_stops, top_n=top_n, pit_step=pit_step)
         return {
             "session_slug": slug,

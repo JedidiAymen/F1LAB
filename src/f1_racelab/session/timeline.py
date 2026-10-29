@@ -24,7 +24,7 @@ def build_timeline(replay: ReplaySource, step_seconds: float = 30.0) -> dict:
         t += step_seconds
     times.append(round(duration, 3))
     driver_ids = [driver["driver_id"] for driver in replay.pack["drivers"]]
-    series = {driver: {"positions": [], "gaps": [], "laps": []} for driver in driver_ids}
+    series: dict[str, dict[str, list]] = {driver: {"positions": [], "gaps": [], "laps": []} for driver in driver_ids}
     for moment in times:
         drivers = replay.state_at(moment).drivers
         for driver in driver_ids:

@@ -11,7 +11,7 @@ fastf1.Cache.enable_cache(str(CACHE_DIR))
 
 def load_session(
     year: int,
-    event: str,
+    event: str | int,
     session_code: str,
     *,
     telemetry: bool = False,

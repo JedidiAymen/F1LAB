@@ -1338,3 +1338,6 @@ Added `engines/{transforms,run}.py`, portable SQL, `mape`/`bias` metrics, `tests
 
 ## 2026-10-29 (10) — pipeline runner, feed check, Overtake UI
 `engines/{pipeline,feed_check}.py`, `tests/test_feed_and_pipeline.py`, `OvertakeLab.tsx` + e2e. Feed check found 53 red-flag rows >400 s (non-green); rule narrowed to green-eligible rows. 20/20 Playwright.
+
+## 2026-10-29 (11) — mypy cleared
+`uv run mypy src/f1_racelab`: Success, 85 files. Annotations added in strategy, session, ml/pace, ml/overtake, ml/driver_dna and api; `fastf1_source.load_session` now accepts `event: str | int` (it is called with a round number). 244 tests pass, ruff clean.

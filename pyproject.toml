@@ -66,3 +66,11 @@ dev = [
     "pytest-cov>=7.1.0",
     "ruff>=0.16.10",
 ]
+
+[tool.mypy]
+python_version = "3.12"
+# These libraries ship no type information in this environment; imports are treated as Any.
+[[tool.mypy.overrides]]
+module = ["pandas.*", "sklearn.*", "lightgbm.*", "scipy.*", "joblib.*", "pyarrow.*", "duckdb.*", "pyspark.*",
+          "deltalake.*", "fastf1.*", "torch.*", "matplotlib.*", "numpy.*"]
+ignore_missing_imports = true

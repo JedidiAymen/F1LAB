@@ -66,7 +66,7 @@ class MCWorld:
 
     def apply(self, base_laps: list[LapState]) -> list[LapState]:
         """Return a new list of LapState with per-lap noise applied."""
-        result = []
+        result: list[LapState] = []
         d = base_laps[0].driver_number
         for i, lap in enumerate(base_laps):
             noise = self.lap_noise[d][i]

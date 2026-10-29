@@ -25,9 +25,8 @@ jobs:
         run: uv run ruff check src tests scripts
       - name: Unit tests (synthetic fixtures; no network, no downloaded data)
         run: uv run pytest -q -W ignore
-      - name: Type check (advisory; known pre-existing errors)
+      - name: Type check
         run: uv run mypy src/f1_racelab
-        continue-on-error: true
 
   web:
     runs-on: ubuntu-latest

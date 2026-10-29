@@ -12,8 +12,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from f1_racelab.ml.pace import inference
 from f1_racelab.strategy.models import CIRCUIT_COMPOUNDS, CIRCUIT_FUEL, RACE_SPECS
+from f1_racelab.strategy.models import Compound as SimCompound
 
-Compound = inference.Compound
 CONTEXT_DEFAULTS = {"track_temp": 35.0, "air_temp": 25.0, "humidity": 50.0, "wind_speed": 2.0, "rainfall": 0.0,
                     "interval_ahead": 5.0, "gap_to_leader": 10.0}
 CAVEAT = ("Autoregressive rollout of a next-lap model: errors compound. At decision time this model is not "
@@ -24,7 +24,7 @@ CAVEAT = ("Autoregressive rollout of a next-lap model: errors compound. At decis
 class StintRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    compound: Compound
+    compound: SimCompound
     start_lap: int = Field(ge=1, le=100)
     laps: int = Field(ge=2, le=60)
     start_age: int = Field(default=1, ge=1, le=60, description="tyre age (laps) on the first stint lap")

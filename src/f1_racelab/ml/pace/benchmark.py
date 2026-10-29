@@ -64,9 +64,9 @@ GROUPS = {
 }
 
 def _columns(drop: list[str] | None = None, identity: bool = False) -> tuple[list[str], list[str]]:
-    drop = set(drop or [])
-    numeric = [c for c in ds.NUMERIC if c not in drop]
-    categorical = [c for c in ds.CATEGORICAL if c not in drop]
+    dropped = set(drop or [])
+    numeric = [c for c in ds.NUMERIC if c not in dropped]
+    categorical = [c for c in ds.CATEGORICAL if c not in dropped]
     if identity:
         categorical = categorical + ds.IDENTITY
     return numeric, categorical
@@ -107,7 +107,8 @@ def walk_forward(frame: pd.DataFrame, *, min_train: int = MIN_TRAIN_RACES, step:
     races = frame.groupby("race_id", as_index=False)["race_start"].first()
     folds = chronological_group_folds(races, group_col="race_id", time_col="race_start",
                                       min_train=min_train, step=step)
-    pieces, timings, ablation_rows, seed_rows = [], {"fit_s": {}, "predict_ms_per_row": {}}, [], []
+    timings: dict[str, dict[str, list[float]]] = {"fit_s": {}, "predict_ms_per_row": {}}
+    pieces, ablation_rows, seed_rows = [], [], []
     contributions = []
     for fold, (train_ids, test_ids) in enumerate(folds):
         train_all = frame[frame.race_id.isin(train_ids)]

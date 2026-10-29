@@ -79,9 +79,9 @@ def walk_forward(pairs: pd.DataFrame) -> pd.DataFrame:
         fit_ids = [r for r in train_ids if start[r] < start[cut]]
         fit, cal = train[train.race_id.isin(fit_ids)], train[~train.race_id.isin(fit_ids)]
         model = _lgbm().fit(fit[FEATURES], fit.overtake)
-        iso = IsotonicRegression(out_of_bounds="clip", y_min=0, y_max=1).fit(model.predict_proba(cal[FEATURES])[:, 1],
+        iso = IsotonicRegression(out_of_bounds="clip", y_min=0, y_max=1).fit(np.asarray(model.predict_proba(cal[FEATURES]))[:, 1],
                                                                               cal.overtake)
-        preds["lightgbm_raw"] = model.predict_proba(test[FEATURES])[:, 1]
+        preds["lightgbm_raw"] = np.asarray(model.predict_proba(test[FEATURES]))[:, 1]
         preds["lightgbm_calibrated"] = iso.predict(preds["lightgbm_raw"])
         for name, p in preds.items():
             rows.append(pd.DataFrame({"fold": fold, "model": name, "race_id": test.race_id.to_numpy(),
