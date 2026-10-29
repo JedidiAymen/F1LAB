@@ -88,3 +88,37 @@ def test_walk_forward_end_to_end_beats_chance_and_reports_audit():
     # Synthetic order is nearly deterministic, so the ensemble should do well.
     summary = result["summary"].set_index(["model", "year"])
     assert summary.loc[("ensemble", 2024), "position_mae"] < 3.0
+
+
+def test_teammate_correlation_changes_joint_not_marginal_probabilities():
+    mu = np.array([0.0, 0.0, 0.3, 0.3, 0.6, 0.6, 0.9, 0.9])
+    sigma = np.full(8, 0.3)
+    teams = np.array(list("AABBCCDD"))
+
+    def joint_marginal(rho):
+        rng = np.random.default_rng(1)
+        own = rng.standard_normal((20000, 8))
+        # Re-use the module's sampler through its public output where possible.
+        mc = wf.monte_carlo_ranks(mu, sigma, draws=20000, seed=3, teams=teams, rho=rho)
+        shock = rng.standard_normal((20000, 4))[:, [0, 0, 1, 1, 2, 2, 3, 3]]
+        noise = np.sqrt(rho) * shock + np.sqrt(1 - rho) * own
+        ranks = (mu + sigma * noise).argsort(axis=1).argsort(axis=1) + 1
+        both = ((ranks[:, 0] <= 2) & (ranks[:, 1] <= 2)).mean()
+        return mc["p_top3"], both
+
+    marginal_ind, both_ind = joint_marginal(0.0)
+    marginal_cor, both_cor = joint_marginal(0.7)
+    assert np.allclose(marginal_ind.sum(), 3.0) and np.allclose(marginal_cor.sum(), 3.0)
+    assert both_cor > both_ind  # teammates rise and fall together
+    assert abs(marginal_cor[0] - marginal_ind[0]) < 0.03  # marginals barely move
+
+
+def test_residual_scale_learns_teammate_correlation():
+    scale = wf.ResidualScale()
+    rng = np.random.default_rng(5)
+    teams = np.repeat(np.arange(10), 2)
+    for _ in range(12):
+        mu = np.sort(rng.random(20))
+        shock = np.repeat(rng.normal(0, 0.2, 10), 2)
+        scale.update(mu, mu + shock + rng.normal(0, 0.05, 20), np.arange(1, 21), teams)
+    assert scale.rho() > 0.5

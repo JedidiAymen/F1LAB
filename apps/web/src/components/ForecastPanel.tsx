@@ -12,7 +12,7 @@ type ReliabilityRow = { target: string; n: number; mean_predicted: number; obser
 type WeekendRef = { year: number; round: number; event: string }
 type Manifest = {
   experiment: {
-    warmup_events: number; mc_draws: number; seed: number; features: string[]
+    warmup_events: number; mc_draws: number; seed: number; features: string[]; evaluated_years: number[]
     audit: {
       events: number; driver_rows: number
       brier_pole: number; brier_pole_uniform: number
@@ -107,7 +107,7 @@ export function ForecastPanel() {
 
   const headline = useMemo(() => {
     if (!manifest) return null
-    const ensemble = manifest.bootstrap.find((row) => row.model === 'ensemble' && row.window === '2024-2025')
+    const ensemble = manifest.bootstrap.find((row) => row.model === 'ensemble' && row.window === 'pooled')
     const mae = (model: string) => {
       const rows = manifest.summary.filter((row) => row.model === model)
       const events = rows.reduce((sum, row) => sum + row.events, 0)
@@ -134,7 +134,7 @@ export function ForecastPanel() {
     <section className="forecast panel" aria-label="Walk-forward probabilistic forecast">
       <div className="forecast-heading">
         <div>
-          <span className="eyebrow">WALK-FORWARD · PROBABILISTIC · 2024–2025</span>
+          <span className="eyebrow">WALK-FORWARD · PROBABILISTIC · {manifest.experiment.evaluated_years.join(' · ')}</span>
           <h2>Ensemble forecast with rank probabilities</h2>
           <p>Every event is scored by models fitted only on earlier weekends. Ridge + LightGBM + LambdaRank are
             averaged; noise scale and width are learned from earlier events' errors, then simulated {manifest.experiment.mc_draws.toLocaleString()} times.</p>

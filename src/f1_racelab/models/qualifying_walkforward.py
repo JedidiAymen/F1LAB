@@ -49,7 +49,10 @@ from f1_racelab.models.qualifying_backtest import (
 )
 
 ROOT = Path(__file__).resolve().parents[3]
-DATA_FILE = ROOT / "data/processed/qualifying_mixed_2022_2023_2024_2025.parquet"
+_MIXED = sorted((ROOT / "data/processed").glob("qualifying_mixed_2022_*.parquet"),
+                key=lambda path: len(path.stem))
+DATA_FILE = _MIXED[-1] if _MIXED else ROOT / "data/processed/qualifying_mixed_2022_2023_2024_2025.parquet"
+EVALUATION_START_YEAR = 2024
 OUT = ROOT / "data/processed/qualifying_walkforward"
 
 CONTEXT_FEATURES = [
@@ -189,10 +192,23 @@ def _predict_event(train: pd.DataFrame, test: pd.DataFrame) -> pd.DataFrame:
 
 
 def monte_carlo_ranks(mu: np.ndarray, sigma: np.ndarray, *, draws: int = MC_DRAWS,
-                      seed: int = SEED) -> dict[str, np.ndarray]:
-    """Rank distribution from independent Gaussian gap perturbations."""
+                      seed: int = SEED, teams: np.ndarray | None = None,
+                      rho: float = 0.0) -> dict[str, np.ndarray]:
+    """Rank distribution from Gaussian gap perturbations.
+
+    With ``teams`` and ``rho > 0`` each driver's noise is
+    ``sqrt(rho) * team_shock + sqrt(1 - rho) * own_noise`` so teammates share
+    car-level error (corr = ``rho``) while marginal variance is unchanged.
+    """
     rng = np.random.default_rng(seed)
-    sample = mu[None, :] + sigma[None, :] * rng.standard_normal((draws, len(mu)))
+    own = rng.standard_normal((draws, len(mu)))
+    if teams is not None and rho > 0:
+        labels, inverse = np.unique(teams, return_inverse=True)
+        shock = rng.standard_normal((draws, len(labels)))[:, inverse]
+        noise = np.sqrt(rho) * shock + np.sqrt(1.0 - rho) * own
+    else:
+        noise = own
+    sample = mu[None, :] + sigma[None, :] * noise
     ranks = sample.argsort(axis=1).argsort(axis=1) + 1
     return {
         "p_pole": (ranks == 1).mean(axis=0),
@@ -215,7 +231,8 @@ class ResidualScale:
 
     def __init__(self) -> None:
         self._ratios: list[np.ndarray] = []
-        self._history: list[tuple[np.ndarray, np.ndarray]] = []  # (mu, actual_rank)
+        self._history: list[tuple[np.ndarray, np.ndarray, np.ndarray]] = []  # (mu, actual_rank, teams)
+        self._pairs: list[tuple[float, float]] = []  # teammate residual ratios
         self._events = 0
 
     def ready(self) -> bool:
@@ -235,22 +252,38 @@ class ResidualScale:
         best, best_score = 1.0, np.inf
         for k in self.MULTIPLIERS:
             scores = []
-            for mu, actual_rank in self._history:
-                mc = monte_carlo_ranks(mu, k * self._base_sigma(mu, ratio), draws=300, seed=SEED)
+            rho = self.rho()
+            for mu, actual_rank, teams in self._history:
+                mc = monte_carlo_ranks(mu, k * self._base_sigma(mu, ratio), draws=300,
+                                       seed=SEED, teams=teams, rho=rho)
                 scores.append(np.mean((mc["p_top3"] - (actual_rank <= 3)) ** 2))
             score = float(np.mean(scores))
             if score < best_score:
                 best, best_score = k, score
         return best
 
+    def rho(self) -> float:
+        """Teammate residual correlation from earlier events, clipped to [0, 0.8]."""
+        if len(self._pairs) < 20:
+            return 0.0
+        pairs = np.asarray(self._pairs)
+        value = np.corrcoef(pairs[:, 0], pairs[:, 1])[0, 1]
+        return float(np.clip(value, 0.0, 0.8)) if np.isfinite(value) else 0.0
+
     def sigma(self, predicted_gap: np.ndarray) -> np.ndarray:
         ratio = float(np.concatenate(self._ratios).std())
         return self.multiplier() * self._base_sigma(predicted_gap, ratio)
 
     def update(self, predicted_gap: np.ndarray, actual_gap: np.ndarray,
-               actual_rank: np.ndarray) -> None:
-        self._history.append((predicted_gap.copy(), actual_rank.copy()))
-        self._ratios.append((actual_gap - predicted_gap) / (0.5 + np.clip(predicted_gap, 0, None)))
+               actual_rank: np.ndarray, teams: np.ndarray | None = None) -> None:
+        teams = np.asarray(teams if teams is not None else np.arange(len(predicted_gap)))
+        self._history.append((predicted_gap.copy(), actual_rank.copy(), teams))
+        ratio = (actual_gap - predicted_gap) / (0.5 + np.clip(predicted_gap, 0, None))
+        self._ratios.append(ratio)
+        for team in np.unique(teams):
+            members = np.flatnonzero(teams == team)
+            if team != "__UNKNOWN__" and len(members) == 2:
+                self._pairs.append((float(ratio[members[0]]), float(ratio[members[1]])))
         self._events += 1
 
 
@@ -277,14 +310,17 @@ def walk_forward(frame: pd.DataFrame, *, warmup_events: int = 12,
         actual = test[TARGET].to_numpy()
         if scale.ready():
             sigma = scale.sigma(mu)
-            mc = monte_carlo_ranks(mu, sigma, draws=draws, seed=SEED + i)
+            mc = monte_carlo_ranks(mu, sigma, draws=draws, seed=SEED + i,
+                                   teams=test["team"].to_numpy(), rho=scale.rho())
             ens = event_frame["model"] == "ensemble"
             # scored_positions sorts by predicted score; align by driver label.
             by_driver = pd.DataFrame(mc, index=test["driver"].to_numpy())
             by_driver["sigma"] = sigma
+            by_driver["team_rho"] = scale.rho()
             for column in by_driver.columns:
                 event_frame.loc[ens, column] = event_frame.loc[ens, "driver"].map(by_driver[column]).to_numpy()
-        scale.update(mu, actual, test[LABEL].rank(method='first').to_numpy())
+        scale.update(mu, actual, test[LABEL].rank(method='first').to_numpy(),
+                     test["team"].to_numpy())
         pieces.append(event_frame)
     return pd.concat(pieces, ignore_index=True)
 
@@ -332,9 +368,9 @@ def summarise(predictions: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd
         spearman=("spearman", "mean"), pole_hit_rate=("pole_hit", "mean"),
         top3_overlap=("top3_overlap", "mean"))
     boots = []
-    for label, part in (("2024", by_event[by_event.year == 2024]),
-                        ("2025", by_event[by_event.year == 2025]),
-                        ("2024-2025", by_event[by_event.year >= 2024])):
+    windows = [(str(year), by_event[by_event.year == year]) for year in sorted(by_event.year.unique())]
+    windows.append(("pooled", by_event))
+    for label, part in windows:
         if part.empty:
             continue
         table = paired_event_bootstrap(part, baseline="latest_practice")
@@ -346,7 +382,7 @@ def summarise(predictions: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd
 def run(raw: pd.DataFrame, *, warmup_events: int = 12, draws: int = MC_DRAWS) -> dict:
     frame = build_frame(raw)
     predictions = walk_forward(frame, warmup_events=warmup_events, draws=draws)
-    evaluated = predictions.loc[predictions.year >= 2024]
+    evaluated = predictions.loc[predictions.year >= EVALUATION_START_YEAR]
     by_event, summary, bootstrap = summarise(evaluated)
     audit = probability_audit(evaluated)
     return {"frame": frame, "predictions": predictions, "by_event": by_event,
@@ -394,7 +430,8 @@ def main() -> None:
         "candidate": "ensemble", "baseline": "latest_practice",
         "models": list(MODELS), "features": NUMERIC, "target": TARGET, "label": LABEL,
         "warmup_events": args.warmup_events, "mc_draws": args.draws, "seed": SEED,
-        "evaluated_years": [2024, 2025],
+        "evaluated_years": sorted(int(y) for y in result["predictions"].year.unique()
+                                  if y >= EVALUATION_START_YEAR),
         "events_total": int(result["frame"][GROUP].drop_duplicates().shape[0]),
         "dataset": str(args.dataset),
         "dataset_sha256": hashlib.sha256(args.dataset.read_bytes()).hexdigest(),
