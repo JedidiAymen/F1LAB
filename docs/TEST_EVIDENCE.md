@@ -434,7 +434,10 @@ Classification: **real** data for metrics, **synthetic** fixtures for unit tests
 `uv run pytest -q -W ignore` — **214 passed** (real: audit/strict/benchmark runs on 65 races; synthetic: unit tests). `uv run ruff check src tests scripts` clean (46 -> 0). `npm run lint`, `npm run test:unit` (16), `npm run build` clean. A fresh `git clone` run found one environment-dependent test (Monza pack); it now skips when the git-ignored pack is absent. mypy: 72 pre-existing errors, run as advisory in CI. Commands: `python -m f1_racelab.ml.pace.audit`, `python -m f1_racelab.ml.pace.strict`, `python -m f1_racelab.ml.pace.benchmark --refit-only`.
 
 ## 2026-10-29 (6) — ML pace overlay and Driver DNA
-`uv run pytest -q -W ignore` and `npx playwright test` (20 specs incl. ML overlay and Driver DNA). Driver DNA runs are real data (1,749 laps, 3 seeds, GPU); unit tests are synthetic. torch 2.15.0+cu132 is an optional extra (`uv sync --extra dl`); CI does not install it, so the network test skips there via `importorskip`.
+`uv run pytest -q -W ignore` and `npx playwright test` (19 specs passed, incl. ML overlay and Driver DNA). Driver DNA runs are real data (1,749 laps, 3 seeds, GPU); unit tests are synthetic. torch 2.15.0+cu132 is an optional extra (`uv sync --extra dl`); CI does not install it, so the network test skips there via `importorskip`.
 
 ## 2026-10-29 (7) — Overtake
 `uv run pytest -q -W ignore` — 231 passed; ruff clean. Real runs: `python -m f1_racelab.ml.overtake.dataset`, `python -m f1_racelab.ml.overtake.benchmark` (artifacts in git-ignored `data/processed/overtake/`).
+
+## 2026-10-29 (8) — final verification of this mandate pass
+Local, with data: `uv run pytest -q -W ignore` 233 passed; ruff clean; `npm run lint`, `npm run test:unit` (16), `npm run build` clean; `npx playwright test` 19 passed.
