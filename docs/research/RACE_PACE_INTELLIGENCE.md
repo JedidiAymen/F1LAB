@@ -80,3 +80,13 @@ Tyre compound/age at L+1 are scenario inputs. Multi-lap (direct/recursive) forec
 **not implemented**. 2026 regulation shift is not isolated in the metrics. The served model is
 fitted on all races, so the API shows out-of-fold forecasts instead. Only green-flag clean laps
 carry the headline result.
+
+## Quality-gate audit: LightGBM vs last-lap persistence (Milestone 1, gates A, C, E)
+
+Command: `uv run python -m f1_racelab.ml.pace.audit` (reads `data/processed/race_pace/predictions.parquet`, writes `audit.json`; real data, 65 scored races, 57,679 green laps). Code: `src/f1_racelab/ml/pace/audit.py`, tests: `tests/test_pace_audit.py` (synthetic).
+
+**A. Paired, race-clustered comparison.** MAE LightGBM 0.5749 s vs persistence 0.5929 s: difference -0.018 s (-3.0%), 95% race-clustered bootstrap CI [-0.057, +0.029]. **The CI contains zero, so the earlier claim of beating the strongest baseline is not supported at this strength.** LightGBM wins in 80% of races and the median per-race delta is -0.052 s, but the mean is pulled up by a few races where it loses heavily (95th percentile +0.20 s).
+
+**E. Per season (green laps, MAE s).** 2024: LightGBM 0.491 vs persistence 0.498. 2025: 0.489 vs 0.478 (persistence better). 2026: 0.849 vs 0.923. The pooled gain comes mostly from 2026; in 2025 persistence is better. 2026 lap-time noise is larger for every model. 2026 was part of the walk-forward evaluation, not an untouched holdout.
+
+**C. Interval calibration.** Raw q10-q90 coverage is 75.1% against an 80% target. Chronological conformalized quantile regression (fold k corrected with scores from folds < k only) gives 80.1% at width 1.44 s (raw 1.31 s), with pinball 0.1797 vs 0.1803, so sharpness is essentially unchanged. By compound the coverage is 78-80%. By season it is 77.7% (2024), 83.4% (2025) and 78.8% (2026). By regime, green is 76.2% and yellow 50.3%; safety-car/VSC laps are 5.3% and the intervals are unusable there. Do not present them as valid for neutralised laps.
