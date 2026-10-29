@@ -198,19 +198,19 @@ def normalize_weekend(item: dict, drivers: list[dict], results: dict[str, list[d
 
 
 def build_dataset(years: list[int], *, output_root: Path = OUTPUT_ROOT,
-                  cache_root: Path = RAW_ROOT) -> tuple[pd.DataFrame, pd.DataFrame]:
+                  cache_root: Path = RAW_ROOT, offline: bool = False) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Resume per-weekend ingestion and write coverage even when a source fails."""
     output_root = Path(output_root)
     weekend_root = output_root / "qualifying_openf1_weekends"
     weekend_root.mkdir(parents=True, exist_ok=True)
     frames: list[pd.DataFrame] = []
     report: list[dict] = []
-    with OpenF1Client(cache_root) as client:
+    with OpenF1Client(cache_root, offline=offline) as client:
         for year in sorted(set(years)):
             try:
                 weekends = conventional_weekends(client.get("meetings", year=year),
                                                  client.get("sessions", year=year))
-            except (httpx.HTTPError, ValueError, KeyError) as exc:
+            except (httpx.HTTPError, OSError, ValueError, KeyError) as exc:
                 report.append({"year": year, "round": None, "event": "schedule",
                                "status": "ERROR", "rows": 0, "detail": f"{type(exc).__name__}: {exc}"})
                 continue
@@ -239,9 +239,12 @@ def build_dataset(years: list[int], *, output_root: Path = OUTPUT_ROOT,
                     report.append({"year": year, "round": item["round"], "event": item["event"],
                                    "status": status, "rows": len(frame), "detail": ""})
                     print(f"[{status}] {year} R{item['round']:02d} {item['event']}: {len(frame)}", flush=True)
-                except (httpx.HTTPError, ValueError, KeyError, TypeError) as exc:
+                except (httpx.HTTPError, OSError, ValueError, KeyError, TypeError) as exc:
+                    # A 404 on session results means the provider has not published
+                    # them (yet): informative, not a pipeline fault.
+                    missing = isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code == 404
                     report.append({"year": year, "round": item["round"], "event": item["event"],
-                                   "status": "ERROR", "rows": 0,
+                                   "status": "NOT_PUBLISHED" if missing else "ERROR", "rows": 0,
                                    "detail": f"{type(exc).__name__}: {exc}"[:300]})
                     print(f"[ERROR] {year} R{item['round']:02d}: {exc}", flush=True)
     report_frame = pd.DataFrame(report)
