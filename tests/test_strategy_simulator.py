@@ -6,6 +6,8 @@ All simulated results are labelled; no historical lap times are mixed in.
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from f1_racelab.strategy.models import (
@@ -295,6 +297,9 @@ def test_mc_limits_included():
 # Real-data sanity check (P5 acceptance gate)
 # ---------------------------------------------------------------------------
 
+@pytest.mark.skipif(
+    not (Path(__file__).resolve().parents[1] / 'data/processed/replay_packs/monza_2025_race.json.gz').is_file(),
+    reason='Monza 2025 pack not present (local, git-ignored data)')
 def test_real_data_calibration_monza():
     """Verify calibration against real Monza 2025 lap data."""
     from f1_racelab.strategy.calibration import sanity_check_monza
