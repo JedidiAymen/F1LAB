@@ -1,0 +1,299 @@
+{
+  "cases": [
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t3"
+      ],
+      "reason": "Cited t3 shows 2026 green bias around 0.42749 s versus near-zero earlier years. Similar batch/live values establish agreement, not the claimed absence of bias; the year shift is visible in the cited rows.",
+      "scenario_id": "regime_shift-s1",
+      "verdict": "contradicted"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [
+        "t1"
+      ],
+      "reason": "Cited t1 explicitly reports batch 2026 green bias 0.42749 s versus near-zero 2024/25. Calling that observed bias noise ignores the period-specific change; matching pipelines do not rule out a shared error.",
+      "scenario_id": "regime_shift-s1",
+      "verdict": "contradicted"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [
+        "t1"
+      ],
+      "reason": "Cited t1 explicitly reports batch 2026 green bias 0.31752 s versus near-zero 2024/25. Calling that observed bias noise ignores the period-specific change; matching pipelines do not rule out a shared error.",
+      "scenario_id": "regime_shift-s4",
+      "verdict": "contradicted"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t3"
+      ],
+      "reason": "Cited t3 shows 2026 green bias around 0.31752 s versus near-zero earlier years. Similar batch/live values establish agreement, not the claimed absence of bias; the year shift is visible in the cited rows.",
+      "scenario_id": "regime_shift-s4",
+      "verdict": "contradicted"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t2"
+      ],
+      "reason": "Cited t2 shows persistent batch/live gaps around 0.13\u20130.16 s and unequal biases, but contains no model-version inspection. Stable discrepancies do not establish the claimed absence of a material fault.",
+      "scenario_id": "stale_model_version-s1",
+      "verdict": "insufficient"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [
+        "t1",
+        "t3"
+      ],
+      "reason": "Cited t1 identifies batch pace-v2 versus live pace-v1; cited t3 shows live bias against actuals with batch near zero. These observations support the version mismatch and degraded live forecasts, though they do not independently prove causality.",
+      "scenario_id": "stale_model_version-s1",
+      "verdict": "supported"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [
+        "t1",
+        "t3"
+      ],
+      "reason": "Cited t1 identifies batch pace-v2 versus live pace-v1; cited t3 shows live bias against actuals with batch near zero. These observations support the version mismatch and degraded live forecasts, though they do not independently prove causality.",
+      "scenario_id": "stale_model_version-s4",
+      "verdict": "supported"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t3"
+      ],
+      "reason": "Cited t3 supports systematic live bias, but not the selected config_drift cause or the claimed empty config_diff result. The explanation itself leaves model/data alternatives unresolved; it cites no version evidence.",
+      "scenario_id": "stale_model_version-s4",
+      "verdict": "insufficient"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t2"
+      ],
+      "reason": "Cited forecast comparisons show a consistent roughly 0.06 s live offset. They do not compare feature values or establish an acceptable-noise threshold, so they cannot rule out feature skew. The claim about empty configuration differences cites no config observation.",
+      "scenario_id": "feature_skew-s1",
+      "verdict": "insufficient"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [],
+      "reason": "No final explanation or evidence IDs: six-step budget exhausted. The trace can be inspected but an undetermined outcome does not provide an evidence-supported diagnosis.",
+      "scenario_id": "feature_skew-s1",
+      "verdict": "insufficient"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [
+        "t1"
+      ],
+      "reason": "Cited t1 reports 4,320 mismatched tyre_age values out of 4,320 matched feature keys. The explanation explicitly claims no evidence of feature skew, contradicting that observation.",
+      "scenario_id": "feature_skew-s4",
+      "verdict": "contradicted"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t2",
+        "t3"
+      ],
+      "reason": "Cited forecast comparisons show a consistent roughly 0.06 s live offset. They do not compare feature values or establish an acceptable-noise threshold, so they cannot rule out feature skew. Cited t3 establishes only equal declared configuration.",
+      "scenario_id": "feature_skew-s4",
+      "verdict": "insufficient"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t3"
+      ],
+      "reason": "Cited t3 has zero live/matched rows for 2024-r03, 2024-r06 and 2026-r06 while batch rows exist. This supports missing race forecasts. The explanation repeats 2026-r06 and omits 2024-r06, so its event listing is incomplete, but its named distinct missing races are real in the observation.",
+      "scenario_id": "missing_live_data-s1",
+      "verdict": "supported"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [
+        "t1"
+      ],
+      "reason": "Cited t1 reports 668 batch-only forecast keys. A tiny prediction gap on surviving matched keys cannot negate missing forecasts; the explanation explicitly denies missing-data evidence despite the coverage result.",
+      "scenario_id": "missing_live_data-s1",
+      "verdict": "contradicted"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [
+        "t1"
+      ],
+      "reason": "Cited t1 reports 661 batch-only forecast keys. A tiny prediction gap on surviving matched keys cannot negate missing forecasts; the explanation explicitly denies missing-data evidence despite the coverage result.",
+      "scenario_id": "missing_live_data-s4",
+      "verdict": "contradicted"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t3",
+        "t4"
+      ],
+      "reason": "Cited t3 shows zero live rows for 2024-r03, 2026-r03 and 2026-r05; cited t4 has no groups for those races. This supports the named missing-forecast diagnosis. The irrelevant v1/v2 SQL counts use names unlike pace-v1/pace-v2 and do not establish model identity.",
+      "scenario_id": "missing_live_data-s4",
+      "verdict": "supported"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t3"
+      ],
+      "reason": "Cited forecast comparison contains affected 2026 races with live-minus-batch gaps and live bias around 89,000 seconds. These contradict the claimed minimal differences/no material discrepancy. Speculating about anomalies does not justify dismissing them.",
+      "scenario_id": "unit_mismatch-s1",
+      "verdict": "contradicted"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [
+        "t1"
+      ],
+      "reason": "Cited t1 reports mean prediction gap 10061.14196 seconds and maximum live values above 91,000 versus batch about 91. Calling this expected noise contradicts the cited magnitudes.",
+      "scenario_id": "unit_mismatch-s1",
+      "verdict": "contradicted"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [
+        "t1"
+      ],
+      "reason": "Cited t1 reports mean prediction gap 15004.98635 seconds and maximum live values above 91,000 versus batch about 91. Calling this expected noise contradicts the cited magnitudes.",
+      "scenario_id": "unit_mismatch-s4",
+      "verdict": "contradicted"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t2",
+        "t3"
+      ],
+      "reason": "Cited forecast comparison contains affected 2026 races with live-minus-batch gaps and live bias around 89,000 seconds. These contradict the claimed minimal differences/no material discrepancy. Speculating about anomalies does not justify dismissing them.",
+      "scenario_id": "unit_mismatch-s4",
+      "verdict": "contradicted"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t2"
+      ],
+      "reason": "Cited t2 config_diff explicitly shows green_laps_only=true in batch and false in live. This supports the configuration-drift diagnosis and a cautious possibility of different forecast coverage.",
+      "scenario_id": "config_drift-s1",
+      "verdict": "supported"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [
+        "t1",
+        "t2",
+        "t3"
+      ],
+      "reason": "Cited t1/t3 establish the true/false green_laps_only difference and live-only keys, supporting the label. The extra assertion that green-lap bias further supports this filter cause is not established: t2 green biases are nearly identical, whereas all-row live MAE is elevated. The full explanation overstates what those biases prove.",
+      "scenario_id": "config_drift-s1",
+      "verdict": "insufficient"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [
+        "t1",
+        "t2"
+      ],
+      "reason": "Cited t1 contains green_laps_only=true/false and 372 live-only forecast keys; t2 shows nearly identical green biases. This supports differing filter coverage with aligned predictions on matched green rows, as cautiously described.",
+      "scenario_id": "config_drift-s4",
+      "verdict": "supported"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t2"
+      ],
+      "reason": "Cited t2 config_diff explicitly shows green_laps_only=true in batch and false in live. This supports the configuration-drift diagnosis and a cautious possibility of different forecast coverage.",
+      "scenario_id": "config_drift-s4",
+      "verdict": "supported"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t3"
+      ],
+      "reason": "Cited t3 includes incomplete key matching and live all-row MAE above 2 s in affected races, despite much smaller clean-race errors. Dismissing these as outliers does not support the asserted no-material-discrepancy outcome.",
+      "scenario_id": "lap_misalignment-s1",
+      "verdict": "contradicted"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [],
+      "reason": "No final explanation or cited evidence IDs: six-step budget exhausted. A previous-lap alignment clue in a tool trace is not a completed supported diagnosis.",
+      "scenario_id": "lap_misalignment-s1",
+      "verdict": "insufficient"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [],
+      "reason": "No final explanation or cited evidence IDs: six-step budget exhausted. A previous-lap alignment clue in a tool trace is not a completed supported diagnosis.",
+      "scenario_id": "lap_misalignment-s4",
+      "verdict": "insufficient"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t3"
+      ],
+      "reason": "Cited t3 shows positive live counts (212, 212 and 217) for the three named races, not absent race forecasts. Fewer or mismatched lap keys do not establish the claimed no forecasts for entire races.",
+      "scenario_id": "lap_misalignment-s4",
+      "verdict": "contradicted"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t2",
+        "t3"
+      ],
+      "reason": "Cited t2 supports tiny gaps, complete matching and near-zero biases; t3 supports equal declared configuration. The extra claim ruling out actual model-version mismatch is not established by these citations, which do not inspect version identities in forecast rows.",
+      "scenario_id": "no_material_discrepancy-s1",
+      "verdict": "insufficient"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [
+        "t1"
+      ],
+      "reason": "Cited t1 shows complete matched forecast coverage, mean gap about 0.0016 s, identical pace-v2 versions, no configuration/feature differences and small yearly batch bias. These support the clean-control explanation within the observed synthetic warehouse.",
+      "scenario_id": "no_material_discrepancy-s1",
+      "verdict": "supported"
+    },
+    {
+      "arm": "candidate",
+      "cited_ids": [
+        "t1"
+      ],
+      "reason": "Cited t1 shows complete matched forecast coverage, mean gap about 0.0016 s, identical pace-v2 versions, no configuration/feature differences and small yearly batch bias. These support the clean-control explanation within the observed synthetic warehouse.",
+      "scenario_id": "no_material_discrepancy-s4",
+      "verdict": "supported"
+    },
+    {
+      "arm": "baseline",
+      "cited_ids": [
+        "t2",
+        "t3"
+      ],
+      "reason": "Cited t2 shows complete matched coverage, roughly 0.0015\u20130.0017 s gaps and small similar biases; cited t3 has no declared config differences. These support the limited clean-control explanation without an additional unsupported version claim.",
+      "scenario_id": "no_material_discrepancy-s4",
+      "verdict": "supported"
+    }
+  ],
+  "method": "Engineering adjudication against exact cited observations; not blinded independent human annotation. Supported: material claims warranted; contradicted: an explicit material claim conflicts with cited values; insufficient: missing citation coverage, overclaim or no final diagnosis. Label correctness is scored separately.",
+  "results_sha256": "dd0b5cc7601d07e84ee3dc76f1252f0c1e7a96850877e32bcf6aed479620c97e",
+  "schema_version": 1
+}
