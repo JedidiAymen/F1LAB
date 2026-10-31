@@ -126,3 +126,42 @@ Remaining: multi-fault, incomplete/ambiguous evidence and unseen-taxonomy
 scenarios; richer evidence-support annotation; transport-failure-resilient
 checkpointing; an actual read-only live warehouse connector. No production-readiness
 or improvement over the scripted checklist is claimed.
+
+## EXP-AGENT-03 — deterministic preflight evidence (review branch)
+
+The new `agents/forecast_debug/triage.py` provides a **descriptive, read-only**
+`summarize(tables)` function. It compares forecast key coverage, model-version
+identity, prediction magnitudes, per-field feature skew, configuration differences,
+potential previous-lap alignment, and actual historical forecast bias by season.
+
+The agent can request the same summary via the `incident_checks` tool, and its
+instructions now warn that agreement between batch and live does not imply
+agreement with actual outcomes. The output contains **no known planted root-cause
+label**, does not change any input DataFrame, and deliberately does not make a
+final causal diagnosis. A separate regression suite exercises the eight
+synthetic fault scenarios and rejects duplicate forecast keys.
+
+This is an **agent-instrumentation milestone**, not a claim of improved LLM
+accuracy. The previously measured Qwen3 8B result remains 2/8. An actual
+paired evaluation should run the **same fixed model, seeds, scenario definitions,
+temperature, think mode, context, token/step budget and hardware** under both
+the old and new protocols, and retain complete traces and incorrect examples.
+Evaluate semantic evidence support separately from citation-ID existence.
+
+Research limitations: the preflight uses **retrospectively observed** outcomes
+for seasonal bias, so it must not be used as a forecast-time feature. Its
+possible-lap-shift list is a heuristic clue, not an independently verified
+source of timing errors. Synthetic single-cause scenarios are not a substitute
+for multi-fault, incomplete-evidence or real read-only incidents.
+
+To reproduce the CPU-only evidence checks:
+
+```bash
+uv run pytest -q tests/test_forecast_triage.py
+```
+
+Next research gates: compare the LLM protocols on paired scenarios; introduce
+multi-fault/incomplete-evidence cases; annotate whether each cited observation
+actually supports the specific claim; then connect to **read-only** real
+F1LAB batch-versus-on-demand forecast manifests. Do not call the agent
+production-ready until those gates pass.
