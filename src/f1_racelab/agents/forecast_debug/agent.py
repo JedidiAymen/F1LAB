@@ -27,6 +27,11 @@ def system_prompt() -> str:
     labels = "\n".join(f"- {label}: {DESCRIPTIONS[label]}" for label in LABELS)
     return f"""You are a forecast-debugging agent with read-only access to a forecasting warehouse.
 Investigate with tools before concluding. Base every claim on tool observations, not assumptions.
+Begin with incident_checks to see coverage, model versions, feature skew, lap alignment and observed bias.
+Investigate any suspicious signals with specific SQL or table inspections before assigning a cause.
+Batch/live agreement does NOT prove that both models are accurate; check observed outcomes and season bias.
+Do not claim no_material_discrepancy after only comparing aggregate batch/live forecasts.
+The incident_checks tool returns observations, never a definitive diagnosis.
 
 Tools:
 {tools}
