@@ -214,3 +214,18 @@ The existing Research & reliability workspace adds paired-case selection,
 either-agent-failed filtering, side-by-side trace disclosure, support reasons
 and fingerprints. Compose bundles only these small synthetic-warehouse results;
 raw F1 artifacts and model weights remain optional.
+
+Publication verified: implementation `a84259489aae8364a25bcabddb4e5a4e4a712e35`
+pushed normally to `feat/issue-2-agent-paired-evaluation`; `git ls-remote`
+matched exactly. Draft [PR #3](https://github.com/JedidiAymen/F1LAB/pull/3)
+targets `feat/foundation`, unmerged. [PR CI 41229788889](https://github.com/JedidiAymen/F1LAB/actions/runs/41229788889)
+passed Python, web and clean-data Compose. Exact Python CI result: **247 passed,
+30 skipped in 9.28 s**, default dependency set; mypy 100 files. This differs from
+local all-extras verification (307 full-run passes before the final added binding
+regression, then 5 focused service passes; 308-test local inventory). Web CI has
+16 unit passes, build/lint pass. Compose CI actually builds and checks the bundled
+32-case API without raw F1 data. Browser evidence remains local, not a CI job.
+PR #1 stays at `5a95ba26395cf8f7395a8396297409db17ebe02e`; foundation stays at
+`5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. No PR/main merge or attribution change.
+After testing, removed disposable build cache (Docker reported 2.956 GB; shared
+runtime layers remain), restoring about 3.2 GiB free; no images/volumes/data deleted.
