@@ -593,3 +593,10 @@ on base 5cdac66 with a modified worktree, as honestly recorded in run provenance
 Publication source/CI proof is distinct from the base training SHA.
 PR #3 remains `810b90e8fefd877015eb90cb9d5f947fe0b9584b` with CI 41230058581 green;
 PR #1 remains `5a95ba2`; foundation remains `5cdac66`. No merges/force pushes.
+
+Independent checker follow-up: verifies the study sidecar and all 17 model/card/
+preprocessing hashes before any model deserialization. Real artifact reload and
+ten-model metrics pass again; a deliberately corrupted temporary model copy is
+rejected before deserialization. Actual saved models stay unchanged. Publication
+metadata commit `9070231d01bc77c6ae6eaea95cde1ca3fbc8cc12` also passed all CI
+jobs in run 41251143634. No new model fit or test-set tuning occurred.

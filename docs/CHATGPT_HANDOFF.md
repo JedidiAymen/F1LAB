@@ -1003,3 +1003,10 @@ imagery, not Formula 1 or racing footage. Existing RACECAR/A2RL/CARLA audit
 still applies; no CV training is claimed. Resolve a small annotated RGB source,
 explicit rights/splits and storage gate before detector work. Other Issue #2
 modules remain partial, not globally blocked or marked complete.
+
+Independent checker follow-up: verifies the study sidecar and all 17 model/card/
+preprocessing hashes before any model deserialization. Real artifact reload and
+ten-model metrics pass again; a deliberately corrupted temporary model copy is
+rejected before deserialization. Actual saved models stay unchanged. Publication
+metadata commit `9070231d01bc77c6ae6eaea95cde1ca3fbc8cc12` also passed all CI
+jobs in run 41251143634. No new model fit or test-set tuning occurred.

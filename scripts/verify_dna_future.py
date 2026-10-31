@@ -1,6 +1,7 @@
 """Independent saved-model inference/metric check; requires local real artifacts."""
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -16,7 +17,15 @@ def verify(root: Path = OUT / "verified") -> dict:
 
     from f1_racelab.ml.driver_dna.future_nets import RemainingLapNet
 
-    study = json.loads((root / "study.json").read_text())
+    payload = (root / "study.json").read_bytes()
+    if hashlib.sha256(payload).hexdigest() != (root / "study.sha256").read_text().strip():
+        raise ValueError("Study checksum mismatch; refusing artifact deserialization")
+    study = json.loads(payload)
+    for filename, expected in study["artifacts_sha256"].items():
+        if Path(filename).name != filename:
+            raise ValueError("Artifact manifest must contain local filenames")
+        if hashlib.sha256((root / "models" / filename).read_bytes()).hexdigest() != expected:
+            raise ValueError(f"Artifact checksum mismatch: {filename}")
     frame = pd.read_parquet(root / "predictions.parquet")
     test = frame[frame.split == "test"]
     selected = test.sample(n=min(8, len(test)), random_state=42).index.to_numpy()
@@ -55,7 +64,7 @@ def verify(root: Path = OUT / "verified") -> dict:
         np.testing.assert_allclose(predicted, expected, rtol=0, atol=0.001)
         checked[name] = {"points": len(selected), "max_reloaded_difference_s": float(np.abs(predicted - expected).max())}
     return {"evidence": "real saved model reload; independent pandas metric recomputation",
-            "metric_models": len(study["results"]), "test_rows": len(test), "models": checked}
+            "verified_artifact_files": len(study["artifacts_sha256"]), "metric_models": len(study["results"]), "test_rows": len(test), "models": checked}
 
 
 if __name__ == "__main__":

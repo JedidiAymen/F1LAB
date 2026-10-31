@@ -1,5 +1,6 @@
 {
   "evidence": "real saved model reload; independent pandas metric recomputation",
+  "verified_artifact_files": 17,
   "metric_models": 10,
   "test_rows": 1597,
   "models": {
