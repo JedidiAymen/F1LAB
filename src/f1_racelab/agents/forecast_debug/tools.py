@@ -7,12 +7,17 @@ never modify data or reach the filesystem or network.
 from __future__ import annotations
 
 import re
+import threading
+import time
 from collections.abc import Callable
 from typing import Any
 
 import pandas as pd
 
 MAX_ROWS = 50
+MAX_QUERY_CHARS = 12_000
+MAX_COLUMNS = 32
+MAX_VALUE_CHARS = 1000
 _WRITE = re.compile(
     r"\b(insert|update|delete|merge|create|drop|alter|truncate|copy|attach|detach|install|load|pragma|set|reset|"
     r"export|import|call|checkpoint|vacuum|grant|revoke|use)\b", re.IGNORECASE)
@@ -32,6 +37,8 @@ class ToolError(ValueError):
 
 def guard_sql(query: str) -> str:
     """Return the query if it is one read-only SELECT/WITH statement, else raise ``ToolError``."""
+    if not isinstance(query, str) or len(query) > MAX_QUERY_CHARS:
+        raise ToolError(f"query must be text of at most {MAX_QUERY_CHARS} characters")
     text = _COMMENTS.sub(" ", query).strip().rstrip(";").strip()
     if not text:
         raise ToolError("empty query")
@@ -53,14 +60,22 @@ def _records(df: pd.DataFrame, limit: int = MAX_ROWS) -> dict[str, Any]:
 
 
 class ForecastTools:
-    def __init__(self, tables: dict[str, pd.DataFrame]) -> None:
+    def __init__(self, tables: dict[str, pd.DataFrame], *, timeout_seconds: float = 2.0) -> None:
         import duckdb
 
+        if not 0 < timeout_seconds <= 10:
+            raise ValueError("SQL timeout must be in (0, 10] seconds")
+        self._timeout = timeout_seconds
+        self._lock = threading.Lock()
         self._tables = tables
-        self._con = duckdb.connect(":memory:")
+        self._con = duckdb.connect(":memory:", config={
+            "threads": 1, "memory_limit": "128MB", "max_temp_directory_size": "0B",
+            "enable_external_access": False, "autoload_known_extensions": False,
+            "autoinstall_known_extensions": False,
+        })
         for name, frame in tables.items():
             self._con.register(name, frame)
-        self._con.execute("SET enable_external_access = false")
+        self._con.execute("SET lock_configuration = true")
         self._handlers: dict[str, Callable[..., dict[str, Any]]] = {
             "list_tables": self.list_tables,
             "describe_table": self.describe_table,
@@ -68,6 +83,11 @@ class ForecastTools:
             "compare_forecasts": self.compare_forecasts,
             "config_diff": self.config_diff,
         }
+
+    def close(self) -> None:
+        """Release this scenario's registered frames and engine resources."""
+        with self._lock:
+            self._con.close()
 
     @staticmethod
     def specs() -> list[dict[str, Any]]:
@@ -111,7 +131,42 @@ class ForecastTools:
                 "sample": _records(df, 5)["rows"]}
 
     def run_sql(self, query: str) -> dict[str, Any]:
-        return {"query": query, **_records(self._con.execute(guard_sql(query)).df())}
+        """Bound execution and fetching, not just the returned DataFrame's head.
+
+        Engine cancellation is cooperative; this is defense in depth for a local
+        read-only agent, not an OS sandbox for arbitrary hostile tenants.
+        """
+        import duckdb
+
+        text = guard_sql(query)
+        with self._lock:
+            started = time.perf_counter()
+            timer = threading.Timer(self._timeout, self._con.interrupt)
+            timer.daemon = True
+            timer.start()
+            try:
+                statements = self._con.extract_statements(text)
+                if len(statements) != 1 or statements[0].type != duckdb.StatementType.SELECT:
+                    raise ToolError("parser requires exactly one SELECT statement")
+                cursor = self._con.execute(text)
+                columns = [column[0] for column in cursor.description]
+                if len(columns) > MAX_COLUMNS:
+                    raise ToolError(f"at most {MAX_COLUMNS} result columns are allowed")
+                if len(set(columns)) != len(columns):
+                    raise ToolError("result columns must have unique names; use aliases")
+                fetched = cursor.fetchmany(MAX_ROWS + 1)
+                result = _records(pd.DataFrame(fetched, columns=columns))
+                result["row_count_is_exact"] = len(fetched) <= MAX_ROWS
+                result["rows"] = [
+                    {key: value[:MAX_VALUE_CHARS] if isinstance(value, str) else value for key, value in row.items()}
+                    for row in result["rows"]
+                ]
+                return {"query": text, **result, "elapsed_seconds": round(time.perf_counter() - started, 6)}
+            except duckdb.InterruptException as exc:
+                raise ToolError(f"SQL exceeded {self._timeout:g} second execution limit") from exc
+            finally:
+                timer.cancel()
+                timer.join()  # No late interrupt may affect the following query.
 
     def compare_forecasts(self, group_by: str = "year") -> dict[str, Any]:
         if group_by not in GROUPINGS:

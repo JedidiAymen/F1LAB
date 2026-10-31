@@ -1,0 +1,140 @@
+{
+  "summary": {
+    "cases": 8,
+    "accuracy": 0.25,
+    "correct_and_grounded": 0.25,
+    "grounded_rate": 1.0,
+    "undetermined_or_invalid": 0.0,
+    "mean_steps": 4.0,
+    "tool_errors": 0,
+    "mean_seconds": 17.4275,
+    "max_seconds": 35.39,
+    "total_seconds": 139.42,
+    "tool_calls": 24,
+    "false_citation_ids": 0,
+    "per_label_accuracy": {
+      "regime_shift": 0.0,
+      "stale_model_version": 0.0,
+      "feature_skew": 0.0,
+      "missing_live_data": 0.0,
+      "unit_mismatch": 0.0,
+      "config_drift": 1.0,
+      "lap_misalignment": 0.0,
+      "no_material_discrepancy": 1.0
+    },
+    "confusions": {
+      "regime_shift -> no_material_discrepancy": 1,
+      "stale_model_version -> no_material_discrepancy": 1,
+      "feature_skew -> no_material_discrepancy": 1,
+      "missing_live_data -> no_material_discrepancy": 1,
+      "unit_mismatch -> no_material_discrepancy": 1,
+      "lap_misalignment -> no_material_discrepancy": 1
+    }
+  },
+  "cases": [
+    {
+      "scenario_id": "regime_shift-s1",
+      "expected": "regime_shift",
+      "predicted": "no_material_discrepancy",
+      "correct": false,
+      "grounded": true,
+      "steps": 4,
+      "tool_errors": 0,
+      "invalid_replies": 0,
+      "confidence": 0.95,
+      "seconds": 35.39,
+      "notes": "2026 actuals 0.441 s faster than the model's training regime"
+    },
+    {
+      "scenario_id": "stale_model_version-s1",
+      "expected": "stale_model_version",
+      "predicted": "no_material_discrepancy",
+      "correct": false,
+      "grounded": true,
+      "steps": 4,
+      "tool_errors": 0,
+      "invalid_replies": 0,
+      "confidence": 0.95,
+      "seconds": 13.43,
+      "notes": "live service runs pace-v1 while batch and config use pace-v2"
+    },
+    {
+      "scenario_id": "feature_skew-s1",
+      "expected": "feature_skew",
+      "predicted": "no_material_discrepancy",
+      "correct": false,
+      "grounded": true,
+      "steps": 4,
+      "tool_errors": 0,
+      "invalid_replies": 0,
+      "confidence": 0.95,
+      "seconds": 14.79,
+      "notes": "live tyre_age computed 1 lap(s) later than batch"
+    },
+    {
+      "scenario_id": "missing_live_data-s1",
+      "expected": "missing_live_data",
+      "predicted": "no_material_discrepancy",
+      "correct": false,
+      "grounded": true,
+      "steps": 4,
+      "tool_errors": 0,
+      "invalid_replies": 0,
+      "confidence": 0.95,
+      "seconds": 14.7,
+      "notes": "no live forecasts for ['2024-r03', '2024-r06', '2026-r06']"
+    },
+    {
+      "scenario_id": "unit_mismatch-s1",
+      "expected": "unit_mismatch",
+      "predicted": "no_material_discrepancy",
+      "correct": false,
+      "grounded": true,
+      "steps": 4,
+      "tool_errors": 0,
+      "invalid_replies": 0,
+      "confidence": 0.95,
+      "seconds": 14.91,
+      "notes": "live forecasts in milliseconds from 2026-r05 onward"
+    },
+    {
+      "scenario_id": "config_drift-s1",
+      "expected": "config_drift",
+      "predicted": "config_drift",
+      "correct": true,
+      "grounded": true,
+      "steps": 4,
+      "tool_errors": 0,
+      "invalid_replies": 0,
+      "confidence": 0.95,
+      "seconds": 16.35,
+      "notes": "live pipeline stopped filtering to green-flag laps"
+    },
+    {
+      "scenario_id": "lap_misalignment-s1",
+      "expected": "lap_misalignment",
+      "predicted": "no_material_discrepancy",
+      "correct": false,
+      "grounded": true,
+      "steps": 4,
+      "tool_errors": 0,
+      "invalid_replies": 0,
+      "confidence": 0.95,
+      "seconds": 13.95,
+      "notes": "live lap keys shifted by +1 for ['2024-r03', '2026-r03', '2026-r06']"
+    },
+    {
+      "scenario_id": "no_material_discrepancy-s1",
+      "expected": "no_material_discrepancy",
+      "predicted": "no_material_discrepancy",
+      "correct": true,
+      "grounded": true,
+      "steps": 4,
+      "tool_errors": 0,
+      "invalid_replies": 0,
+      "confidence": 0.95,
+      "seconds": 15.9,
+      "notes": "no planted fault"
+    }
+  ]
+}

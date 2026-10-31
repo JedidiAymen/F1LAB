@@ -363,3 +363,44 @@ unrelated user helpers under `ml/features/` remain untracked and untouched.
 `qualifying_walkforward.py` → artifacts → `walkforward_lab.py` (SHA check) → `api.py`
 `/api/v1/predictions/qualifying/walkforward[/event]` → `ForecastPanel.tsx`.
 Data audit: `data/quality.py`. Client hardening: `OpenF1Client._fetch`.
+
+## 2026-10-31 — deployment and reliability call chains
+
+- `infra/api.Dockerfile` → frozen scientific deps + source `/app/src` → non-root
+  Uvicorn with repo-relative read-only `/app/data/processed`. `web.Dockerfile`
+  → locked Vite build → unprivileged Nginx same-origin API/WS. Compose profiles
+  isolate optional services; `scripts/smoke_compose.py` checks SPA/API, real packs,
+  optional model inference and simulated-live WebSocket forwarding. CI also
+  tests basic startup without private research artifacts.
+- `api.create_app` → isolated `HttpTelemetry` registry and lifespan; middleware
+  receives ASGI HTTP scopes, derives safe correlation IDs and registered route
+  templates, records status/count/monotonic seconds and failure logs. Tests
+  validate unmatched path cardinality, per-app registry isolation and shutdown.
+- `registry.save_artifact` → `tracking.record_artifact` → verified byte hashes +
+  atomic local run manifest → optional MLflow REST experiment/run/metrics/artifacts.
+  `artifact_import` does not refit; `training` follows registry save. Failures
+  remain explicit; original model contract and library checks remain unchanged.
+- `reliability.build` consumes saved prediction/frame Parquets → one-to-one
+  paired comparisons by race/driver/lap → 5,000 race-bootstrap draws (seed 42),
+  signed bias and MAE in seconds, reference-decile PSI/missingness → hash-linked
+  report. `load` verifies report sidecar; API projects it with model/run cards.
+  Rebuild after source changes; no live drift detector or fresh holdout claim.
+- `ResearchObservatory` lazily reads report; Recharts season-bias plot, season
+  selector/failure review, card/feature provenance. `AgentInvestigation` reads
+  saved diagnoses and tool observations only. Fixed-path `forecast_debug.service`
+  returns source hashes and omits model `thought` fields; bundled synthetic-fault
+  evaluation is a clean-checkout fallback. React renders tool output as text.
+- `Circuit3DLoader` uses a type-only props import and dynamic module import on
+  user action; actual Three.js scene still consumes existing geometry/state.
+  `initiallyVisible` avoids requiring a second click after module load. Browser
+  test proves no scene chunk request before opening, then tests Orbit interaction.
+- `ForecastTools.run_sql` guards size, parses SELECT, locks one connection and
+  starts an interrupt timer; fetches 51 rows, limits 32 unique columns/string
+  cell length, reports sampled row-count exactness. Timer cancellation+join
+  prevents a late interrupt hitting the next query. External access, extension
+  autoload/install and spill are disabled; memory 128 MB/thread 1. Cooperative
+  cancellation is not an OS sandbox. Evaluation closes each connection.
+
+See `MLOPS_AND_DEPLOYMENT.md` for examples, formulas, exact paths, reproduced
+metrics, sources/licenses, tests and limitations. `fingerprint_frame` remains
+row-order-sensitive; its docstring/test now describes the existing contract.

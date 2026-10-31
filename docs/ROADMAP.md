@@ -147,3 +147,27 @@ chart, 2026 data (12 weekends). See `ENHANCEMENT_PLAN.md`.
 
 **ML/DL/CV mandate status (2026-10-29):** shared infrastructure done; Race Pace Intelligence partial
 (trained, evaluated, API; no UI/Strategy Lab hook/multi-lap). Other five modules not started.
+
+## Advanced mandate checkpoint — 2026-10-31 (current; supersedes stale status rows)
+
+Base SHA `129e4b106a7ad06afec124be44095c6f091e66e2`. Implemented/evaluated:
+Docker/Compose API+web; optional MLflow, Prometheus and HTTP inference replica;
+local training/artifact-import provenance; saved-model reliability API/UI;
+read-only LLM incident replay; bounded agent SQL; actual local Ollama evaluation.
+MLflow import and real-data refit both succeeded. Existing replay/strategy/ML
+were extended, not rebuilt. Details: `MLOPS_AND_DEPLOYMENT.md`.
+
+**Partial:** MLOps (no immutable promotion workflow, remote auth or background
+worker orchestration); research/reliability observatories (saved experiments,
+not live monitoring); agent (25% on eight synthetic cases; multi-fault/unseen
+scenarios still absent). **Not done:** multi-horizon pace, fresh qualifying
+holdout, expanded/inductive Driver DNA, Corner Intelligence, detector/tracker
+training, interactive overtake cutoff inference. **Blocked:** RaceVision
+source/resource gate: RACECAR lacks annotations, A2RL is gated and 67 GB,
+NVIDIA driver unavailable. Camera audit: `research/RACEVISION.md`.
+
+Next dependencies: (1) correct Driver DNA inductive normalization and expand
+held-out sessions; (2) predeclare multi-horizon pace protocol and stronger
+baselines; (3) extend agent fault scenarios/evidence scoring; (4) annotated
+camera subset plus storage/GPU gate. Jenkins/Kubernetes remain optional.
+Publication state and exact final checks: `CHATGPT_HANDOFF.md`.

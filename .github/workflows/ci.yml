@@ -45,3 +45,21 @@ jobs:
       - run: npm run test:unit
       - name: Type check and build
         run: npm run build
+
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Validate all optional profiles
+        run: docker compose --profile '*' config --quiet
+      - name: Build and start basic app without research data or optional services
+        run: docker compose up --build --wait --wait-timeout 180 api web
+      - name: Verify same-origin API, tracing, SPA fallback and missing-data contract
+        run: uv run --frozen python scripts/smoke_compose.py
+      - name: Container diagnostics
+        if: always()
+        run: docker compose ps -a && docker compose logs --tail 100
+      - name: Stop disposable services
+        if: always()
+        run: docker compose down

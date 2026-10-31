@@ -455,3 +455,30 @@ Dataset SHA `74455574…2d3e4`. Negative transfer result retained deliberately.
 ## EXP-PACE-01 — next-lap pace, expanding-window by race (2026-10-29)
 Dataset fingerprint in `data/processed/race_pace/summary.json`; seed 42; LightGBM MAE 0.575 vs anchor 0.682;
 interval coverage 75.2% (80% nominal). See `docs/research/RACE_PACE_INTELLIGENCE.md`.
+
+## EXP-MLOPS-01 / EXP-RELIABILITY-01 — 2026-10-31
+
+Base source `129e4b106a7ad06afec124be44095c6f091e66e2` with modified working tree.
+Real cached OpenF1 pace data, 83,523 rows / 85 races. Reliability cohort:
+57,679 green-clean scored laps / 65 races; five saved candidate forecasts.
+LightGBM MAE 0.5749016 s vs persistence 0.5929278 s; seed-42 5,000 race-cluster
+bootstrap delta −0.0180262 [−0.0572999,+0.0294185]. No reliable gain; this is a
+recomputed inspected experiment, not a fresh test. PSI (2023–25 vs 2026): anchor
+0.28498, track temp 1.35004, air temp 1.59088; descriptive calendar/weather/circuit
+mix shift, not causal attribution. Sources/hashes and exact commands:
+`MLOPS_AND_DEPLOYMENT.md`, ignored `reliability/pace.json`.
+MLflow real refit run `1fe56e63be0a4da1ba4ed29e1fdd0ae1`; prior artifact preserved;
+model SHA reproduced `98b611f3…adf8c2`. Existing walk-forward scores are inherited,
+not in-sample refit metrics. Dataset fingerprints/SHA already suffice; no DVC added.
+
+## EXP-AGENT-02 — 2026-10-31 (actual local LLM, synthetic scenarios)
+
+Qwen3 8B local ID `500a1f067a9f`, no download; temperature 0, 4096 context,
+512 output tokens, think=false, two threads, seed 1 x eight labels, six steps max.
+Accuracy 2/8 (25%); six false no-material-discrepancy conclusions; invalid labels
+0; existing citation IDs 8/8, false IDs 0; support not automatically established.
+24 calls, four steps/case, latency mean 17.4275 s/max 35.39 s/total 139.42 s.
+Committed sample `research/evidence/forecast_debug_20261031/`; exact SHA/command
+and engineering evidence review: `research/FORECAST_DEBUG_AGENT.md`. Preserve as
+negative result. Prior 24-case local artifact (33.3%) used a different protocol;
+scripted reference 200/200 is only solvability, never LLM performance.

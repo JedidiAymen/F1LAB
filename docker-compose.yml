@@ -1,14 +1,112 @@
 services:
+  api:
+    image: f1lab-api:local
+    build:
+      context: .
+      dockerfile: infra/api.Dockerfile
+    init: true
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp:size=128m]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 1536m
+    cpus: 2
+    pids_limit: 128
+    stop_grace_period: 15s
+    ports: ["127.0.0.1:${F1LAB_API_PORT:-8000}:8000"]
+    volumes:
+      - type: bind
+        source: ./data/processed
+        target: /app/data/processed
+        read_only: true
+        bind:
+          create_host_path: false
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+
+  web:
+    image: f1lab-web:local
+    build:
+      context: .
+      dockerfile: infra/web.Dockerfile
+    init: true
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp:size=32m]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 128m
+    cpus: 1
+    pids_limit: 64
+    stop_grace_period: 15s
+    ports: ["127.0.0.1:${F1LAB_WEB_PORT:-8080}:8080"]
+    depends_on:
+      api: {condition: service_healthy}
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+
+  inference:
+    # Optional independently health-checked HTTP inference replica, not a job queue.
+    profiles: [inference]
+    image: f1lab-api:local
+    init: true
+    read_only: true
+    tmpfs: [/tmp:size=64m]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 768m
+    cpus: 2
+    pids_limit: 128
+    stop_grace_period: 15s
+    ports: ["127.0.0.1:${F1LAB_INFERENCE_PORT:-8001}:8000"]
+    volumes: ["./data/processed:/app/data/processed:ro"]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/pace/health', timeout=10)"]
+      interval: 15s
+      timeout: 12s
+      start_period: 30s
+
+  prometheus:
+    profiles: [observability]
+    image: prom/prometheus:v3.5.0
+    command: [--config.file=/etc/prometheus/prometheus.yml, --storage.tsdb.retention.time=7d, --storage.tsdb.retention.size=256MB]
+    ports: ["127.0.0.1:${F1LAB_PROMETHEUS_PORT:-9090}:9090"]
+    volumes:
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - f1lab-prometheus:/prometheus
+    mem_limit: 256m
+    cpus: 1
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+
+  mlflow:
+    profiles: [mlops]
+    image: ghcr.io/mlflow/mlflow:v3.6.0
+    command: [mlflow, server, --host, 0.0.0.0, --port, "5000", --workers, "1", --backend-store-uri, "sqlite:////mlflow/mlflow.db", --artifacts-destination, /mlflow/artifacts, --serve-artifacts, --allowed-hosts, "localhost:*,127.0.0.1:*,mlflow:5000"]
+    ports: ["127.0.0.1:${F1LAB_MLFLOW_PORT:-5000}:5000"]
+    volumes: ["f1lab-mlflow:/mlflow"]
+    mem_limit: 768m
+    cpus: 2
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=2)"]
+      interval: 15s
+      timeout: 3s
+      start_period: 30s
+
   postgres:
+    profiles: [storage]
     image: postgres:17
     container_name: racelab-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: racelab
-      POSTGRES_PASSWORD: racelab
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-racelab}
       POSTGRES_DB: racelab
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - racelab-postgres:/var/lib/postgresql/data
     healthcheck:
@@ -18,19 +116,22 @@ services:
       retries: 10
 
   minio:
+    profiles: [storage]
     image: minio/minio:latest
     container_name: racelab-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: racelab
-      MINIO_ROOT_PASSWORD: racelab-dev-password
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-racelab-dev-password}
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     volumes:
       - racelab-minio:/data
 
 volumes:
+  f1lab-prometheus:
+  f1lab-mlflow:
   racelab-postgres:
   racelab-minio:

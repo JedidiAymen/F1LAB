@@ -29,9 +29,10 @@ def card(**kw):
     return ModelCard(**{**base, **kw})
 
 
-def test_fingerprint_ignores_row_order_but_not_values_or_columns():
+def test_fingerprint_canonicalizes_columns_but_preserves_row_order():
     df = pd.DataFrame({"a": [1, 2, 3], "b": [4.0, 5.0, 6.0]})
     assert fingerprint_frame(df) == fingerprint_frame(df[["b", "a"]])
+    assert fingerprint_frame(df) != fingerprint_frame(df.iloc[::-1])
     assert fingerprint_frame(df) != fingerprint_frame(df.assign(a=[1, 2, 4]))
     assert fingerprint_frame(df) != fingerprint_frame(df.rename(columns={"a": "c"}))
 

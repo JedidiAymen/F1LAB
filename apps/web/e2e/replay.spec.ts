@@ -226,7 +226,7 @@ test('switching real sessions resets time and exposes missing Monaco pit data', 
 }, testInfo) => {
   await chooseSession(page, '2023 Monaco Grand Prix')
   await expect(page.getByRole('heading', { name: 'Monaco 2023' })).toBeVisible()
-  await expect(page.getByRole('status')).toContainText(
+  await expect(page.getByRole('status').filter({ hasText: 'Pit-stop records are unavailable' })).toContainText(
     'Pit-stop records are unavailable',
   )
   await expect(
@@ -247,7 +247,7 @@ test('switching real sessions resets time and exposes missing Monaco pit data', 
   await expect(
     page.getByRole('heading', { name: 'São Paulo 2024' }),
   ).toBeVisible()
-  await expect(page.getByRole('status')).toHaveCount(0)
+  await expect(page.getByRole('status').filter({ hasText: 'Pit-stop records are unavailable' })).toHaveCount(0)
   await slider.focus()
   await slider.press('End')
   await expect(

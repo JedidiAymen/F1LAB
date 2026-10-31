@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import statistics
 import time
 from collections import Counter
 from collections.abc import Callable, Sequence
@@ -34,12 +35,18 @@ def model_solver(model: ChatModel, max_steps: int = 12) -> Solver:
 
 
 def evaluate(solver: Solver, labels: Sequence[str] = LABELS, seeds: Sequence[int] = (1, 2, 3)) -> dict[str, Any]:
+    if not labels or not seeds:
+        raise ValueError("Evaluation needs at least one label and seed")
     cases: list[dict[str, Any]] = []
     for label in labels:
         for seed in seeds:
             scenario = build_scenario(label, seed)
             started = time.perf_counter()
-            diagnosis = solver(ForecastTools(scenario.tables))
+            tools = ForecastTools(scenario.tables)
+            try:
+                diagnosis = solver(tools)
+            finally:
+                tools.close()
             cases.append({"scenario_id": scenario.scenario_id, "expected": label, "predicted": diagnosis.root_cause,
                           "correct": diagnosis.root_cause == label, "grounded": bool(diagnosis.evidence),
                           "steps": diagnosis.steps, "tool_errors": diagnosis.tool_errors,
@@ -57,6 +64,13 @@ def evaluate(solver: Solver, labels: Sequence[str] = LABELS, seeds: Sequence[int
         "undetermined_or_invalid": sum(c["predicted"] in ("undetermined", "invalid_label") for c in cases) / n,
         "mean_steps": sum(c["steps"] for c in cases) / n,
         "tool_errors": sum(c["tool_errors"] for c in cases),
+        "mean_seconds": statistics.mean(c["seconds"] for c in cases),
+        "max_seconds": max(c["seconds"] for c in cases),
+        "total_seconds": sum(c["seconds"] for c in cases),
+        "tool_calls": sum(sum("tool_id" in step for step in c["diagnosis"]["trace"]) for c in cases),
+        "false_citation_ids": sum(sum(str(e) not in {t.get("tool_id") for t in c["diagnosis"]["trace"]}
+                                      for step in c["diagnosis"]["trace"] for e in step.get("final", {}).get("evidence", []))
+                                  for c in cases),
         "per_label_accuracy": per_label,
         "confusions": dict(Counter(f"{c['expected']} -> {c['predicted']}" for c in cases if not c["correct"])),
     }
@@ -69,10 +83,12 @@ def to_markdown(name: str, result: dict[str, Any]) -> str:
              f"{s['cases']} synthetic scenarios with planted root causes (seeds vary magnitude and affected races).",
              "", "| Metric | Value |", "|---|---:|",
              f"| Root-cause accuracy | {s['accuracy']:.1%} |",
-             f"| Correct and grounded in cited evidence | {s['correct_and_grounded']:.1%} |",
-             f"| Grounded answers | {s['grounded_rate']:.1%} |",
+             f"| Correct with existing citation IDs (support not adjudicated) | {s['correct_and_grounded']:.1%} |",
+             f"| Answers with existing citation IDs | {s['grounded_rate']:.1%} |",
              f"| Undetermined or invalid | {s['undetermined_or_invalid']:.1%} |",
-             f"| Mean steps | {s['mean_steps']:.1f} |", f"| Tool errors | {s['tool_errors']} |", "",
+             f"| Mean steps | {s['mean_steps']:.1f} |", f"| Tool errors | {s['tool_errors']} |",
+             f"| Mean latency (s) | {s['mean_seconds']:.2f} |", f"| Tool calls | {s['tool_calls']} |",
+             f"| False citation IDs | {s['false_citation_ids']} |", "",
              "| Root cause | Accuracy |", "|---|---:|"]
     lines += [f"| {label} | {acc:.0%} |" for label, acc in s["per_label_accuracy"].items()]
     if s["confusions"]:
@@ -102,6 +118,9 @@ def main(argv: Sequence[str] | None = None) -> None:
     parser.add_argument("--seeds", type=int, default=3, help="scenarios per root cause")
     parser.add_argument("--labels", nargs="*", choices=LABELS, default=list(LABELS))
     parser.add_argument("--max-steps", type=int, default=12)
+    parser.add_argument("--num-ctx", type=int, default=16384)
+    parser.add_argument("--num-predict", type=int, default=1024)
+    parser.add_argument("--timeout", type=float, default=300)
     parser.add_argument("--out", type=Path, default=OUT)
     args = parser.parse_args(argv)
 
@@ -109,7 +128,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     if args.agent == "reference":
         name, solver = "reference", diagnose
     else:
-        model = OllamaChat(args.model, host=args.host)
+        model = OllamaChat(args.model, host=args.host, num_ctx=args.num_ctx,
+                           num_predict=args.num_predict, timeout=args.timeout)
         name, solver = model.name, model_solver(model, args.max_steps)
     result = evaluate(solver, args.labels, range(1, args.seeds + 1))
     target = write(name, result, args.out)

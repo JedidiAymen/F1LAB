@@ -10,6 +10,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  // Discover the lazy research chart dependency before navigation; otherwise
+  // the first dev-only optimizer reload resets the selected workspace.
+  optimizeDeps: { include: ['recharts'] },
   resolve: {
     alias: {
       "@": import.meta.dirname + "/src",

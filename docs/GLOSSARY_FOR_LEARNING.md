@@ -274,3 +274,32 @@ unrelated user helpers under `ml/features/` remain untracked and untouched.
 - **Brier score**: mean squared error of probabilities; lower is better; compare to a uniform baseline.
 - **Reliability diagram**: forecast probability vs observed frequency; points on the diagonal are calibrated.
 - **Interval coverage**: share of actual outcomes inside the forecast interval; should match nominal (80%).
+
+## 2026-10-31 — operations and reliability concepts in this implementation
+
+- **Liveness vs readiness vs integrity:** `/healthz` says the process answers;
+  readiness lists file presence; pace health actually checks model bytes/schema/
+  dependency versions. A living app can honestly lack a research artifact.
+- **Container image vs mounted artifact:** code/dependencies are built once;
+  `/app/data/processed` mounts local research data read-only. Rebuilding UI does
+  not copy confidential caches into an image. Profiles enable optional services.
+- **Training run vs artifact import:** refitting changes training execution;
+  importing an existing card/weights only registers old evidence. An import SHA
+  belongs to importing code, not the original unknown training source.
+- **PSI:** sum `(current_fraction-reference_fraction)*log(current/reference)`
+  over fixed reference bins plus missingness, with 0.5-count smoothing. High
+  temperature PSI can reflect a different calendar/circuit/weather mix. It does
+  not prove model failure or regulation causality.
+- **Paired race bootstrap:** align candidate and baseline forecasts by race,
+  driver and lap; resample entire races so dependent laps are not falsely treated
+  as independent. A difference interval crossing zero does not establish a gain.
+- **Bounded labels:** aggregate metric keys use registered route templates,
+  not arbitrary URLs/driver IDs. Otherwise metrics grow without bound.
+- **Bounded fetch vs full materialization:** fetch 51 rows to return at most 50
+  and detect truncation; do not convert a billion rows to pandas then call head.
+  A truncated result's reported count is a lower bound, not the full SQL total.
+- **Citation existence vs support:** a real `t2` observation can still contradict
+  a diagnosis. The LLM scored 25% on eight planted faults despite citing real IDs
+  in every case; the scripted reference's success does not measure LLM skill.
+- **Lazy code import:** the Three.js module is fetched when opened; the replay
+  still has one clock. A smaller initial bundle is not measured faster loading.

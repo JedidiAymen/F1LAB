@@ -1,4 +1,145 @@
-# F1LAB handoff for the next ChatGPT session
+# F1LAB handoff — current checkpoint, 2026-10-31
+
+**Read this current digest first.** The long sections below the historical divider
+are retained implementation history; their old completion/status lists are not
+current. Base/fetched SHA: `129e4b106a7ad06afec124be44095c6f091e66e2`, branch
+`feat/foundation`. Implementation publication: pending final commit/push verification.
+Owner Git identity retained; two unrelated untracked `ml/features/` scripts untouched.
+
+## Done and proven in this checkpoint
+
+- Production Dockerfiles for the existing FastAPI and React app; local Compose
+  default API+web, independent MLflow/Prometheus/HTTP-inference profiles, prior
+  storage services behind a profile. Non-root/read-only app runtimes, read-only
+  local artifacts, digest-pinned bases, localhost ports, health/resource/log
+  controls, graceful ingest shutdown, Nginx API and WebSocket forwarding.
+- Read-only startup bug fixed: FastF1 cache initialization moved from import
+  into ingestion. `/healthz`, explicit presence-only readiness, stronger model
+  health, bounded route-template Prometheus metrics and correlation/failure logs.
+- Model registry save now records local training provenance and optionally
+  syncs experiment/metrics/model/card/checksum/run artifacts to MLflow REST.
+  **Actual** artifact import and cached-real-data model refit both synchronized.
+  Old model/card preserved; refit produced identical weights SHA. Imported
+  artifacts are labeled imports; refit scores remain inherited walk-forward
+  evidence, not newly measured holdout performance.
+- Reliability report recomputes paired baseline comparisons, seasonal bias,
+  descriptive input drift and source hashes from saved real experiments; API
+  verifies report SHA. Research & reliability UI adds season/failure selection,
+  feature availability/model provenance and a read-only saved LLM investigation.
+- Actual local Qwen3 8B evaluation: **2/8 correct (25%)**, mean latency
+  **17.4275 s**, 24 tool calls, zero nonexistent citation IDs, six incorrect
+  no-material-discrepancy conclusions. Citation existence does not establish
+  support. Committed small sample is real LLM output on **synthetic fault data**;
+  clean checkout/image can replay it without real F1 artifacts or model download.
+- SQL boundary: parser-checked single SELECT, bounded query/rows/columns/string
+  results, deadline+recovery, thread/memory/spill limits, external access and
+  extension loading disabled, configuration locked. Cooperative limits are not
+  a public multitenant hostile-code sandbox.
+- Existing Three.js viewer code now loads on request, preserving canonical
+  geometry/state. Initial JS chunk 1,443.87 → 516.23 KB; this is a build-size
+  result, not measured loading/FPS. Existing overtake SVG duplicate-key warning
+  fixed. Dev-only lazy Recharts reload fixed through prebundling.
+- RaceVision primary-source audit: RACECAR is NC-licensed but lacks annotations;
+  A2RL is gated, LiDAR-focused and published as a 67 GB repository; local NVIDIA
+  driver unavailable. No video/large camera dataset downloaded; no detector trained.
+
+## Metrics and evidence limits
+
+Real saved pace evaluation: 85 dataset races / 83,523 frame rows; 65 scored races /
+57,679 green-clean laps. LightGBM MAE 0.5749016 s vs persistence 0.5929278 s;
+paired delta −0.0180262 s, 95% race-clustered interval [−0.0572999,+0.0294185].
+**No reliable gain.** PSI compares 67,120 prepared 2023–25 rows with 16,403 in
+2026: anchor pace 0.28498, track temperature 1.35004, air temperature 1.59088.
+Calendar/circuit/weather mix can explain shifts; no causal or fresh-test claim.
+
+Existing research retained: qualifying negative transfer in 2026; Driver DNA
+1,749 laps/three races with TCN not clearly better than handcrafted logistic;
+overtake LightGBM Brier 0.0329 vs gap-only 0.0407 and negative isotonic result;
+neural qualifying no reliable improvement. The earlier saved 24-case local LLM
+run (33.3%) exists but uses a different protocol. Reference 200/200 is scripted
+solvability, not LLM performance. Full research scope is **not complete**.
+
+## Verification and demo
+
+Baseline: 271 Python tests; 20 Chromium; Python/web static gates pass.
+Final: **289 Python passed (28.75 s)**, Ruff clean, mypy **98 source files**;
+frontend lint/type/build, **16 Node tests**; full dev Chromium **22/22 (50.6 s)**;
+full **production Compose Chromium 22/22 (29.2 s)**. Desktop/mobile screenshots
+were rendered and visually reviewed. Model health and real-model POST pass;
+sample forecast 98.058597 s with raw q10/q90 97.660048/98.220698 s (execution
+example only, not quality evidence). All three real packs load and Nginx forwards
+a `SIMULATED LIVE` WebSocket snapshot. Prometheus target `up`; independent
+inference/MLflow healthy. Isolated read-only image with no network/mounts verifies
+missing-data behavior and bundled eight-case incident replay. New GitHub Actions
+Compose job exists; remote workflow status must be checked after publication.
+
+```bash
+docker compose up --build --wait api web
+# http://127.0.0.1:8080 → Research & reliability
+docker compose --profile mlops up -d --wait mlflow
+docker compose --profile observability up -d prometheus
+docker compose --profile inference up -d --wait inference
+.venv/bin/python scripts/smoke_compose.py --require-data --require-model
+.venv/bin/python -m f1_racelab.ml.common.reliability
+uv sync --frozen --dev --all-extras
+.venv/bin/pytest -q -W ignore
+.venv/bin/ruff check src tests scripts
+.venv/bin/mypy src/f1_racelab
+cd apps/web
+npm run lint && npm run test:unit && npm run build && npm run test:e2e
+F1LAB_E2E_BASE_URL=http://127.0.0.1:8080 npm run test:e2e
+```
+
+Real workspaces need existing ignored `data/processed` artifacts; clean checkout
+still serves app, missing-data statuses and the bundled synthetic-fault LLM replay.
+Demo narrative: open research, read the paired no-gain verdict, select season
+2026 and a failure race, expand feature/source lineage, then select the saved
+`config_drift-s1` incident and expand `t3: config_diff`. This reveals actual
+examined configuration and source hashes. No on-demand LLM/SQL executes in UI.
+
+## Architecture, file map and operational caveats
+
+Preserved `RaceSource → SessionEvent → RaceState`; no second race clock.
+New files: `infra/{api.Dockerfile,web.Dockerfile,nginx.conf,prometheus.yml}`,
+`operations.py`, `ml/common/{tracking,reliability}.py`,
+`agents/forecast_debug/service.py`, `scripts/smoke_compose.py`,
+web `ResearchObservatory`, `AgentInvestigation`, `Circuit3DLoader`, and focused
+tests. API routes and algorithms: [deployment/MLOps](MLOPS_AND_DEPLOYMENT.md),
+[atlas](IMPLEMENTATION_ATLAS.md), [agent study](research/FORECAST_DEBUG_AGENT.md).
+Primary-source camera audit: [RaceVision](research/RACEVISION.md).
+Source/result hashes, MLflow run IDs, exact commands and all failures are in
+those notes plus [test evidence](TEST_EVIDENCE.md) and [experiment register](EXPERIMENT_REGISTER.md).
+
+Hardware at audit: 20 logical CPUs, 15 GiB RAM, only 6.5 GiB free disk; NVIDIA
+driver unavailable. Cold image build consumes several GiB transiently. Only
+session-created disposable build cache/superseded images were reclaimed; no
+prior user images/volumes/data were deleted. Initial read-only startup and
+disk-full browser failures were fixed/retested. A production timing difference
+exposed a broad pre-existing `role=status` test selector; it now specifically
+checks pit-resource coverage. Existing npm advisories/large deferred chunks and
+Three.js deprecations remain. Do not claim security audit, production hosting,
+remote storage, GPU training or measured browser performance.
+
+## Partial / not done / next work
+
+MLOps remains partial: immutable run directories, promotion/rollback, background
+workers/spans, remote auth, production alerts and live drift absent. Observatory
+is saved research, not a live production monitor. No new multi-horizon pace,
+fresh untouched qualifying evaluation, expanded/strictly inductive Driver DNA,
+Corner Intelligence, overtake historical-cutoff service, multi-fault/unseen
+agent cases or trained RaceVision/tracker. Radio rights/live subscription remain
+unavailable. Existing strategy is assumption-driven, not a proven race-winning
+decision system. No public deployment, main merge or history rewrite.
+
+Next: fix Driver DNA normalization protocol and expand held-out data; predeclare
+multi-horizon pace study with fair baselines; extend agent multi-fault/evidence
+scoring; obtain a small annotated permitted camera subset plus storage/GPU gate.
+Detailed decision rationale: [decisions](DECISIONS.md), [learning glossary](GLOSSARY_FOR_LEARNING.md),
+[worklog](AGENT_WORKLOG.md), [roadmap](ROADMAP.md).
+
+---
+
+# Historical handoff notes (superseded by the current digest above)
 
 **Status at 2026-10-17 UTC:** qualifying research benchmark complete; a
 historical Prediction Lab is now integrated; three real historical race packs

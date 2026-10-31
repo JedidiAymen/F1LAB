@@ -338,3 +338,25 @@ Neural models did not clearly beat handcrafted features, so no deployed model or
 
 ## 2026-10-29 — mypy is blocking in CI
 All 102 errors cleared: 74 were missing type information for third-party libraries (configured as `ignore_missing_imports` for those modules only, in `pyproject.toml`), 28 were fixed in code. The earlier advisory setting is removed. Not yet run on GitHub Actions.
+
+## 2026-10-31 — deploy locally, retain scientific contracts, expose negative evidence
+
+Use production Docker/Compose first; API+web are default, storage/MLflow/Prometheus/
+HTTP inference replica optional. Retain GitHub Actions; add real container smoke
+coverage there. No parallel mandatory Jenkins/Kubernetes/cloud workflow.
+Keep repo-relative `/app/src` layout until artifact paths are explicitly refactored;
+move ingestion cache creation out of import-time serving. Digest-pin runtime bases,
+read-only artifact mounts, localhost bindings, bounded resources and graceful stops.
+
+Keep local model/card/SHA authoritative; MLflow is an optional REST sink so a
+tracking outage cannot destroy successful training. Differentiate artifact import
+from actual training, preserve dirty-source markers and original snapshots, retain
+inherited evaluation provenance. Correct fingerprint documentation without changing
+existing fingerprints. Existing hashes/manifests are adequate dataset versioning here.
+
+Show actual paired uncertainty/negative model findings and descriptive PSI; never
+call inspected events untouched holdouts or drift causal. Distinguish citation-ID
+existence from support; expose actual low-performing LLM traces for review. Keep
+agent SQL local/read-only with engine limits, not falsely advertised as a hostile
+multitenant sandbox. Defer new CV training because RACECAR lacks annotations,
+A2RL access/storage/GPU gate is unmet; do not silently download protected footage.

@@ -230,16 +230,17 @@ function Scene({
 // Main component
 // ---------------------------------------------------------------------------
 
-interface Circuit3DProps {
+export interface Circuit3DProps {
   geometry: CircuitGeometry
   drivers: Driver[]
   driverStates: Record<string, DriverState>
   selectedId?: string | null
+  initiallyVisible?: boolean
 }
 
-export function Circuit3D({ geometry, drivers, driverStates, selectedId = null }: Circuit3DProps) {
+export function Circuit3D({ geometry, drivers, driverStates, selectedId = null, initiallyVisible = false }: Circuit3DProps) {
   const [cameraMode, setCameraMode] = useState<'top' | 'orbit'>('top')
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(initiallyVisible)
 
   const spline = useMemo(() => {
     const pts = geometry.centerline_xy

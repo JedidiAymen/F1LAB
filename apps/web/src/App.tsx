@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
@@ -36,7 +36,7 @@ import StrategyLab from '@/components/StrategyLab'
 import WhatIfLab from '@/components/WhatIfLab'
 import { TrackMap } from '@/components/TrackMap'
 import { PositionChart } from '@/components/PositionChart'
-import { Circuit3D } from '@/components/Circuit3D'
+import { Circuit3DLoader as Circuit3D } from '@/components/Circuit3DLoader'
 import type { CircuitGeometry, LocationContext } from '@/lib/circuit-geometry'
 import type { LapComparison } from '@/lib/telemetry-comparison'
 import {
@@ -143,6 +143,7 @@ function ReplayWorkspace({
   onOpenPace,
   onOpenDna,
   onOpenOvertake,
+  onOpenResearch,
 }: {
   slug: string
   sessions: CatalogEntry[]
@@ -153,6 +154,7 @@ function ReplayWorkspace({
   onOpenPace?: () => void
   onOpenDna?: () => void
   onOpenOvertake?: () => void
+  onOpenResearch?: () => void
 }) {
   const base = `/api/v1/replay/${slug}`
   const [manifest, setManifest] = useState<Manifest | null>(null)
@@ -419,6 +421,7 @@ function ReplayWorkspace({
               <CircleAlert size={13} /> What-If
             </button>
           )}
+          {onOpenResearch && <Button variant="ghost" size="sm" onClick={onOpenResearch}>Research & reliability</Button>}
         </div>
         <div className="top-right">
           <span>OPENF1 · PUBLIC HISTORICAL</span>
@@ -849,10 +852,12 @@ function ReplayWorkspace({
   )
 }
 
+const ResearchObservatory = lazy(() => import('@/components/ResearchObservatory').then((module) => ({ default: module.ResearchObservatory })))
+
 function App() {
   const [sessions, setSessions] = useState<CatalogEntry[]>([])
   const [slug, setSlug] = useState('monza-2025')
-  const [workspace, setWorkspace] = useState<'replay' | 'prediction' | 'strategy' | 'whatif' | 'pace' | 'dna' | 'overtake'>('replay')
+  const [workspace, setWorkspace] = useState<'replay' | 'prediction' | 'strategy' | 'whatif' | 'pace' | 'dna' | 'overtake' | 'research'>('replay')
   useEffect(() => {
     const controller = new AbortController()
     fetch('/api/v1/replays', { signal: controller.signal })
@@ -864,6 +869,7 @@ function App() {
       .catch(() => {})
     return () => controller.abort()
   }, [])
+  if (workspace === 'research') return <Suspense fallback={<p role="status">Loading research workspace…</p>}><ResearchObservatory onBack={() => setWorkspace('replay')} /></Suspense>
   if (workspace === 'overtake') return <OvertakeLab onBack={() => setWorkspace('replay')} />
   if (workspace === 'dna') return <DriverDnaLab onBack={() => setWorkspace('replay')} />
   if (workspace === 'pace') return <RacePaceLab onBack={() => setWorkspace('replay')} />
@@ -895,6 +901,7 @@ function App() {
     onOpenPace={() => setWorkspace('pace')}
     onOpenDna={() => setWorkspace('dna')}
     onOpenOvertake={() => setWorkspace('overtake')}
+    onOpenResearch={() => setWorkspace('research')}
   />
 }
 

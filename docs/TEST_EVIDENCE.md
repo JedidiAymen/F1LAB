@@ -441,3 +441,66 @@ Classification: **real** data for metrics, **synthetic** fixtures for unit tests
 
 ## 2026-10-29 (8) — final verification of this mandate pass
 Local, with data: `uv run pytest -q -W ignore` 233 passed; ruff clean; `npm run lint`, `npm run test:unit` (16), `npm run build` clean; `npx playwright test` 19 passed.
+
+## 2026-10-31 — advanced mandate baseline and verification
+
+Starting SHA `129e4b106a7ad06afec124be44095c6f091e66e2`; no unrelated files erased.
+Baseline commands: `uv sync --frozen --dev`, then
+`uv sync --frozen --dev --all-extras` to retain optional local engines/DL;
+`OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 timeout 240 .venv/bin/pytest -q -W ignore`
+→ **271 passed, 32.14 s**. `.venv/bin/ruff check src tests scripts`,
+`.venv/bin/mypy src/f1_racelab` (94 files), web lint/unit/build pass.
+`cd apps/web && npm run test:e2e` → **20 passed, 58.0 s**.
+Logs under `data/processed/mandate_20261031/` are ignored.
+
+Latest completed full source gate: `.venv/bin/pytest -q -W ignore` →
+**289 passed, 32.31 s** (unit/integration fixtures are synthetic unless a test
+explicitly loads a local pack). Ruff clean; mypy clean, 98 source files.
+Web lint/build pass; **16 named Node tests** pass (earlier output grouped five
+files); full Chromium **22 passed, 50.6 s**, including real-pack clock/telemetry,
+research season/failure selection, incident replay/provenance, desktop/mobile
+screenshots, and lazy Three.js/Orbit interaction. Three.js upstream deprecation
+warnings and large deferred-chunk warning remain. No measured FPS/load-time claim.
+
+Real executed experiments: `python -m f1_racelab.ml.common.reliability` on saved
+323,035 prediction / 83,523 frame rows; optional MLflow artifact import and
+`MLFLOW_TRACKING_URI=http://127.0.0.1:5000 python -m f1_racelab.ml.pace.benchmark --refit-only`
+fit 74,077 green rows and sync a training run. Same model SHA as preserved prior
+snapshot; no new validation metric or untouched holdout. Actual Ollama command
+and committed 8-case synthetic-fault evidence: `research/FORECAST_DEBUG_AGENT.md`.
+Result: 25% accuracy, 17.4275 s mean, 24 tool calls, zero false citation IDs.
+
+Docker builds/config/basic startup and independent optional inference/MLflow
+health pass. Prometheus `/api/v1/targets` returns API health `up`, empty lastError.
+Production smoke first passed all three real packs; final model/WS/browser
+results and publication are recorded in `CHATGPT_HANDOFF.md`. Readiness inventory
+is presence-only; model health additionally checks checksum/schema/dependencies.
+
+Failure evidence retained in notes: sandbox localhost/TestClient/Spark access
+required runtime escalation; import-time FastF1 cache write caused first
+read-only startup failure (fixed); `ENOSPC` broke one overlapping browser run
+before cache reclamation; Vite lazy-dependency optimization reset first research
+navigation (fixed via `optimizeDeps.include`). An accidental root-directory
+`npm run lint` invocation had no script; correct `apps/web` lint passed.
+No failed run was counted as a pass. CV training/tracking, expanded Driver DNA,
+new multi-horizon study, remote cloud/Databricks/Kubernetes/Jenkins: not executed.
+
+Final production gate: `F1LAB_E2E_BASE_URL=http://127.0.0.1:8080 npm run test:e2e`
+→ **22 passed, 29.2 s**. The first production run passed 21/22 and exposed a
+pre-existing unscoped `getByRole('status')` selector matching a loading message
+as well as the pit-resource warning; the assertion now filters by the actual
+coverage text. Final full Python repeat: **289 passed, 28.75 s**.
+`.venv/bin/python scripts/smoke_compose.py --require-data --require-model` passes:
+three real replay packs, model integrity/POST from a cached real feature row,
+and proxied `SIMULATED LIVE` WebSocket. Forecast example 98.058597 s, raw
+q10/q90 97.660048/98.220698 s; inference execution only, no new quality score.
+An isolated `docker run --network none --read-only` with no mounts confirms
+liveness, absent real-data states and the bundled 8-case LLM replay. Production
+desktop/mobile screenshots copied to `docs/images/research-{desktop,mobile}.png`
+and visually reviewed; final generated browser log is
+`data/processed/mandate_20261031/compose-browser.log`.
+
+Hardened-tool solvability rerun:
+`.venv/bin/python -m f1_racelab.agents.forecast_debug.evaluate --agent reference --seeds 25 --out data/processed/agents/forecast_debug/20261031_reference`
+→ 200/200 synthetic cases, 875 tool calls, zero tool errors. This tests the
+scripted reference after SQL limits; it does **not** improve the 2/8 LLM result.

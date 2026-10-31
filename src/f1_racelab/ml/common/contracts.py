@@ -62,7 +62,11 @@ class ModelCard(BaseModel):
 
 
 def fingerprint_frame(frame: pd.DataFrame) -> str:
-    """Order-insensitive-by-row but column-sensitive SHA-256 of a table's values."""
+    """Row-order-sensitive SHA-256 with canonical column order and names.
+
+    This preserves existing fingerprints; sort rows by a documented key before
+    calling when an order-independent dataset identity is required.
+    """
     ordered = frame.reindex(sorted(frame.columns), axis=1)
     hashed = pd.util.hash_pandas_object(ordered.reset_index(drop=True), index=False).to_numpy()
     digest = hashlib.sha256()

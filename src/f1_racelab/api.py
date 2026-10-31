@@ -9,14 +9,19 @@ from __future__ import annotations
 import json
 import math
 import os
+from contextlib import asynccontextmanager
 from functools import lru_cache
 from pathlib import Path
 from typing import cast
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
+from starlette.responses import Response
 
+from f1_racelab.agents.forecast_debug import service as agent_service
 from f1_racelab.live.ingest import _registry as live_registry
+from f1_racelab.ml.common import reliability
+from f1_racelab.ml.common.contracts import read_card
 from f1_racelab.ml.common.registry import ArtifactUnavailable
 from f1_racelab.ml.driver_dna import service as dna_service
 from f1_racelab.ml.overtake import benchmark as overtake_benchmark
@@ -28,6 +33,7 @@ from f1_racelab.models.qualifying_phase_lab import (
     phase_prediction_event,
 )
 from f1_racelab.models.walkforward_lab import load_walkforward_lab, walkforward_event
+from f1_racelab.operations import HttpTelemetry, RequestTelemetryMiddleware
 from f1_racelab.session.catalog import DEFAULT_SESSION, SESSIONS
 from f1_racelab.session.contracts import WeatherPayload
 from f1_racelab.session.location_history import build_location_context
@@ -79,6 +85,8 @@ def create_app(
     qualifying_prediction_path: Path | None = None,
     qualifying_phase_prediction_path: Path | None = None,
     qualifying_walkforward_path: Path | None = None,
+    reliability_report_path: Path | None = None,
+    agent_evaluation_path: Path | None = None,
 ) -> FastAPI:
     """Create an API bound to a local replay pack, allowing isolated fixtures."""
     paths = {slug: spec.pack_path for slug, spec in SESSIONS.items()}
@@ -94,7 +102,63 @@ def create_app(
     walkforward_path = Path(qualifying_walkforward_path or DEFAULT_WALKFORWARD_ARTIFACTS)
     if pack_path or os.environ.get("F1LAB_REPLAY_PACK"):
         paths[DEFAULT_SESSION.slug] = pack_path or Path(os.environ["F1LAB_REPLAY_PACK"])
-    app = FastAPI(title="F1LAB local replay API", version="0.1.0")
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        try:
+            yield
+        finally:
+            await live_registry.stop_all()
+
+    app = FastAPI(title="F1LAB local replay API", version="0.1.0", lifespan=lifespan)
+    telemetry = HttpTelemetry()
+    app.add_middleware(RequestTelemetryMiddleware, telemetry=telemetry)
+
+    @app.get("/healthz", include_in_schema=False)
+    def health() -> dict:
+        """Process liveness only; missing research data does not crash the app."""
+        return {"status": "ok", "service": "f1lab-api"}
+
+    @app.get("/api/v1/readiness")
+    def readiness() -> dict:
+        """Report file presence, explicitly distinct from artifact validation."""
+        return {"status": "ok", "artifact_check": "presence_only",
+                "replay_packs": {slug: path.is_file() for slug, path in paths.items()},
+                "pace_model_present": (pace_inference.MODEL_DIR / f"{pace_inference.NAME}.joblib").is_file()}
+
+    @app.get("/metrics", include_in_schema=False)
+    def metrics() -> Response:
+        return Response(telemetry.render(), media_type="text/plain; version=0.0.4")
+
+    @app.get("/api/v1/pace/health")
+    def pace_health() -> dict:
+        try:
+            _, card = pace_inference.load()
+        except (ArtifactUnavailable, OSError, ValueError) as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        return {"status": "ok", "model_id": card.model_id, "version": card.version,
+                "checks": ["model_sha256", "feature_schema", "dependency_versions"]}
+
+    @app.get("/api/v1/research/reliability")
+    def research_reliability() -> dict:
+        try:
+            report = reliability.load(reliability_report_path or reliability.OUT)
+            model_root = pace_inference.MODEL_DIR
+            card_path = model_root / f"{pace_inference.NAME}.card.json"
+            card = read_card(card_path).model_dump(mode="json") if card_path.is_file() else None
+            run_path = model_root / f"{pace_inference.NAME}.run.json"
+            run = json.loads(run_path.read_text()) if run_path.is_file() else None
+            return {**report, "served_card": card, "run_provenance": run}
+        except (OSError, ValueError, KeyError) as exc:
+            raise HTTPException(status_code=503, detail="Reliability artifact unavailable or invalid. "
+                                "Run python -m f1_racelab.ml.common.reliability.") from exc
+
+    @app.get("/api/v1/research/agent-evaluation")
+    def agent_evaluation() -> dict:
+        try:
+            return agent_service.load_run(agent_evaluation_path or agent_service.DEFAULT_RUN)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(status_code=503, detail="Saved LLM evaluation unavailable or invalid. "
+                                "See docs/research/FORECAST_DEBUG_AGENT.md for reproduction.") from exc
 
     @lru_cache(maxsize=3)
     def source(slug: str) -> ReplaySource:

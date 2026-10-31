@@ -25,8 +25,8 @@ function Reliability({ bins }: { bins: Bin[] }) {
       <line className="axis" x1={pad} y1={y(0)} x2={x(max)} y2={y(0)} />
       <line className="axis" x1={pad} y1={y(0)} x2={pad} y2={y(max)} />
       <line className="ideal" x1={x(0)} y1={y(0)} x2={x(max)} y2={y(max)} />
-      {bins.map((b) => (
-        <circle key={b.mean_predicted} cx={x(b.mean_predicted)} cy={y(b.observed)} r={3.5}>
+      {bins.map((b, index) => (
+        <circle key={index} cx={x(b.mean_predicted)} cy={y(b.observed)} r={3.5}>
           <title>{`${b.n} pairs · forecast ${(b.mean_predicted * 100).toFixed(1)}% · observed ${(b.observed * 100).toFixed(1)}%`}</title>
         </circle>
       ))}

@@ -4,8 +4,8 @@ F1LAB is an in-progress Formula 1 race-intelligence workstation: historical
 race replay on one shared clock, walk-forward qualifying and race-pace
 forecasting with honest baselines and uncertainty, a deterministic strategy
 simulator and what-if branches, behind a FastAPI backend and a React/Vite
-front end. Live timing and the deep-learning and computer-vision modules are
-not built yet.
+front end. Live timing is simulated from historical replay. Driver DNA has
+real-data neural experiments; RaceVision remains untrained.
 
 ## Status at a glance
 
@@ -19,7 +19,40 @@ git-ignored (OpenF1 terms are non-commercial, see
 | Race-pace forecast | Next-lap LightGBM, out-of-fold UI (`/api/v1/pace/*`), versioned prediction endpoint (`POST /api/v1/pace/predict`) | 65 scored races, 57,679 green laps. 0.575 s MAE vs 0.593 s for last-lap persistence: **difference -0.018 s, race-clustered 95% CI [-0.057, +0.029], not significant**; persistence is better in 2025. Raw 80% interval covers 75%; a chronological conformal correction reaches 80%. Safety-car laps are out of distribution. |
 | Replay and Race Control | Three historical races, shared clock, 2D map, race control | Deterministic seek; see [replay docs](docs/RACE_CONTROL_UI.md) |
 | Strategy and What-If | Deterministic simulator, seeded Monte Carlo | Assumption-driven, calibrated on Monza 2025 only |
-| Driver DNA, RaceVision, Overtake, Neural Qualifying, Radio | Not started | None. No claims are made. |
+| Driver DNA | Three-race telemetry study; handcrafted, TCN and contrastive encoders; API/UI | 1,749 laps; neural model does not clearly beat handcrafted logistic regression. Cross-circuit normalization is transductive. |
+| Overtake Intelligence | Historical walk-forward comparison, calibration and API/UI | LightGBM Brier 0.0329 vs gap-only logistic 0.0407; isotonic calibration did not improve proper scores. |
+| Neural qualifying | Evaluated exploratory variants | No reliable gain over existing ensemble; not served. |
+| Forecast Debug Agent | Local Ollama evaluation and read-only incident replay | **2/8 diagnoses correct**, 17.43 s mean latency on synthetic planted faults; not production-ready. Scripted reference accuracy is not LLM accuracy. |
+| Research & reliability | Saved forecast comparisons, season bias, input drift, provenance and agent traces | Reuses inspected experiments; no fresh holdout or live drift claim. |
+| RaceVision / Radio / Corner Intelligence | Not implemented | Camera-source audit exists; no detector, tracking or corner-model scores. |
+
+## Start the containerized workstation
+
+```bash
+docker compose up --build --wait api web
+```
+
+Open **http://127.0.0.1:8080**. No database, cloud account or LLM download is
+required. A clean checkout serves the app and the bundled **actual Ollama
+evaluation on synthetic faults** in Research & reliability. Real replay,
+telemetry and model artifacts remain local under `data/processed`; absent
+artifacts are shown as unavailable. Existing cached artifacts mount read-only.
+
+```bash
+docker compose --profile mlops up -d mlflow              # optional, :5000
+docker compose --profile observability up -d prometheus  # optional, :9090
+docker compose --profile inference up -d inference      # optional, :8001; needs trained model
+.venv/bin/python -m f1_racelab.ml.common.reliability      # existing saved pace experiments
+.venv/bin/python scripts/smoke_compose.py --require-data # requires all three real packs
+```
+
+Training through the model registry records local provenance and optionally
+logs to `MLFLOW_TRACKING_URI`. See [deployment and MLOps](docs/MLOPS_AND_DEPLOYMENT.md)
+for resource costs, exact tracking commands, health contracts and limitations.
+
+Rendered production screenshots: [desktop](docs/images/research-desktop.png),
+[mobile](docs/images/research-mobile.png). They show saved real-data research
+and explicitly labeled synthetic-fault LLM investigations.
 
 Model cards, hashes and the research notes are in
 [docs/research](docs/research/RACE_PACE_INTELLIGENCE.md); CI runs ruff, pytest

@@ -55,17 +55,21 @@ class OllamaChat:
     """A model served by a local Ollama instance (``ollama pull qwen3:8b``)."""
 
     def __init__(self, model: str = "qwen3:8b", host: str = "http://localhost:11434", temperature: float = 0.0,
-                 num_ctx: int = 16384, timeout: float = 300.0) -> None:
+                 num_ctx: int = 16384, timeout: float = 300.0, *, num_predict: int = 1024,
+                 num_thread: int = 2, think: bool = False) -> None:
         self.name = f"ollama:{model}"
         self._model, self._url = model, host.rstrip("/") + "/api/chat"
-        self._options = {"temperature": temperature, "num_ctx": num_ctx}
+        self._options = {"temperature": temperature, "num_ctx": num_ctx, "num_predict": num_predict,
+                         "num_thread": num_thread}
+        self._think = think
         self._timeout = timeout
 
     def complete(self, messages: list[Message]) -> str:
         import httpx
 
         response = httpx.post(self._url, timeout=self._timeout, json={
-            "model": self._model, "messages": messages, "stream": False, "format": "json", "options": self._options})
+            "model": self._model, "messages": messages, "stream": False, "format": "json", "options": self._options,
+            "think": self._think, "keep_alive": "1m"})
         response.raise_for_status()
         return str(response.json()["message"]["content"])
 

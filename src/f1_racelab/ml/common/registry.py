@@ -7,6 +7,7 @@ from pathlib import Path
 import joblib
 
 from f1_racelab.ml.common.contracts import ModelCard, read_card, write_card
+from f1_racelab.ml.common.tracking import record_artifact
 
 
 class ArtifactUnavailable(RuntimeError):
@@ -21,6 +22,7 @@ def save_artifact(root: Path, name: str, model: object, card: ModelCard) -> dict
     digest = hashlib.sha256(model_path.read_bytes()).hexdigest()
     card_digest = write_card(card, root / f"{name}.card.json")
     (root / f"{name}.sha256").write_text(f"{digest}\n")
+    record_artifact(root, name, card)
     return {"model_sha256": digest, "card_sha256": card_digest}
 
 

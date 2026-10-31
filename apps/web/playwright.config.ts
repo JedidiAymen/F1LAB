@@ -16,7 +16,7 @@ export default defineConfig({
     ],
   ],
   use: {
-    baseURL: 'http://127.0.0.1:5181',
+    baseURL: process.env.F1LAB_E2E_BASE_URL ?? 'http://127.0.0.1:5181',
     viewport: { width: 1440, height: 1000 },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
@@ -30,7 +30,7 @@ export default defineConfig({
       },
     },
   ],
-  webServer: [
+  webServer: process.env.F1LAB_E2E_BASE_URL ? [] : [
     {
       command:
         '../../.venv/bin/uvicorn f1_racelab.api:app --host 127.0.0.1 --port 8011',
