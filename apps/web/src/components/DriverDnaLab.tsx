@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import './DriverDnaLab.css'
 
 type Row = { model: string; accuracy: number; ci?: [number, number] }
+const FutureSegmentStudy = lazy(() => import('./FutureSegmentStudy'))
 type Summary = {
   laps: number; per_circuit: Record<string, number>; shared_drivers: string[]; chance_task_a: number
   majority_task_b: number; task_a: Row[]; task_b: Row[]; seeds: number[]; device: string; limits: string[]
@@ -87,12 +88,13 @@ export function DriverDnaLab({ onBack }: { onBack: () => void }) {
                 <th scope="row">{name}</th><td>{pct(row.transductive.task_a.accuracy)}</td><td>{pct(row.inductive_normalization.task_a.accuracy)}</td><td>{pct(row.inductive_normalization.task_b.mean_accuracy)}</td>
               </tr>)}</tbody>
             </table></div>
-            <p className="dna-note">Neural scores above use transductive normalization and cannot be compared directly with these training-only scores. No inductive neural model was trained.</p>
+            <p className="dna-note">Neural scores above use transductive normalization and cannot be compared directly with these training-only scores. No inductive neural model was trained for these identity tasks. The future-performance study below is a separate regression task.</p>
             <ul className="dna-limits">{data.normalization_study.limitations.map((item) => <li key={item}>{item}</li>)}</ul>
           </section>}
           <ul className="dna-limits">{data.limits.map((text) => <li key={text}>{text}</li>)}</ul>
         </>
       )}
+      <Suspense fallback={<p role="status">Loading future-performance study…</p>}><FutureSegmentStudy /></Suspense>
     </main>
   )
 }

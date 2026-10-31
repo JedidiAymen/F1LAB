@@ -1,0 +1,10 @@
+{
+  "fresh_path": "/tmp/f1lab-dna-future/data/processed/driver_dna_future/fresh_session_11234/laps/4d508b0d238a5632e3d0.json",
+  "fresh_rows": 1008,
+  "fresh_sha256": "2a3fd6867dac686c4324573d65ca9c39b22ea822aaa1c724111490d1e4c536dd",
+  "original_path": "/tmp/f1lab-dna-future/data/raw/openf1/laps/4d508b0d238a5632e3d0.json",
+  "original_preserved": true,
+  "original_sha256": "a6e52b3e34c806dfd507340086ef89c43ade9dfb832aad8654af24d0ba45d8b8",
+  "overlay": "/tmp/f1lab-dna-future/data/processed/driver_dna_future/audited_cache",
+  "session_key": 11234
+}

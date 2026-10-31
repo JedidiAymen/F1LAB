@@ -1,0 +1,1073 @@
+{
+  "artifacts_sha256": {
+    "context_ridge.card.json": "047c9f7492bd21fec1be602cdb6f4a1f46a6d705a768f4ffcf3b871ada4954a9",
+    "context_ridge.joblib": "6046903f0acad9d570e2f7963aaeb8871e90a1cd6b8b9004f4b1b115345d0a14",
+    "prefix_lightgbm.card.json": "bff6ebb079c1e8c237bf270527453308cee66dce1f5583ac688212abc763de32",
+    "prefix_lightgbm.joblib": "b327f12e46a32ee6372410e6b96d79258ca9320d5977a7450b39d1ba3409b744",
+    "prefix_ridge.card.json": "00366510f289302a79aed3e5b91418f74c41da7142046fbb8a06eb5bacf76736",
+    "prefix_ridge.joblib": "7c657affb95994d94007d028b3d955bd77d3504be7ac1cbbfd840c2964772114",
+    "preprocessing.npz": "5816d75b6dc2566a12829fa352969fe31ec4194377e11e9cfc4be40601c37f5d",
+    "tcn_masked_seed42.card.json": "b131fc37e37650babe106b6357cd5e33b6182d9d3df73662da384bd3f63b16f3",
+    "tcn_masked_seed42.pt": "0adb58aaf452d7963dad87e1c4fa8fa57ddc7f464e0e7f6ea6511ea59d864008",
+    "tcn_no_context_seed42.card.json": "33e3cb819ac48763ee46bda93b5bd89ba70844f593685ed65160114e12617582",
+    "tcn_no_context_seed42.pt": "7d54d80593d3d44d8e6200ec83f7bffd52bf0f75d55945db4c26be7ede51bd98",
+    "tcn_seed123.card.json": "0e299979950b14461379d67cc37cdf837dfc32a45aeedc6be27422e8d0009127",
+    "tcn_seed123.pt": "048f8142ef598c998d784e1ddf9e4d69d594a7ea562d1de1b92edfaf40ae7278",
+    "tcn_seed42.card.json": "aae8d9c80c5f1552a8a0cb66fe5263af10c28e4883e11c70ce7f84b55b2245e5",
+    "tcn_seed42.pt": "223323080743e0a33beb5ec6fbe404888a92220a291dc661e48c3a1659cb33cd",
+    "tcn_seed7.card.json": "5858e7ed4d44b06f9cd8a55796fce62f81564dc972846fa5a93f2513e92c0071",
+    "tcn_seed7.pt": "521c03c39686db9356c5c1575544d3268ed132ce2d1f1bac208f32c19a5b6d09"
+  },
+  "created_at_utc": "2026-10-31T22:48:26.413648+00:00",
+  "data_license": "OpenF1 CC BY-NC-SA 4.0; non-commercial research; upstream rights caveat",
+  "dataset": {
+    "channels": [
+      "speed",
+      "throttle",
+      "brake",
+      "gear",
+      "rpm"
+    ],
+    "context_features": [
+      "last_lap_seconds",
+      "recent_three_seconds",
+      "lap_number"
+    ],
+    "created_at_utc": "2026-10-31T22:47:17.262595+00:00",
+    "evidence": "real OpenF1 telemetry",
+    "files": {
+      "prefixes.npz": "b7842a5cc4fa6868125b0b40597327b017e3efb8911f8956566c2627c12bd7cf",
+      "prefixes_meta.parquet": "abc117611b7633c04299ba133325687a87b8119dd613321fafe1a4efe5c752da"
+    },
+    "grid": 64,
+    "metadata_fingerprint": "8df43ff49d595ffd88ad3bb1f699035247acc5e7363e89b07d6140b2ba08f3e4",
+    "quality": {
+      "11234": {
+        "kept": 777,
+        "no_completed_prior_lap": 20,
+        "prefix_coverage_or_gap": 207,
+        "source_laps": 1008,
+        "unavailable_or_invalid_target": 2,
+        "unknown_lap_start": 2
+      },
+      "11253": {
+        "kept": 820,
+        "no_completed_prior_lap": 22,
+        "prefix_coverage_or_gap": 264,
+        "source_laps": 1108,
+        "unavailable_or_invalid_target": 2
+      },
+      "9094": {
+        "kept": 1442,
+        "no_completed_prior_lap": 20,
+        "prefix_coverage_or_gap": 51,
+        "source_laps": 1516,
+        "unavailable_or_invalid_target": 3
+      },
+      "9636": {
+        "kept": 1033,
+        "no_completed_prior_lap": 18,
+        "prefix_coverage_or_gap": 82,
+        "source_laps": 1137,
+        "unavailable_or_invalid_target": 3,
+        "unknown_lap_start": 1
+      },
+      "9839": {
+        "kept": 880,
+        "no_completed_prior_lap": 20,
+        "prefix_coverage_or_gap": 256,
+        "source_laps": 1156
+      },
+      "9912": {
+        "kept": 724,
+        "no_completed_prior_lap": 20,
+        "prefix_coverage_or_gap": 231,
+        "source_laps": 976,
+        "unavailable_or_invalid_target": 1
+      }
+    },
+    "rows": 5676,
+    "schema_version": 1,
+    "source_hashes": {
+      "car_data?driver_number=1&session_key=11234": "b8dbe2fbfe11f47a9c977800c298e95b0d873825c97461b1fb15a16edf6e3d5c",
+      "car_data?driver_number=1&session_key=11253": "e019c5e238c3fee89210089144bdf2bfcea448807739b7ca1fdc45070cb44fdf",
+      "car_data?driver_number=1&session_key=9094": "0c4466949cfcf3a2383026450a679f642f50f154061195021633a7872e2b5fc4",
+      "car_data?driver_number=1&session_key=9636": "94247aace58e3c9506b0bb827800be0c052201c3e67efdf8cba2938fd284256f",
+      "car_data?driver_number=1&session_key=9839": "9aa9b0d4ab3a5719d1bab03bee598ff223fba0f64019e8ee4056465a6b19638d",
+      "car_data?driver_number=1&session_key=9912": "6ff42419ce5d39a0ca77d8fca0836676328f1456bf187028e94771acf621d36e",
+      "car_data?driver_number=10&session_key=11234": "b4e39eeb7db41212dde481f6a7591d77e2cd0b2b1a6fe0b69649c984e69e286f",
+      "car_data?driver_number=10&session_key=11253": "d7c51807bc8d122d880a27894e9f19165da0a98337637ca2c333790207ba1ca7",
+      "car_data?driver_number=10&session_key=9094": "e5f9a1bc77e02d0e0e46e2935f6a2120a516d120eb9d6dd44b61a33bde04107b",
+      "car_data?driver_number=10&session_key=9636": "b45ef6403f33471b0afe25eea06ba3054c75829f4eea05c6c7a71eb1e1d250b3",
+      "car_data?driver_number=10&session_key=9839": "5f36e525295de57f98a019ad78f4f5a26f924e7c7033f3193fe61c3fa85875af",
+      "car_data?driver_number=10&session_key=9912": "908563ef24d068b1766f8281791b07346a0ada5053759a8b167515f6e74b4c6b",
+      "car_data?driver_number=11&session_key=11234": "d916456a44777fdac6de9e7b0a1a559acdc6ade13ef556d5ffac05181147ba25",
+      "car_data?driver_number=11&session_key=11253": "ae22a3e721c74fe40484cdadb139f0237fa567b5509be492e116ce5997e4441e",
+      "car_data?driver_number=11&session_key=9094": "d9412d9d9805b8cc79fcfe55c9496c6670e28ae12d5988673a031675b08a170c",
+      "car_data?driver_number=11&session_key=9636": "f343a78dd1b9fab219f23c1ac8ec227e01b6a273733a1d40c929ebf9fb171042",
+      "car_data?driver_number=12&session_key=11234": "a16aeaaf4f685823e3c0258a1d5e1b38a44c62c20a8ad8c55d19d299667f31df",
+      "car_data?driver_number=12&session_key=11253": "34d7f2684c9c24d649360de4336b067d4ab820219496f72c61300d8c3799e5e6",
+      "car_data?driver_number=12&session_key=9839": "0b321a7b3725d4d6d0f871bf4bff7567df80334e133b7ade62c92b204754aa7a",
+      "car_data?driver_number=12&session_key=9912": "21604ec811197a63f8246e888e61701852f0a514afcfef01227201baa4b16149",
+      "car_data?driver_number=14&session_key=11234": "0753ec73094eaeaff1bb20c7ddde054dcb3f15d7d9a245e18414ac3f76296ae5",
+      "car_data?driver_number=14&session_key=11253": "02bd63a3dd4462d5d871a0378d359fcdc78db53e5e6c901596baae715f8c2389",
+      "car_data?driver_number=14&session_key=9094": "a597f405181180ec2df12e1768e4cf3b76b5c755b4e02867a0689bf5338f9b67",
+      "car_data?driver_number=14&session_key=9636": "50e2835b3b8afb97d4584b82db7cae841d335840afccaaaafbd8bdd75c26ca63",
+      "car_data?driver_number=14&session_key=9839": "503afbe950ecade967b3180e9810b1832658d9e0d62f46cc784eb603cff0f7fa",
+      "car_data?driver_number=14&session_key=9912": "9705699ff680a0bd06ff8c60de456671757b802933633f9e55b09700a941a28a",
+      "car_data?driver_number=16&session_key=11234": "59b4978c0b09db6ac1a844d8cf2fbe12845e958dfb631a018929f9e8b5973d85",
+      "car_data?driver_number=16&session_key=11253": "bf6589324e4e0d1b05ad06cdfa908466cd7c203d08f6a72805700d85a7f959c2",
+      "car_data?driver_number=16&session_key=9094": "5753bdcee46943c03b6746722b9efc7187adb36ce5d6af00a8c55b3e1a852c1f",
+      "car_data?driver_number=16&session_key=9636": "89b4ab5d51633ec2aa0fdb1c88c9cb644d9c8207d6d88e9411a41b3347037593",
+      "car_data?driver_number=16&session_key=9839": "fd8987593f3f8c881a81c053c219f408a53c1e38c9b7e3b4de2f599320cd71aa",
+      "car_data?driver_number=16&session_key=9912": "2ebd1162e7fae04023a339619522d2f1c7b4bc14c3693f1b0a65aa9efa9aacb4",
+      "car_data?driver_number=18&session_key=11234": "88d3729820bf94a60354903c33a303f7be57b615ec00b17557cab2eecafb2dc8",
+      "car_data?driver_number=18&session_key=11253": "c51229998e1cef2cbed2bda654b5ee3711dd2fedf93e829f33da66ffaa12e2a3",
+      "car_data?driver_number=18&session_key=9094": "fb5df545b787de2af8573cdf6a94bbf6128ebc709c25c5d4cfd59da052304381",
+      "car_data?driver_number=18&session_key=9636": "4b2e957382ed241a68b55ea9e227e39a04196c4a0b3c35aa1897cf3671bc5ea1",
+      "car_data?driver_number=18&session_key=9839": "a4d19da7320947e6e569d24c4f0b03e21d826c6bbd09a052554417c3059e0db3",
+      "car_data?driver_number=18&session_key=9912": "6e39ef5b32b6f7d6c2b7480d6c1a699a42bb4233c8eb68b86474ea54764344da",
+      "car_data?driver_number=2&session_key=9094": "64d597eb2c92626ba7f9f2141d00ff0fe273c96caa6c668ecd5f48ed6077c35f",
+      "car_data?driver_number=20&session_key=9094": "c6425b7f8ef1c731c941b56690f29875fcbaceef32d88b40566080dd5df65186",
+      "car_data?driver_number=21&session_key=9094": "0bad6b0d103b55c4f7e0df17c2b98a649df502a03fe6a0a7dd2dd5b9696b9a85",
+      "car_data?driver_number=22&session_key=9094": "08b2b5159dea1270b00f09a123ec4927376a239dc5e1f51a78c23cca86169404",
+      "car_data?driver_number=22&session_key=9636": "904dd3aad8baa001f11381a0c85818e54a7d3e1a9ea7824b73bbbb3af8ee97ef",
+      "car_data?driver_number=22&session_key=9839": "9225337dc0d10d110b50f662bb2caf60473f7360b52abab38478df30beaf844c",
+      "car_data?driver_number=22&session_key=9912": "45ae031d226c7cfab361fe1a8da68465ef02c9b6994f2ccf12e69c075fc393f4",
+      "car_data?driver_number=23&session_key=11234": "207ce2ed3f2e0c931d5a48b9ffc9ccf52089601799a5acab8af2548b434f15f5",
+      "car_data?driver_number=23&session_key=11253": "a16aa02be25630fb417dda8e7b82093718efbb032fc8d0f162e04a53ec83f879",
+      "car_data?driver_number=23&session_key=9094": "7d8c77abd591fb61955189627f038a9c636bf81a3fce5a6c65387bfb92605d72",
+      "car_data?driver_number=23&session_key=9839": "dfeb875675b67b3c916233c2ee231a7ac5509deaca26153db6bd9a864164088a",
+      "car_data?driver_number=23&session_key=9912": "9b64edeedfaadfbfaeed62a9673a6dd0ad15c8ad6f81adeccf89b25505c9a531",
+      "car_data?driver_number=24&session_key=9094": "3d745ad88d90bf773fdb5253da7c65bb7af89ff702e90ce95b78d5afa7329813",
+      "car_data?driver_number=24&session_key=9636": "4f2847bba93901d01b669d9d9cfe0aa93e55a42234bf1d11ff70ffc81721cae2",
+      "car_data?driver_number=27&session_key=11234": "9589f021074e11720f4fea6b55c30fa8e29ebdbb2514216b26ee40f7adf0e2cc",
+      "car_data?driver_number=27&session_key=11253": "6a859f6d09091bec8def72eca7facedfc163d6075da89cfd28bfa40aa7550e89",
+      "car_data?driver_number=27&session_key=9094": "bcf6fff161d06822e156af85b80ad690ae057368aeefe04ebda94467c2f1add9",
+      "car_data?driver_number=27&session_key=9636": "ef7b2550e785b43c93394976bbba1c41e486590ab2ac94a51c03b5bc6d39e577",
+      "car_data?driver_number=27&session_key=9839": "d2fe7643729ef8df1092694d7023e933c8fdec608b08e62e620f0a5daf65c26e",
+      "car_data?driver_number=27&session_key=9912": "37142fd8f158e3e057464c8188bd5af14597455b4be489ba5a9211cfd4d95fdc",
+      "car_data?driver_number=3&session_key=11234": "a3fb479c41cd45cf9e01ad1d3ad330a2628ca82d5db4f5eedb332a671fffc326",
+      "car_data?driver_number=3&session_key=11253": "f8cdf0b594535abb3a2c321c077e796a10350b98514530ea25c61b545f61699a",
+      "car_data?driver_number=30&session_key=11234": "5adf9d2845e8567fe602f563eb8167e012e7faaae62b9356f50d9067a6f88934",
+      "car_data?driver_number=30&session_key=11253": "69b62088d8c5aa04349f3f044d302c57b986fb31db31c93e71a356f0d29ed35d",
+      "car_data?driver_number=30&session_key=9636": "3b8645f9ad5279d2b1492e54fe1477438b23b10d933c90ee024589adda9a8efd",
+      "car_data?driver_number=30&session_key=9839": "b18a64f56747b968dee8d64801df09f7802182f5534cff12bcd574bfbdcb1cd2",
+      "car_data?driver_number=30&session_key=9912": "68dae9e3d827d550158e2b20e30139c4dfdcb804c4bb8746482eaa3fe99600d5",
+      "car_data?driver_number=31&session_key=11234": "1d2c077e39854b332b9bb8bf748f3cfef3f6baa79bb7316c42eae85f4d76f45d",
+      "car_data?driver_number=31&session_key=11253": "864f151d122e5404d1f726a70a65347c427f24788c370a663780bf66d108a439",
+      "car_data?driver_number=31&session_key=9094": "fa350494fdc2cdc9a30b35b8d623d5e4332e4c626d08753629314cee2374be18",
+      "car_data?driver_number=31&session_key=9636": "7dbb99b657915e5cfce8ad9e66de4f07198596208d24a9fc17a167e4a9015674",
+      "car_data?driver_number=31&session_key=9839": "58fb2f7286f80e6f2ee900a32a2252c93465dd3c9eb883ecd14973055f40f5ba",
+      "car_data?driver_number=31&session_key=9912": "f9779f50d34ddb6cf772ebbdad3fc643fc601be42a983a9413b20ae92090ba98",
+      "car_data?driver_number=4&session_key=9094": "75d44c6d3c6c37cd455f80e07c1fdc97fd67bf2ac63b306d90fde194c862b19e",
+      "car_data?driver_number=4&session_key=9636": "9c04654219ac75376e02586e47a69f7e98543e02c308c78c411c7f3ba002e900",
+      "car_data?driver_number=4&session_key=9839": "113058f5d8d102f3c52b19ce140aa0f80b9d6f3fe7db5d07c3d046b853e39b55",
+      "car_data?driver_number=4&session_key=9912": "9ed72c1fbbce6a4e462dcf1cb6d93e75813896aa1b5bfc8598df60de82ac1a40",
+      "car_data?driver_number=41&session_key=11234": "0596136188b277b2080d0665a1f31ce05b6a4e5b65cb69628ad1b6e5f92b1cbe",
+      "car_data?driver_number=41&session_key=11253": "759b9bc4665a15c41ab4d0063383267d03b612beea76d73d5d79b021a06e4de2",
+      "car_data?driver_number=43&session_key=11234": "61e3b7f698d23bfb1e2cd6250c30b8a47c8b9590e7725bf3697ba4b2d15b7b91",
+      "car_data?driver_number=43&session_key=11253": "83025d49c2fd5d277996475dd9918475293248d5f9711dfdf03fe0be9cc1a9b8",
+      "car_data?driver_number=43&session_key=9636": "df3935d5aa1786db5b95923fdbbc418733bcc87aa89f2544af47725d80f26059",
+      "car_data?driver_number=43&session_key=9839": "c8128fa9a1c76a11211eabf1b42e1b86dc3e3f2f4b84ba4f08e0ed3656408b0c",
+      "car_data?driver_number=43&session_key=9912": "6dd2a4e438ce9354ee6f677b817618c5d0a4a073418427f9d5744d2f5648b14c",
+      "car_data?driver_number=44&session_key=11234": "271c135a196cef7859877845acf95c77b286f54fbcf40c0dab70997a814f3515",
+      "car_data?driver_number=44&session_key=11253": "8e051d7351fd66f3179608bf9df7d61282928a1cb8505413b64f287a20a3baf1",
+      "car_data?driver_number=44&session_key=9094": "4ecd35fe3fc4109e54953f4c3b488ab14170a306637d72f42b34b0a5e29b2fa0",
+      "car_data?driver_number=44&session_key=9636": "cda78b8994aff0d49f3ecba4130b76e4d2e63a33d76960e77081211ce2a4eecd",
+      "car_data?driver_number=44&session_key=9839": "432f4f586e3c03367a656294edab2f1c237058ce9ad87749e03e28a3078a8de6",
+      "car_data?driver_number=44&session_key=9912": "4732e631a8de283b618de7e7a50cd5a67673adb9e6e7babb08e4325e738c680f",
+      "car_data?driver_number=5&session_key=11234": "b9882cce036786f3714ffe1bdfa99bf400da8b5b7c27132b88885997b3a688a5",
+      "car_data?driver_number=5&session_key=11253": "6f11402f7d001d2cb40bcfbc9cfb9b545de79b8f1e3a427cb77d0774a2fe3691",
+      "car_data?driver_number=5&session_key=9839": "d094bf99f50e07e7efc8793fb9c4caa63d8f1e4b8be88a529f163e9dbb23102f",
+      "car_data?driver_number=5&session_key=9912": "1a029a5670c17434ae2924cefe960e594bcdd2eaef2ae20f9e232fa415a0b758",
+      "car_data?driver_number=50&session_key=9636": "fafc64c4238639a09ddcf3093fdbf4e553ec253325c7224f5c6e00b55808054c",
+      "car_data?driver_number=55&session_key=11234": "bb4e4f34561edee4fa7bb0715237b0b99862ac29804408e0670e8e33f050e9a8",
+      "car_data?driver_number=55&session_key=11253": "140c9a82ddf79ee8c88f042dbc3aa4966ae67b69c2c743ad19aaaee3e79f5421",
+      "car_data?driver_number=55&session_key=9094": "4678fe6f23f06c7887c6ed1f71af1cfe346d9279694cf966eb3451a8e1efc50c",
+      "car_data?driver_number=55&session_key=9636": "e40154621a965bb435387612ffcdea0dace6b3b2b8c295004200b489f855ec76",
+      "car_data?driver_number=55&session_key=9839": "66112f6a07c7e55b10755fbe02000c0b132f16b10670a9b8a4073afcaaa89da9",
+      "car_data?driver_number=55&session_key=9912": "37d5619f9ec71f5f48c3f32d2e0fe501ff16cb121e3907156d60b40bc0827610",
+      "car_data?driver_number=6&session_key=11234": "ea58a128435984e698719fc8a994ddaa3ae333b5100cf255f832588fb39e5195",
+      "car_data?driver_number=6&session_key=11253": "0a43dc1184c96ce2e4f69496d71a348e1846576b2264db7be9b97c740062e369",
+      "car_data?driver_number=6&session_key=9839": "d1e737af2f5e39a161cb3d163ac9f6d11c3d50574abbd45a928a612f3916426d",
+      "car_data?driver_number=6&session_key=9912": "f03cd4f598a0fea8e7dc101f2b161b4619bcca7ff2c596070781c09e462ccfb0",
+      "car_data?driver_number=63&session_key=11234": "85103201690a9a70d35f5a866ee30a32d699130b7b8f3628dec9b71176d49291",
+      "car_data?driver_number=63&session_key=11253": "3d81c191723da5e43d4b9a310b3657be93ba173d1e4e6918bb23c5938b8214b4",
+      "car_data?driver_number=63&session_key=9094": "91126f54aef5f28eafca1ab42a5f0462358f36babe7b79f8c00707b1b13f94da",
+      "car_data?driver_number=63&session_key=9636": "bbea58784a3ada85c84d267f07ba731721474fab84b2823d1b7d20abbe6b9ff8",
+      "car_data?driver_number=63&session_key=9839": "77cb45cf13abc68b5eed8497c3eb005264f8bfcea56c067ff6d4e28d1dc2b477",
+      "car_data?driver_number=63&session_key=9912": "23389c4ee9eab6ea41d7c8a16b0e45b5c731e8bce031b5c0b069f734d9e54fc1",
+      "car_data?driver_number=77&session_key=11234": "212d48a1abad261a335e3d239c5fa5ce09ebc7920b42613f2b02fea766b216aa",
+      "car_data?driver_number=77&session_key=11253": "757dea270e749682a3c50387dac775b0d5fec39b091d308984062bd55f49a34a",
+      "car_data?driver_number=77&session_key=9094": "a9e6fe1a734b306817502ee5f2de841f634ec40c1774048bb0f4400f754dc573",
+      "car_data?driver_number=77&session_key=9636": "a2cb927443b240e4c067320692960d969c907c33556ccb7f6b1c93d3dd968949",
+      "car_data?driver_number=81&session_key=11234": "24b11b32c1a64caa769a829f3029063ce0df7aeca0c407500c0668703e2ccbb5",
+      "car_data?driver_number=81&session_key=11253": "f4a84abb32b1b1acfcb2cc68e2938773d9968be07978ac900789a4bb693da98c",
+      "car_data?driver_number=81&session_key=9094": "7566137ca0f74f2d076a995c13abe9ef346be7acd47396921d0036b392baa776",
+      "car_data?driver_number=81&session_key=9636": "9959b0b3bf9b9db1c7fa0d0b6ce4eee45a43d6d763bb7948e0dc1299439c9264",
+      "car_data?driver_number=81&session_key=9839": "da816c1de5614cb72eca8a90584dba010603876e05145abcb5b08ece12189d5c",
+      "car_data?driver_number=81&session_key=9912": "e5602058235c7336f1a33a139e4f067a1b1b57e99f1ebaa80cd519edd930ad21",
+      "car_data?driver_number=87&session_key=11234": "38a48aab9811c6900d97e36de22a232403ae3d293582c93c6b7beab1b304fe15",
+      "car_data?driver_number=87&session_key=11253": "c3fd93d2d29ffe9b72bb2a5fdd3df8bad206ccab26f8181c6e10289ea044fe6a",
+      "car_data?driver_number=87&session_key=9839": "30cfc5a06eeb5bf013243be8526ab9e50183539002bfd30ca23d190232c9040a",
+      "car_data?driver_number=87&session_key=9912": "ed0188a725d976aa476e4baf616642cf9830e6cdac316c33e0f1c1432672b713",
+      "drivers?session_key=11234": "17735e79ec57794d90ba76ac38793aba8302a6cf3204ba694895462f4d9aab42",
+      "drivers?session_key=11253": "4d4b018a25934dd9ff495c501c03ecfbbb94ef2469f52fb053d54ffbfb9036f8",
+      "drivers?session_key=9094": "aa4eb3588f87a8f7604cbb82b58b653f831b387dfc819c21a7a1ec921a96dc24",
+      "drivers?session_key=9636": "9bdff2076fc40af704c350030715699c6320e43092d272a360ab03b41087d48a",
+      "drivers?session_key=9839": "8032440666859103d5cf486e23a31ef87dba4e653f8cd9ee6eee35e086296ede",
+      "drivers?session_key=9912": "720d8a8a09e1ce030680266f7a849e480fd5f508f4c3228bfa0ae5d012cddeda",
+      "laps?session_key=11234": "2a3fd6867dac686c4324573d65ca9c39b22ea822aaa1c724111490d1e4c536dd",
+      "laps?session_key=11253": "9842d62023a031cc78adcf8527a5e0e6976770ef3b132361d3f341d9756ccdbf",
+      "laps?session_key=9094": "5ca9ddade49942e30e889a9e3e419eb1c56a98458ea2eb132eb6bde60b776084",
+      "laps?session_key=9636": "16bc906b0fad0b99ab26ba5e8f8e23400f73d6d811c095dcdd04f2a92679d280",
+      "laps?session_key=9839": "8a6a850686c75cde7620c8bea5f7882cc8205173941db7a03f21adde8d6afca2",
+      "laps?session_key=9912": "89cee73604aaf44129b1a80cb10205f55eb16937dff0ba804ca38326532bbbae"
+    },
+    "split_rows": {
+      "test": 1597,
+      "train": 3199,
+      "validation": 880
+    },
+    "tensor_sha256": "23c3056cdb0bcb893d5a00d285a2e154887cf3a065109e572b52c3ae49d3aae9",
+    "window_seconds": 20.0
+  },
+  "dependencies": {
+    "lightgbm": "4.7.0",
+    "numpy": "2.5.3",
+    "pandas": "2.3.3",
+    "python": "3.12.13",
+    "scikit-learn": "1.9.1",
+    "torch": "2.15.0"
+  },
+  "evidence": "real OpenF1 telemetry",
+  "features": [
+    "last_lap_seconds",
+    "recent_three_seconds",
+    "lap_number",
+    "speed_mean",
+    "throttle_mean",
+    "brake_mean",
+    "gear_mean",
+    "rpm_mean",
+    "speed_std",
+    "throttle_std",
+    "brake_std",
+    "gear_std",
+    "rpm_std",
+    "brake_events",
+    "gear_changes",
+    "throttle_changes"
+  ],
+  "intended_use": "Offline research, no promoted/deployed replacement",
+  "limitations": [
+    "Two new test circuits and the 2026 boundary are confounded.",
+    "Driver bootstrap conditions on these two events; not a new-circuit population interval.",
+    "No provider publication timestamp contract; retrospective observation-time features.",
+    "Completed targets only; future pit/SC disruptions are retained, censored laps unscored.",
+    "Predictive telemetry is not proof of intrinsic driving style."
+  ],
+  "prediction_sha256": "c0bd6e95964aaa3368ba72697e9671c5c51ec247688998ffc39f76c9f2ec8bc0",
+  "results": [
+    {
+      "by_session": {
+        "11234": {
+          "bias_s": 0.7165096525096526,
+          "mae_s": 6.702718146718146,
+          "median_ae_s": 0.4579999999999984,
+          "rmse_s": 49.621576910775104
+        },
+        "11253": {
+          "bias_s": -0.03361707317073186,
+          "mae_s": 3.8145634146341463,
+          "median_ae_s": 0.3219999999999956,
+          "rmse_s": 10.053392783824457
+        }
+      },
+      "conditional_driver_bootstrap_95_s": [
+        0.0,
+        0.0
+      ],
+      "model": "last_completed_lap",
+      "paired_vs_persistence_s": 0.0,
+      "test": {
+        "bias_s": 0.33134752661239825,
+        "mae_s": 5.219758296806512,
+        "median_ae_s": 0.3780000000000001,
+        "rmse_s": 35.35388474325805
+      },
+      "validation": {
+        "bias_s": 0.1600977272727273,
+        "mae_s": 1.4532818181818181,
+        "median_ae_s": 0.24849999999999994,
+        "rmse_s": 4.521913971528992
+      }
+    },
+    {
+      "by_session": {
+        "11234": {
+          "bias_s": -1.3116756756756758,
+          "mae_s": 6.7508236808236814,
+          "median_ae_s": 0.7530000000000001,
+          "rmse_s": 35.85866829988688
+        },
+        "11253": {
+          "bias_s": -0.9966298780487804,
+          "mae_s": 4.89017743902439,
+          "median_ae_s": 0.32900000000000773,
+          "rmse_s": 12.855579248613344
+        }
+      },
+      "conditional_driver_bootstrap_95_s": [
+        -0.8157718096058229,
+        1.3198236036032158
+      ],
+      "model": "recent_three_median",
+      "paired_vs_persistence_s": 0.5756928616155291,
+      "test": {
+        "bias_s": -1.1499113963681904,
+        "mae_s": 5.795451158422041,
+        "median_ae_s": 0.4650000000000034,
+        "rmse_s": 26.654623416141604
+      },
+      "validation": {
+        "bias_s": -0.15052215909090902,
+        "mae_s": 1.2524982954545458,
+        "median_ae_s": 0.27950000000000585,
+        "rmse_s": 3.567665807090057
+      }
+    },
+    {
+      "by_session": {
+        "11234": {
+          "bias_s": 11.374353371742608,
+          "mae_s": 17.661071291135546,
+          "median_ae_s": 7.425197174072267,
+          "rmse_s": 42.04833505369139
+        },
+        "11253": {
+          "bias_s": 37.347001146815465,
+          "mae_s": 38.14044870526733,
+          "median_ae_s": 31.018489692687993,
+          "rmse_s": 50.532749622478434
+        }
+      },
+      "conditional_driver_bootstrap_95_s": [
+        21.52005363940054,
+        24.704854416134093
+      ],
+      "model": "context_ridge",
+      "paired_vs_persistence_s": 22.95671028899908,
+      "test": {
+        "bias_s": 24.71034033201796,
+        "mae_s": 28.176468585805583,
+        "median_ae_s": 22.369907852172858,
+        "rmse_s": 46.59812836563328
+      },
+      "validation": {
+        "bias_s": 16.32336604035551,
+        "mae_s": 16.454790605289286,
+        "median_ae_s": 16.05649880981445,
+        "rmse_s": 18.647075096439984
+      }
+    },
+    {
+      "by_session": {
+        "11234": {
+          "bias_s": -19.717038163810777,
+          "mae_s": 32.39521278319242,
+          "median_ae_s": 27.371575012207032,
+          "rmse_s": 52.1292478868644
+        },
+        "11253": {
+          "bias_s": 24.32506730678474,
+          "mae_s": 43.99701735006934,
+          "median_ae_s": 39.90645970153809,
+          "rmse_s": 54.258359445418584
+        }
+      },
+      "conditional_driver_bootstrap_95_s": [
+        30.433319914157476,
+        36.0123776314672
+      ],
+      "model": "prefix_ridge",
+      "paired_vs_persistence_s": 33.13254887889629,
+      "test": {
+        "bias_s": 2.8969421028694513,
+        "mae_s": 38.3523071757028,
+        "median_ae_s": 32.16698587036133,
+        "rmse_s": 53.23310518760786
+      },
+      "validation": {
+        "bias_s": 105.25817404452887,
+        "mae_s": 105.4736080682863,
+        "median_ae_s": 104.6478717651367,
+        "rmse_s": 107.74926071029589
+      }
+    },
+    {
+      "by_session": {
+        "11234": {
+          "bias_s": -5.977187586190691,
+          "mae_s": 11.959455063722633,
+          "median_ae_s": 8.658700501540878,
+          "rmse_s": 44.518485724481344
+        },
+        "11253": {
+          "bias_s": -16.285042807059227,
+          "mae_s": 31.766652449519732,
+          "median_ae_s": 17.43601281111306,
+          "rmse_s": 59.60290100561511
+        }
+      },
+      "conditional_driver_bootstrap_95_s": [
+        15.232112018059047,
+        18.98016249159377
+      ],
+      "model": "prefix_lightgbm",
+      "paired_vs_persistence_s": 16.90995466068796,
+      "test": {
+        "bias_s": -11.269887198659193,
+        "mae_s": 22.129712957494466,
+        "median_ae_s": 13.082235889705629,
+        "rmse_s": 52.8047858735974
+      },
+      "validation": {
+        "bias_s": -12.195476299732285,
+        "mae_s": 15.227811847662707,
+        "median_ae_s": 13.018500173528345,
+        "rmse_s": 23.520208624894078
+      }
+    },
+    {
+      "by_session": {
+        "11234": {
+          "bias_s": -4.438655333159552,
+          "mae_s": 9.05293440529286,
+          "median_ae_s": 4.449838622904984,
+          "rmse_s": 43.29607946544008
+        },
+        "11253": {
+          "bias_s": -1.9930269310312583,
+          "mae_s": 7.22237207401883,
+          "median_ae_s": 4.507179418421934,
+          "rmse_s": 11.153359899650871
+        }
+      },
+      "conditional_driver_bootstrap_95_s": [
+        2.212169140002999,
+        3.511184957586587
+      ],
+      "model": "tcn_seed7",
+      "paired_vs_persistence_s": 2.8932505532924195,
+      "test": {
+        "bias_s": -3.182916266318475,
+        "mae_s": 8.11300885009893,
+        "median_ae_s": 4.491380447245788,
+        "rmse_s": 31.23959197608668
+      },
+      "validation": {
+        "bias_s": 2.5067574102675723,
+        "mae_s": 4.2839093774759025,
+        "median_ae_s": 3.1344236279953037,
+        "rmse_s": 6.027076663145345
+      }
+    },
+    {
+      "by_session": {
+        "11234": {
+          "bias_s": -2.4257472599143,
+          "mae_s": 8.270626255455314,
+          "median_ae_s": 3.735353845454405,
+          "rmse_s": 45.699364388365865
+        },
+        "11253": {
+          "bias_s": -11.57087231862036,
+          "mae_s": 12.134739681688385,
+          "median_ae_s": 9.263198760844425,
+          "rmse_s": 16.873652523971394
+        }
+      },
+      "conditional_driver_bootstrap_95_s": [
+        4.648395533283232,
+        5.474012883495914
+      ],
+      "model": "tcn_seed42",
+      "paired_vs_persistence_s": 5.034946236363967,
+      "test": {
+        "bias_s": -7.121428254365752,
+        "mae_s": 10.254704533170479,
+        "median_ae_s": 6.820297870494073,
+        "rmse_s": 34.092420276770824
+      },
+      "validation": {
+        "bias_s": -2.6209005381239194,
+        "mae_s": 3.6649704557229805,
+        "median_ae_s": 2.642656474925232,
+        "rmse_s": 5.7231240212527466
+      }
+    },
+    {
+      "by_session": {
+        "11234": {
+          "bias_s": -1.9284613970672737,
+          "mae_s": 9.954922197599354,
+          "median_ae_s": 4.896100593708795,
+          "rmse_s": 42.730097774362676
+        },
+        "11253": {
+          "bias_s": 7.786137148801443,
+          "mae_s": 12.161985937071389,
+          "median_ae_s": 9.081380655288704,
+          "rmse_s": 17.50637909378946
+        }
+      },
+      "conditional_driver_bootstrap_95_s": [
+        5.168640921955022,
+        6.684914675557953
+      ],
+      "model": "tcn_seed123",
+      "paired_vs_persistence_s": 5.868408901648864,
+      "test": {
+        "bias_s": 3.0596230159648794,
+        "mae_s": 11.088167198455375,
+        "median_ae_s": 6.596944736622632,
+        "rmse_s": 32.33747289892635
+      },
+      "validation": {
+        "bias_s": 1.417358455487434,
+        "mae_s": 4.515347763043077,
+        "median_ae_s": 2.6237138002883853,
+        "rmse_s": 9.097153128793016
+      }
+    },
+    {
+      "by_session": {
+        "11234": {
+          "bias_s": 0.6154465632297211,
+          "mae_s": 7.86925018563075,
+          "median_ae_s": 1.8380669284236006,
+          "rmse_s": 50.084227243546614
+        },
+        "11253": {
+          "bias_s": 0.9418153763492499,
+          "mae_s": 5.7847300468131975,
+          "median_ae_s": 2.195962314747618,
+          "rmse_s": 12.003022942648737
+        }
+      },
+      "conditional_driver_bootstrap_95_s": [
+        1.2678470000340745,
+        1.9089874548676942
+      ],
+      "model": "tcn_no_context_seed42",
+      "paired_vs_persistence_s": 1.5791684612535473,
+      "test": {
+        "bias_s": 0.7830247891270372,
+        "mae_s": 6.798926758060059,
+        "median_ae_s": 2.034738975382993,
+        "rmse_s": 35.978055198720114
+      },
+      "validation": {
+        "bias_s": 2.948112037985409,
+        "mae_s": 3.309712062220458,
+        "median_ae_s": 2.5720190822113054,
+        "rmse_s": 5.204764673154543
+      }
+    },
+    {
+      "by_session": {
+        "11234": {
+          "bias_s": -2.55138811716588,
+          "mae_s": 6.841503186101719,
+          "median_ae_s": 2.768783849574284,
+          "rmse_s": 36.8077679945361
+        },
+        "11253": {
+          "bias_s": -0.9350487639759072,
+          "mae_s": 9.146287100895615,
+          "median_ae_s": 5.727201616145322,
+          "rmse_s": 14.332507431175388
+        }
+      },
+      "conditional_driver_bootstrap_95_s": [
+        1.7167570536655472,
+        3.5927357989349917
+      ],
+      "model": "tcn_masked_seed42",
+      "paired_vs_persistence_s": 2.8051655593834943,
+      "test": {
+        "bias_s": -1.7214580798360253,
+        "mae_s": 8.024923856190005,
+        "median_ae_s": 3.9434281364452346,
+        "rmse_s": 27.652166670358017
+      },
+      "validation": {
+        "bias_s": -4.935294676402679,
+        "mae_s": 5.42854799158345,
+        "median_ae_s": 5.329407733775337,
+        "rmse_s": 5.972274990065937
+      }
+    }
+  ],
+  "schema_version": 1,
+  "settings": {
+    "lightgbm": {
+      "learning_rate": 0.03,
+      "min_child_samples": 30,
+      "n_estimators": 200,
+      "n_jobs": 2,
+      "num_leaves": 15,
+      "random_state": 42,
+      "verbosity": -1
+    },
+    "neural_max_epochs": 25,
+    "neural_seeds": [
+      7,
+      42,
+      123
+    ],
+    "ridge_alpha": 10
+  },
+  "source_dirty": true,
+  "source_files": {
+    "src/f1_racelab/ml/driver_dna/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/f1_racelab/ml/driver_dna/baselines.py": "ac19089735669cb0c4d334195c2ea9c359c80d5b14340c387baf08b6ff2773dc",
+    "src/f1_racelab/ml/driver_dna/dataset.py": "b67c028e9a86aaeeffede93718b0a167b5bd760f12bc66873672d0453548791e",
+    "src/f1_racelab/ml/driver_dna/evaluate_nets.py": "ec07b70f999c66a64c4ca71f488d86e3c2eed5a53b4abf738160921888155033",
+    "src/f1_racelab/ml/driver_dna/future_data.py": "64f65ecb47b7174573843e9d6bcc3fc5c894f226367603d1bb1380f4bba46ede",
+    "src/f1_racelab/ml/driver_dna/future_nets.py": "610c418a3d13deaffe46168e2e5af44b1130654e4c4cbedc0207dcb850c3a704",
+    "src/f1_racelab/ml/driver_dna/future_service.py": "b5786d6e63e411b0255a1ec5b6e920240c4af0605c2b7e7bb9a2daaebdeffcc3",
+    "src/f1_racelab/ml/driver_dna/future_study.py": "d0c211b9e96ece5d743237e0a5de2652998713326eb7901316a17e0dc91a39a7",
+    "src/f1_racelab/ml/driver_dna/handcrafted.py": "7a12fe328399f6f5252a44ebced50b491d8ba4c2debd341b20d2f61c6290b7ca",
+    "src/f1_racelab/ml/driver_dna/nets.py": "825bdf741d4dd177a941f2dc01ae903cff9fe5bde60e19ca4c1d895c50853bd7",
+    "src/f1_racelab/ml/driver_dna/normalization_study.py": "46be34acf6a19cbc7d78d184a8b46c6d3cf47941a35ca661e68282194d5c7238",
+    "src/f1_racelab/ml/driver_dna/protocol.py": "8e8ab9ab276f3bc0f4d5fc69461c1a3227acab149dd419b33f14e4b99d63073f",
+    "src/f1_racelab/ml/driver_dna/service.py": "51978d5137755798ceabe1e49768fb7d16b4cb79c997d629a2df6b928df05e4c"
+  },
+  "source_sha": "5cdac66677e6abb513f84e3ede5f74dd74d00bb6",
+  "task": "remaining completed-lap seconds after observing 20 seconds",
+  "training_curves": {
+    "tcn_masked_seed42": [
+      {
+        "epoch": 1,
+        "loss": 0.2914832279086113,
+        "stage": "masked_prefix"
+      },
+      {
+        "epoch": 2,
+        "loss": 0.053857112228870394,
+        "stage": "masked_prefix"
+      },
+      {
+        "epoch": 3,
+        "loss": 0.036503213532269,
+        "stage": "masked_prefix"
+      },
+      {
+        "epoch": 4,
+        "loss": 0.030479633994400502,
+        "stage": "masked_prefix"
+      },
+      {
+        "epoch": 5,
+        "loss": 0.023783422224223614,
+        "stage": "masked_prefix"
+      },
+      {
+        "epoch": 6,
+        "loss": 0.02166837276890874,
+        "stage": "masked_prefix"
+      },
+      {
+        "epoch": 7,
+        "loss": 0.019879041761159896,
+        "stage": "masked_prefix"
+      },
+      {
+        "epoch": 8,
+        "loss": 0.018678793143481018,
+        "stage": "masked_prefix"
+      },
+      {
+        "epoch": 9,
+        "loss": 0.017692152094095945,
+        "stage": "masked_prefix"
+      },
+      {
+        "epoch": 10,
+        "loss": 0.014474269393831491,
+        "stage": "masked_prefix"
+      },
+      {
+        "epoch": 1,
+        "stage": "supervised",
+        "train_loss": 0.10274321472272277,
+        "validation_scaled_mae": 0.08888674527406693
+      },
+      {
+        "epoch": 2,
+        "stage": "supervised",
+        "train_loss": 0.08725215410348028,
+        "validation_scaled_mae": 0.04972153529524803
+      },
+      {
+        "epoch": 3,
+        "stage": "supervised",
+        "train_loss": 0.08673927678493783,
+        "validation_scaled_mae": 0.06514919549226761
+      },
+      {
+        "epoch": 4,
+        "stage": "supervised",
+        "train_loss": 0.07976283006952144,
+        "validation_scaled_mae": 0.041687801480293274
+      },
+      {
+        "epoch": 5,
+        "stage": "supervised",
+        "train_loss": 0.0725320870289579,
+        "validation_scaled_mae": 0.08587885648012161
+      },
+      {
+        "epoch": 6,
+        "stage": "supervised",
+        "train_loss": 0.06652087164809928,
+        "validation_scaled_mae": 0.04669349268078804
+      },
+      {
+        "epoch": 7,
+        "stage": "supervised",
+        "train_loss": 0.058281755174975844,
+        "validation_scaled_mae": 0.040652595460414886
+      },
+      {
+        "epoch": 8,
+        "stage": "supervised",
+        "train_loss": 0.04949628089787438,
+        "validation_scaled_mae": 0.05027909576892853
+      },
+      {
+        "epoch": 9,
+        "stage": "supervised",
+        "train_loss": 0.0437079683248885,
+        "validation_scaled_mae": 0.050668634474277496
+      },
+      {
+        "epoch": 10,
+        "stage": "supervised",
+        "train_loss": 0.041560147660784426,
+        "validation_scaled_mae": 0.10338708758354187
+      },
+      {
+        "epoch": 11,
+        "stage": "supervised",
+        "train_loss": 0.03220610102172941,
+        "validation_scaled_mae": 0.0423172302544117
+      },
+      {
+        "epoch": 12,
+        "stage": "supervised",
+        "train_loss": 0.02175880311988294,
+        "validation_scaled_mae": 0.03870472311973572
+      },
+      {
+        "epoch": 13,
+        "stage": "supervised",
+        "train_loss": 0.023151081691030414,
+        "validation_scaled_mae": 0.0734778493642807
+      },
+      {
+        "epoch": 14,
+        "stage": "supervised",
+        "train_loss": 0.02190514903049916,
+        "validation_scaled_mae": 0.07566429674625397
+      },
+      {
+        "epoch": 15,
+        "stage": "supervised",
+        "train_loss": 0.026996497598011048,
+        "validation_scaled_mae": 0.08212822675704956
+      },
+      {
+        "epoch": 16,
+        "stage": "supervised",
+        "train_loss": 0.024213218225631862,
+        "validation_scaled_mae": 0.09492750465869904
+      },
+      {
+        "epoch": 17,
+        "stage": "supervised",
+        "train_loss": 0.021304501837585123,
+        "validation_scaled_mae": 0.052940547466278076
+      }
+    ],
+    "tcn_no_context_seed42": [
+      {
+        "epoch": 1,
+        "stage": "supervised",
+        "train_loss": 0.09837607101071626,
+        "validation_scaled_mae": 0.054162368178367615
+      },
+      {
+        "epoch": 2,
+        "stage": "supervised",
+        "train_loss": 0.09109206133987754,
+        "validation_scaled_mae": 0.04002343490719795
+      },
+      {
+        "epoch": 3,
+        "stage": "supervised",
+        "train_loss": 0.09043247648747638,
+        "validation_scaled_mae": 0.02937375009059906
+      },
+      {
+        "epoch": 4,
+        "stage": "supervised",
+        "train_loss": 0.09351841797120869,
+        "validation_scaled_mae": 0.070185087621212
+      },
+      {
+        "epoch": 5,
+        "stage": "supervised",
+        "train_loss": 0.0891113528702408,
+        "validation_scaled_mae": 0.05893092602491379
+      },
+      {
+        "epoch": 6,
+        "stage": "supervised",
+        "train_loss": 0.08006032407516614,
+        "validation_scaled_mae": 0.05626584216952324
+      },
+      {
+        "epoch": 7,
+        "stage": "supervised",
+        "train_loss": 0.09759919816162438,
+        "validation_scaled_mae": 0.02359774522483349
+      },
+      {
+        "epoch": 8,
+        "stage": "supervised",
+        "train_loss": 0.09363052285974845,
+        "validation_scaled_mae": 0.031046312302350998
+      },
+      {
+        "epoch": 9,
+        "stage": "supervised",
+        "train_loss": 0.09255215971497818,
+        "validation_scaled_mae": 0.0686357170343399
+      },
+      {
+        "epoch": 10,
+        "stage": "supervised",
+        "train_loss": 0.08736784276552498,
+        "validation_scaled_mae": 0.02814682573080063
+      },
+      {
+        "epoch": 11,
+        "stage": "supervised",
+        "train_loss": 0.07670681928517296,
+        "validation_scaled_mae": 0.059629887342453
+      },
+      {
+        "epoch": 12,
+        "stage": "supervised",
+        "train_loss": 0.06834327999502421,
+        "validation_scaled_mae": 0.028988609090447426
+      }
+    ],
+    "tcn_seed123": [
+      {
+        "epoch": 1,
+        "stage": "supervised",
+        "train_loss": 0.09765530378557742,
+        "validation_scaled_mae": 0.06856302917003632
+      },
+      {
+        "epoch": 2,
+        "stage": "supervised",
+        "train_loss": 0.0862282201112248,
+        "validation_scaled_mae": 0.04108784347772598
+      },
+      {
+        "epoch": 3,
+        "stage": "supervised",
+        "train_loss": 0.07957117538433522,
+        "validation_scaled_mae": 0.042686376720666885
+      },
+      {
+        "epoch": 4,
+        "stage": "supervised",
+        "train_loss": 0.07060130845289678,
+        "validation_scaled_mae": 0.08084005862474442
+      },
+      {
+        "epoch": 5,
+        "stage": "supervised",
+        "train_loss": 0.0701313185878098,
+        "validation_scaled_mae": 0.03219374641776085
+      },
+      {
+        "epoch": 6,
+        "stage": "supervised",
+        "train_loss": 0.05457364552887157,
+        "validation_scaled_mae": 0.07659449428319931
+      },
+      {
+        "epoch": 7,
+        "stage": "supervised",
+        "train_loss": 0.06108355451840907,
+        "validation_scaled_mae": 0.08032374083995819
+      },
+      {
+        "epoch": 8,
+        "stage": "supervised",
+        "train_loss": 0.05240328417392447,
+        "validation_scaled_mae": 0.10421492159366608
+      },
+      {
+        "epoch": 9,
+        "stage": "supervised",
+        "train_loss": 0.053526082980679346,
+        "validation_scaled_mae": 0.1221797913312912
+      },
+      {
+        "epoch": 10,
+        "stage": "supervised",
+        "train_loss": 0.04864461469929665,
+        "validation_scaled_mae": 0.13992328941822052
+      }
+    ],
+    "tcn_seed42": [
+      {
+        "epoch": 1,
+        "stage": "supervised",
+        "train_loss": 0.12543044053949415,
+        "validation_scaled_mae": 0.041910912841558456
+      },
+      {
+        "epoch": 2,
+        "stage": "supervised",
+        "train_loss": 0.0895288403541781,
+        "validation_scaled_mae": 0.05850168317556381
+      },
+      {
+        "epoch": 3,
+        "stage": "supervised",
+        "train_loss": 0.0850746860029176,
+        "validation_scaled_mae": 0.026130685582756996
+      },
+      {
+        "epoch": 4,
+        "stage": "supervised",
+        "train_loss": 0.08001991994911804,
+        "validation_scaled_mae": 0.03586124628782272
+      },
+      {
+        "epoch": 5,
+        "stage": "supervised",
+        "train_loss": 0.07178777634631843,
+        "validation_scaled_mae": 0.040110792964696884
+      },
+      {
+        "epoch": 6,
+        "stage": "supervised",
+        "train_loss": 0.06423955534119159,
+        "validation_scaled_mae": 0.034907471388578415
+      },
+      {
+        "epoch": 7,
+        "stage": "supervised",
+        "train_loss": 0.05243370409589261,
+        "validation_scaled_mae": 0.1705690622329712
+      },
+      {
+        "epoch": 8,
+        "stage": "supervised",
+        "train_loss": 0.05680385367246345,
+        "validation_scaled_mae": 0.057634126394987106
+      }
+    ],
+    "tcn_seed7": [
+      {
+        "epoch": 1,
+        "stage": "supervised",
+        "train_loss": 0.1069950019614771,
+        "validation_scaled_mae": 0.07847155630588531
+      },
+      {
+        "epoch": 2,
+        "stage": "supervised",
+        "train_loss": 0.08864584873663262,
+        "validation_scaled_mae": 0.07478461414575577
+      },
+      {
+        "epoch": 3,
+        "stage": "supervised",
+        "train_loss": 0.0792145966202952,
+        "validation_scaled_mae": 0.03467889875173569
+      },
+      {
+        "epoch": 4,
+        "stage": "supervised",
+        "train_loss": 0.07150747465901076,
+        "validation_scaled_mae": 0.04462773725390434
+      },
+      {
+        "epoch": 5,
+        "stage": "supervised",
+        "train_loss": 0.06465949575882406,
+        "validation_scaled_mae": 0.22079993784427643
+      },
+      {
+        "epoch": 6,
+        "stage": "supervised",
+        "train_loss": 0.06051146072335541,
+        "validation_scaled_mae": 0.06366009265184402
+      },
+      {
+        "epoch": 7,
+        "stage": "supervised",
+        "train_loss": 0.04819721556967124,
+        "validation_scaled_mae": 0.14087601006031036
+      },
+      {
+        "epoch": 8,
+        "stage": "supervised",
+        "train_loss": 0.03909327248577028,
+        "validation_scaled_mae": 0.030543627217411995
+      },
+      {
+        "epoch": 9,
+        "stage": "supervised",
+        "train_loss": 0.05038836394669488,
+        "validation_scaled_mae": 0.03296923637390137
+      },
+      {
+        "epoch": 10,
+        "stage": "supervised",
+        "train_loss": 0.03466684906277805,
+        "validation_scaled_mae": 0.2514815926551819
+      },
+      {
+        "epoch": 11,
+        "stage": "supervised",
+        "train_loss": 0.04169496906688437,
+        "validation_scaled_mae": 0.30320441722869873
+      },
+      {
+        "epoch": 12,
+        "stage": "supervised",
+        "train_loss": 0.0316248947288841,
+        "validation_scaled_mae": 0.21218077838420868
+      },
+      {
+        "epoch": 13,
+        "stage": "supervised",
+        "train_loss": 0.02071815462782979,
+        "validation_scaled_mae": 0.5796147584915161
+      }
+    ]
+  }
+}

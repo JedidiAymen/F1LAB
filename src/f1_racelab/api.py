@@ -23,6 +23,7 @@ from f1_racelab.live.ingest import _registry as live_registry
 from f1_racelab.ml.common import reliability
 from f1_racelab.ml.common.contracts import read_card
 from f1_racelab.ml.common.registry import ArtifactUnavailable
+from f1_racelab.ml.driver_dna import future_service as dna_future
 from f1_racelab.ml.driver_dna import service as dna_service
 from f1_racelab.ml.overtake import benchmark as overtake_benchmark
 from f1_racelab.ml.pace import inference as pace_inference
@@ -87,6 +88,7 @@ def create_app(
     qualifying_walkforward_path: Path | None = None,
     reliability_report_path: Path | None = None,
     agent_evaluation_path: Path | None = None,
+    dna_future_path: Path | None = None,
 ) -> FastAPI:
     """Create an API bound to a local replay pack, allowing isolated fixtures."""
     paths = {slug: spec.pack_path for slug, spec in SESSIONS.items()}
@@ -474,6 +476,22 @@ def create_app(
             return pace_service.forecast(pace_lab(), race_id, driver)
         except KeyError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/v1/driver-dna/future-study")
+    def dna_future_study() -> dict:
+        try:
+            return dna_future.summary(dna_future_path or dna_future.DEFAULT)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(status_code=503, detail="Future-performance study unavailable or invalid; run future_data and future_study.") from exc
+
+    @app.get("/api/v1/driver-dna/future-study/{case_id}")
+    def dna_future_incident(case_id: int) -> dict:
+        try:
+            return dna_future.incident(case_id, dna_future_path or dna_future.DEFAULT)
+        except IndexError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(status_code=503, detail="Verified prefix artifact unavailable.") from exc
 
     @app.get("/api/v1/driver-dna/summary")
     def driver_dna_summary() -> dict:

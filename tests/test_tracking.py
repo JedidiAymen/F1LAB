@@ -1,3 +1,4 @@
+import hashlib
 import json
 
 import httpx
@@ -55,3 +56,18 @@ def test_tracking_failure_retains_artifact_and_honest_status(tmp_path, monkeypat
     assert (tmp_path / "m.joblib").is_file()
     assert numeric_metrics({"table": [{"model": "baseline", "mae_s": 1}], "bad": float("nan")}) == {
         "table.baseline.mae_s": 1.0}
+
+
+def test_tensor_checkpoint_provenance_includes_required_preprocessing(tmp_path, monkeypatch):
+    monkeypatch.delenv("MLFLOW_TRACKING_URI", raising=False)
+    from f1_racelab.ml.common.contracts import write_card
+
+    (tmp_path / "neural.pt").write_bytes(b"synthetic checkpoint fixture")
+    (tmp_path / "neural.sha256").write_text(hashlib.sha256((tmp_path / "neural.pt").read_bytes()).hexdigest())
+    (tmp_path / "preprocessing.npz").write_bytes(b"synthetic normalizer fixture")
+    write_card(card(), tmp_path / "neural.card.json")
+    result = record_artifact(tmp_path, "neural", card(), artifact_suffix=".pt", extra_artifacts=("preprocessing.npz",))
+    assert result["model_file"] == "neural.pt"
+    assert "preprocessing.npz" in result["files"]
+    with pytest.raises(ValueError, match="filenames"):
+        record_artifact(tmp_path, "neural", card(), artifact_suffix=".pt", extra_artifacts=("../other",))

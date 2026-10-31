@@ -527,3 +527,56 @@ Real replay/model/WS smoke passes unchanged. Screenshot
 `docs/images/driver-dna-normalization.png` is rendered from the working UI and
 visually reviewed. Basic API/web and optional model-serving replica remain
 healthy; session-created disposable build caches were reclaimed afterward.
+
+## EXP-DNA-FUTURE-01 — verification, 2026-11-01 local / 2026-10-31 UTC
+
+Starting source `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`, isolated branch
+`feat/issue-2-dna-future-segment`. Baseline: 297 Python (32.38 s), mypy 99 files,
+web static/build/16 units pass before changes. Actual 329.9 MiB bounded ingestion,
+5,676 real prefixes and eight trained artifacts/runs; all negative scores retained.
+Full protocol/results/source and license: `research/DRIVER_DNA_FUTURE_SEGMENT.md`.
+
+- `PYTHONPATH=/tmp/f1lab-dna-future/src .venv/bin/pytest -q -W ignore`:
+  **309 passed in 30.53 s**, all extras installed. Core fixture/optional-DL tests,
+  held-out poisoning, resource cap/retry, gate, integrity, API read-only checks.
+- Ruff clean; mypy **103 source files**. `npm run lint`, `npm run test:unit`
+  (**16 pass**), `npm run build`: pass. Expensive research chart code is lazy.
+- Full dev Chromium **24/24 in 53.2 s**; additional final screenshot/validation-
+  curve scenario **1/1 in 5.7 s**. Fresh local `npm ci --prefer-offline` fixed a
+  temporary symlink-worktree font allow-list issue without broadening Vite access.
+- Full production-runtime Chromium **24/24 in 31.0 s**. Existing locked-dependency
+  Docker images were reused with read-only source, aggregate-bundle and built-dist
+  mounts from `/tmp/f1lab-dna-production-override.yml`; this is explicitly **not**
+  a new clean-image local build. Remote CI will build the committed Dockerfiles.
+- Production smoke checks pass: three real replay packs, same preserved actual
+  pace-model prediction, process/model health, new ten-model saved-study API and
+  Nginx simulated-live WebSocket. No new model is served/promoted.
+- Independent checker recomputes ten test metrics and reloads eight actual models
+  at eight seeded held-out points; max difference 0.0000119843 s, threshold 0.001 s.
+- Rendered desktop/mobile screenshots visually reviewed; five actual resampled
+  traces, training curve, circuit/model/lap selection, mobile table scroll, no
+  page overflow. `docs/images/dna-future-{desktop,mobile}.png`.
+- Clean-checkout aggregate API is covered by a real bundled-output integrity test;
+  it explicitly has zero individual cases and returns 503 for missing local
+  prefixes. No raw telemetry/weights are bundled.
+
+Failures preserved: 2026 DRS is null (six-channel attempt failed); globally dropped
+DRS before any model scoring, never filled it as off. Original Australia cache
+had 45 laps; fresh response 1,008. Fixed per-session gate, stopped the first
+incomplete-data run before test-score reporting, retained its partial artifacts.
+Audited separate cache overlay preserves old bytes. Final registered two-event
+study has 777 Australia and 820 Japan test prefixes. NumPy/pandas generic-timedelta
+deprecation warnings occurred in dataset metadata time arithmetic; explicit ns
+prefix selection is used, outputs checked, versions pinned, warning is not hidden
+as a correctness improvement. Existing npm audit reports 25 findings (7 high);
+dependency security review remains separate, as recorded on PR #3.
+
+No clean-image local build, GPU training, CV detector, broad new-circuit inference,
+new identity-task inductive accuracy or future operational availability is claimed.
+Publication/remote SHA/CI will be appended after verification; no merge requested.
+
+Additional isolated runtime check passes with `--network none --read-only`, no
+raw data/model mounts and no Torch import: ten real aggregate result rows serve
+from the read-only mounted source/bundle. This does not replace the clean-image
+build job. Source/cache audit CLI executed against a fresh separate response and
+reproduced the 1,008-row audited source, preserving the original 45-row response.

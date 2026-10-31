@@ -1,0 +1,17 @@
+.dna-future { margin-top: 32px; padding-top: 24px; border-top: 1px solid #283238; min-width: 0; }
+.dna-future p { font-size: 13px; line-height: 1.7; color: #a9b6bf; }
+.dna-future label { display: flex; flex-direction: column; gap: 8px; font-size: 13px; margin: 16px 0; }
+.dna-future select { padding: 10px; border: 1px solid #38434b; border-radius: 6px; background: #10171d; color: #e7eff4; min-width: 0; max-width: 100%; }
+.future-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.future-scroll { overflow-x: auto; }
+.dna-future table { width: 100%; font-size: 12px; border-collapse: collapse; white-space: nowrap; }
+.dna-future th, .dna-future td { text-align: right; padding: 10px; border-bottom: 1px solid #283238; }
+.dna-future th:first-child { text-align: left; }
+.dna-future tr[data-selected="true"] { background: #1a2c36; }
+.future-failures { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 16px 0; }
+.future-failures button { display: flex; justify-content: space-between; gap: 10px; border: 1px solid #283238; border-radius: 6px; padding: 12px; color: #c8d2db; background: #111a22; font-size: 12px; text-align: left; }
+.future-failures button[aria-pressed="true"] { border-color: #4dc9b0; }
+.future-chart { height: 155px; font-size: 11px; }
+.dna-future h4 { font-size: 13px; margin: 20px 0 8px; }
+.dna-future code, .dna-future pre { overflow-wrap: anywhere; white-space: pre-wrap; font-size: 11px; }
+@media (max-width: 700px) { .future-controls, .future-failures { grid-template-columns: 1fr; gap: 4px; } }
