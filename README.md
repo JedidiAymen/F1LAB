@@ -19,7 +19,7 @@ git-ignored (OpenF1 terms are non-commercial, see
 | Race-pace forecast | Next-lap LightGBM, out-of-fold UI (`/api/v1/pace/*`), versioned prediction endpoint (`POST /api/v1/pace/predict`) | 65 scored races, 57,679 green laps. 0.575 s MAE vs 0.593 s for last-lap persistence: **difference -0.018 s, race-clustered 95% CI [-0.057, +0.029], not significant**; persistence is better in 2025. Raw 80% interval covers 75%; a chronological conformal correction reaches 80%. Safety-car laps are out of distribution. |
 | Replay and Race Control | Three historical races, shared clock, 2D map, race control | Deterministic seek; see [replay docs](docs/RACE_CONTROL_UI.md) |
 | Strategy and What-If | Deterministic simulator, seeded Monte Carlo | Assumption-driven, calibrated on Monza 2025 only |
-| Driver DNA | Three-race telemetry study; handcrafted, TCN and contrastive encoders; API/UI | 1,749 laps; neural model does not clearly beat handcrafted logistic regression. Cross-circuit normalization is transductive. |
+| Driver DNA | Three-race telemetry study; handcrafted, TCN and contrastive encoders; API/UI | 1,749 laps. Cross-circuit logistic accuracy falls **38.4% → 19.8%** under train-only normalization; teammate accuracy remains 88.8%. Original neural scores are transductive; no inductive neural result. |
 | Overtake Intelligence | Historical walk-forward comparison, calibration and API/UI | LightGBM Brier 0.0329 vs gap-only logistic 0.0407; isotonic calibration did not improve proper scores. |
 | Neural qualifying | Evaluated exploratory variants | No reliable gain over existing ensemble; not served. |
 | Forecast Debug Agent | Local Ollama evaluation and read-only incident replay | **2/8 diagnoses correct**, 17.43 s mean latency on synthetic planted faults; not production-ready. Scripted reference accuracy is not LLM accuracy. |
@@ -53,6 +53,8 @@ for resource costs, exact tracking commands, health contracts and limitations.
 Rendered production screenshots: [desktop](docs/images/research-desktop.png),
 [mobile](docs/images/research-mobile.png). They show saved real-data research
 and explicitly labeled synthetic-fault LLM investigations.
+The [Driver DNA normalization comparison](docs/images/driver-dna-normalization.png)
+shows why the preprocessing protocol changes the cross-circuit result.
 
 Model cards, hashes and the research notes are in
 [docs/research](docs/research/RACE_PACE_INTELLIGENCE.md); CI runs ruff, pytest

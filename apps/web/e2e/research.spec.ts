@@ -39,3 +39,12 @@ test('Three.js code loads only when the existing 3D view is requested', async ({
   expect(chunks.length).toBeGreaterThan(0)
   await page.getByRole('button', { name: 'Orbit', exact: true }).click()
 })
+
+test('Driver DNA distinguishes transductive from training-only normalization', async ({ page }, testInfo) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: /Driver DNA/ }).click()
+  await expect(page.getByLabel('Cross-circuit identification')).toContainText('transductive')
+  await expect(page.getByRole('table', { name: 'Normalization comparison' })).toContainText('19.8%')
+  await expect(page.getByLabel('Training-only normalization study')).toContainText('No inductive neural model was trained')
+  await page.screenshot({ path: testInfo.outputPath('driver-dna-normalization.png'), fullPage: true })
+})

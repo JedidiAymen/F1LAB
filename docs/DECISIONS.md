@@ -360,3 +360,14 @@ existence from support; expose actual low-performing LLM traces for review. Keep
 agent SQL local/read-only with engine limits, not falsely advertised as a hostile
 multitenant sandbox. Defer new CV training because RACECAR lacks annotations,
 A2RL access/storage/GPU gate is unmet; do not silently download protected footage.
+
+## 2026-10-31 — separate transductive adaptation from train-only normalization
+
+Retain original Driver DNA cohort-normalized results and label their allowed
+unlabeled target-circuit access. Add a separate same-data/same-split train-only
+classical comparison; do not silently overwrite old neural numbers or claim a
+fresh test. Large cross-circuit accuracy loss is a scientific finding, not a
+reason to compare unmatched protocols or favor neural complexity. Dataset quality
+filters/shared-label vocabulary remain retrospective; only normalization fitting
+is strictly train-only. Expand sessions and causal reference availability before
+new neural claims. Also decouple Docker dependency caching from README edits.

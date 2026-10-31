@@ -482,3 +482,14 @@ Committed sample `research/evidence/forecast_debug_20261031/`; exact SHA/command
 and engineering evidence review: `research/FORECAST_DEBUG_AGENT.md`. Preserve as
 negative result. Prior 24-case local artifact (33.3%) used a different protocol;
 scripted reference 200/200 is only solvability, never LLM performance.
+
+## EXP-DNA-NORM-01 — 2026-10-31
+
+Source SHA `7238387d206125413d1403b739909cc3e787bade`, dirty worktree recorded.
+Same inspected three-race 1,749-lap dataset, same circuit/teammate splits, fixed
+original model factories. Task A logistic 38.43% transductive / 19.79% train-only;
+LightGBM 30.21% / 12.33%. Task B logistic 88.80% unchanged [81.82,95.04];
+LightGBM 83.59% / 83.92% [76.52,90.76]. Three circuits are insufficient for a
+significant-gain claim; raw descriptors retain circuit shift. Original artifacts
+unchanged; no inductive neural retrain or expanded data. Report/hash, dependencies,
+per-circuit/pair scores and exact command: `research/DRIVER_DNA.md`.

@@ -12,3 +12,10 @@ The machine-readable card for the served race-pace model is `data/processed/mode
 | RaceVision, Radio | Not built | none | none | none | all uses |
 
 Each module's research note lists exact commands, versions, limitations and artifact locations in `docs/research/`.
+
+**2026-10-31 normalization correction:** the Driver DNA headline above describes
+the original transductive protocol. Same-data train-only normalization gives
+Task A 19.79% logistic / 12.33% LightGBM (original 38.43% / 30.21%); Task B
+88.80% / 83.92%. No new inductive neural model or expanded dataset exists.
+`driver_dna/normalization_study.json` records source/dependency/input hashes and
+per-split results; API checks its SHA sidecar. See `DRIVER_DNA.md`.

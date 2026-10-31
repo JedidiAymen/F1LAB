@@ -3,8 +3,33 @@
 **Read this current digest first.** The long sections below the historical divider
 are retained implementation history; their old completion/status lists are not
 current. Base/fetched SHA: `129e4b106a7ad06afec124be44095c6f091e66e2`, branch
-`feat/foundation`. Implementation publication: pending final commit/push verification.
+`feat/foundation`. MLOps implementation `7238387d206125413d1403b739909cc3e787bade`
+is pushed and remote-verified. [GitHub Actions run 41211311973](https://github.com/JedidiAymen/F1LAB/actions/runs/41211311973)
+completed successfully for Python, web and Compose. Follow-on normalization
+publication is recorded below after verification.
 Owner Git identity retained; two unrelated untracked `ml/features/` scripts untouched.
+
+## Latest follow-on — Driver DNA normalization audit
+
+Real CPU same-cohort study on 1,749 laps, 1,046 shared-driver Task A test laps,
+19 teammate pairs: logistic cross-circuit accuracy **38.43% transductive → 19.79%
+training-only**; LightGBM **30.21% → 12.33%**. Teammate accuracy remains 88.80%
+logistic and 83.92% LightGBM. This exposes an availability assumption; no fresh
+holdout, larger dataset, intrinsic driving-style proof or new neural model.
+Original neural results remain explicitly transductive and cannot be compared
+directly to the new inductive-normalization baseline scores.
+
+Added train-only tensor fit/apply contracts with held-out poisoning tests,
+`ml/driver_dna/normalization_study.py`, hash-verified optional existing API study
+and a Driver DNA UI comparison table. Existing artifacts preserved. Reproduce:
+`OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 .venv/bin/python -m f1_racelab.ml.driver_dna.normalization_study`.
+Full Python **297/297 (28.25 s)**; Ruff/mypy **99 files**; web lint/build and
+16 unit tests pass; full dev Chromium **23/23 (51.5 s)**. Detailed input/output
+hashes, per-circuit/pair results, code map and caveats: [Driver DNA study](research/DRIVER_DNA.md).
+Docker dependency caching now excludes README changes. Final local Compose
+Chromium **23/23 (32.0 s)**, all three real replay packs, model health/inference
+and Nginx simulated-live WebSocket smoke checks pass. Follow-on publication
+is pending its final commit/push entry; the implementation and docs are verified.
 
 ## Done and proven in this checkpoint
 
@@ -125,17 +150,23 @@ remote storage, GPU training or measured browser performance.
 MLOps remains partial: immutable run directories, promotion/rollback, background
 workers/spans, remote auth, production alerts and live drift absent. Observatory
 is saved research, not a live production monitor. No new multi-horizon pace,
-fresh untouched qualifying evaluation, expanded/strictly inductive Driver DNA,
+fresh untouched qualifying evaluation, expanded dataset or inductive neural Driver DNA,
 Corner Intelligence, overtake historical-cutoff service, multi-fault/unseen
 agent cases or trained RaceVision/tracker. Radio rights/live subscription remain
 unavailable. Existing strategy is assumption-driven, not a proven race-winning
 decision system. No public deployment, main merge or history rewrite.
 
-Next: fix Driver DNA normalization protocol and expand held-out data; predeclare
+Next: expand Driver DNA held-out data and train/evaluate inductive neural models; predeclare
 multi-horizon pace study with fair baselines; extend agent multi-fault/evidence
 scoring; obtain a small annotated permitted camera subset plus storage/GPU gate.
 Detailed decision rationale: [decisions](DECISIONS.md), [learning glossary](GLOSSARY_FOR_LEARNING.md),
 [worklog](AGENT_WORKLOG.md), [roadmap](ROADMAP.md).
+
+Owner steering after this checkpoint: first review draft PR #1 and its passing
+CI, then follow [GitHub Issue #2](https://github.com/JedidiAymen/F1LAB/issues/2)
+for the remaining ML/DL/CV milestones. Use small reviewable branches and draft
+pull requests for new work; never automatically merge review PRs or merge main.
+Preserve negative results, licenses, authorized owner identity and exact blockers.
 
 ---
 

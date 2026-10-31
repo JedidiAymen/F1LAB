@@ -218,3 +218,9 @@ Primary references examined 2026-10-31: [Docker profiles](https://docs.docker.co
 [MLflow REST API](https://mlflow.org/docs/latest/api_reference/rest-api.html).
 Configuration/client code is independently written; dependencies retain upstream
 licenses. No vendor source or visual assets were copied.
+
+Published implementation: `7238387d206125413d1403b739909cc3e787bade`, normal push
+and remote SHA verified; [CI run 41211311973](https://github.com/JedidiAymen/F1LAB/actions/runs/41211311973)
+passed Python, web and actual clean-data Compose build/start/smoke jobs. A
+follow-on cache correction removes README from the API dependency COPY so
+documentation edits cannot invalidate frozen scientific dependency installation.

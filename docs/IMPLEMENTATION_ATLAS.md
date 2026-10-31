@@ -404,3 +404,22 @@ Data audit: `data/quality.py`. Client hardening: `OpenF1Client._fetch`.
 See `MLOPS_AND_DEPLOYMENT.md` for examples, formulas, exact paths, reproduced
 metrics, sources/licenses, tests and limitations. `fingerprint_frame` remains
 row-order-sensitive; its docstring/test now describes the existing contract.
+
+## 2026-10-31 — Driver DNA training-only normalization
+
+`protocol.fit_train_normalization(x, train_indices)` accepts finite N-dimensional
+feature tensors, unique in-range explicit training rows; stores read-only float64
+mean/std+1e-6. `apply_train_normalization` validates feature shape/finite inputs,
+returns dimensionless float32 z-scores without fitting. Synthetic held-out poison
+cannot affect training statistics or outputs. Existing per-circuit function is
+retained and explicitly documented as transductive.
+
+`normalization_study.run` loads existing tensors/meta → raw 17 handcrafted
+features and original per-circuit variant → existing circuit/blocked teammate
+folds and fixed logistic/LightGBM factories → real paired-protocol result JSON
+and SHA. It records source/dependencies/input hashes; no new data or neural fit.
+`driver_dna.service.summary` adds an optional checksum-verified study and always
+labels original scores transductive; UI shows protocols side by side. `tests/
+test_driver_dna_normalization.py` covers poisoning/contracts/optional data/tamper;
+research browser scenario checks real 19.8% logistic and no-inductive-neural warning.
+All metrics/units/caveats/reproduction are in `research/DRIVER_DNA.md`.

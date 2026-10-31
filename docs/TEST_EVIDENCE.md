@@ -504,3 +504,26 @@ Hardened-tool solvability rerun:
 `.venv/bin/python -m f1_racelab.agents.forecast_debug.evaluate --agent reference --seeds 25 --out data/processed/agents/forecast_debug/20261031_reference`
 → 200/200 synthetic cases, 875 tool calls, zero tool errors. This tests the
 scripted reference after SQL limits; it does **not** improve the 2/8 LLM result.
+
+## 2026-10-31 — Driver DNA follow-on
+
+Real command: `OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 .venv/bin/python -m f1_racelab.ml.driver_dna.normalization_study`.
+Existing 1,749 laps, three races, 11 shared drivers, 1,046 Task A test laps,
+19 Task B pairs. Full inputs/output hashes and real scores: `research/DRIVER_DNA.md`.
+Synthetic-only tests: eight new normalization/service cases (test-only poisoning,
+invalid indices, zero variance, shape/nonfinite and checksum rejection).
+`.venv/bin/pytest -q -W ignore` → **297 passed, 28.25 s**. Ruff clean;
+mypy clean, 99 source files. `cd apps/web && npm run lint && npm run build` pass;
+`npm run test:unit` → 16 pass; `npm run test:e2e` → **23 passed, 51.5 s**.
+Targeted real-data normalization browser test passes, screenshot generated.
+The earlier sandboxed TestClient run was interrupted after stalling; full run
+with runtime access passed, no tests were silently skipped locally.
+No new neural training, larger dataset, fresh holdout or generalized driver-style
+score is claimed. Compose CI for the preceding milestone succeeded remotely.
+
+Final updated local production images built and started healthy; all **23/23
+Compose Chromium tests pass (32.0 s)**, including the normalization table.
+Real replay/model/WS smoke passes unchanged. Screenshot
+`docs/images/driver-dna-normalization.png` is rendered from the working UI and
+visually reviewed. Basic API/web and optional model-serving replica remain
+healthy; session-created disposable build caches were reclaimed afterward.
