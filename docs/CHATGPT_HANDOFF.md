@@ -979,3 +979,27 @@ Radio: **blocked** (protected audio, nothing downloaded), `docs/research/RADIO_I
 ## Engines layer (2026-10-29)
 DuckDB/Spark/pandas run the same SQL transformations with equivalence tests, engine-declaring registry, one-command CLI, Delta
 round trip, MAPE/bias. pandas is fastest at 83k rows. Databricks not tested. See `docs/research/ENGINES.md`.
+
+Publication: implementation `7477f70fb540b4b8e37c66bbe98fd631a599549f` pushed
+normally and remote-SHA verified. Draft [PR #4](https://github.com/JedidiAymen/F1LAB/pull/4)
+targets foundation, unmerged. [CI 41250905883](https://github.com/JedidiAymen/F1LAB/actions/runs/41250905883)
+passed Python, web and the **actual clean Dockerfile build/start/smoke** without
+research data/optional services. Exact Python CI: **247 passed, 31 skipped in
+14.47 s**, default dependencies; mypy 103 files. Local all-extras count is 309;
+16 frontend units pass. Browser evidence is local, not a CI job. Seven executed
+model/data source hashes match the committed implementation; training occurred
+on base 5cdac66 with a modified worktree, as honestly recorded in run provenance.
+Publication source/CI proof is distinct from the base training SHA.
+PR #3 remains `810b90e8fefd877015eb90cb9d5f947fe0b9584b` with CI 41230058581 green;
+PR #1 remains `5a95ba2`; foundation remains `5cdac66`. No merges/force pushes.
+
+Next CV gate inspected: KITTI official object page lists 12 GB left RGB and
+5 MB labels, and current downloads link to login. With about 2 GiB free, the
+full archive does not fit. Current [terms](https://www.cvlibs.net/datasets/kitti/terms_of_service.php)
+require account access and contain content-use restrictions; an applicable
+research/download agreement has not been established here. No download or
+legacy-link workaround performed and no CC dataset grant assumed. It is road
+imagery, not Formula 1 or racing footage. Existing RACECAR/A2RL/CARLA audit
+still applies; no CV training is claimed. Resolve a small annotated RGB source,
+explicit rights/splits and storage gate before detector work. Other Issue #2
+modules remain partial, not globally blocked or marked complete.

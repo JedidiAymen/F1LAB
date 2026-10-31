@@ -580,3 +580,16 @@ raw data/model mounts and no Torch import: ten real aggregate result rows serve
 from the read-only mounted source/bundle. This does not replace the clean-image
 build job. Source/cache audit CLI executed against a fresh separate response and
 reproduced the 1,008-row audited source, preserving the original 45-row response.
+
+Publication: implementation `7477f70fb540b4b8e37c66bbe98fd631a599549f` pushed
+normally and remote-SHA verified. Draft [PR #4](https://github.com/JedidiAymen/F1LAB/pull/4)
+targets foundation, unmerged. [CI 41250905883](https://github.com/JedidiAymen/F1LAB/actions/runs/41250905883)
+passed Python, web and the **actual clean Dockerfile build/start/smoke** without
+research data/optional services. Exact Python CI: **247 passed, 31 skipped in
+14.47 s**, default dependencies; mypy 103 files. Local all-extras count is 309;
+16 frontend units pass. Browser evidence is local, not a CI job. Seven executed
+model/data source hashes match the committed implementation; training occurred
+on base 5cdac66 with a modified worktree, as honestly recorded in run provenance.
+Publication source/CI proof is distinct from the base training SHA.
+PR #3 remains `810b90e8fefd877015eb90cb9d5f947fe0b9584b` with CI 41230058581 green;
+PR #1 remains `5a95ba2`; foundation remains `5cdac66`. No merges/force pushes.
