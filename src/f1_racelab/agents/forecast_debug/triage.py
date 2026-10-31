@@ -38,8 +38,8 @@ def summarize(tables: Mapping[str, pd.DataFrame]) -> dict[str, Any]:
     }
     out: dict[str, Any] = {
         "forecast_coverage": {
-            "batch_rows": int(len(batch)), "live_rows": int(len(live)),
-            "matched_keys": int(len(both)),
+            "batch_rows": len(batch), "live_rows": len(live),
+            "matched_keys": len(both),
             "batch_only_keys": int((joined._merge == "left_only").sum()),
             "live_only_keys": int((joined._merge == "right_only").sum()),
         },
@@ -75,7 +75,7 @@ def summarize(tables: Mapping[str, pd.DataFrame]) -> dict[str, Any]:
             mismatched = ~(a.eq(b) | (a.isna() & b.isna())).to_numpy()
         skew[name] = int(np.sum(mismatched))
     out["feature_comparison"] = {
-        "matched_keys": int(len(feature_both)),
+        "matched_keys": len(feature_both),
         "batch_only_keys": int((feature_join._merge == "left_only").sum()),
         "live_only_keys": int((feature_join._merge == "right_only").sum()),
         "mismatched_values_on_matched": skew,
