@@ -527,3 +527,63 @@ Real replay/model/WS smoke passes unchanged. Screenshot
 `docs/images/driver-dna-normalization.png` is rendered from the working UI and
 visually reviewed. Basic API/web and optional model-serving replica remain
 healthy; session-created disposable build caches were reclaimed afterward.
+
+## Issue #2 — paired agent comparison (2026-10-31)
+
+Source baseline `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`, candidate PR #1
+`5a95ba26395cf8f7395a8396297409db17ebe02e`; its CI 41225692954 passed all jobs
+and 43 local focused tests passed. New branch `feat/issue-2-agent-paired-evaluation`.
+Actual local Qwen3 inference: 32 investigations on synthetic warehouses, 6/16
+correct per arm, paired delta 0 pp [−37.5,+37.5], 5 supported explanations per
+arm under explicit engineering adjudication. Zero nonexistent IDs does not
+mean supported evidence. Protocol, checksums, negatives and reproduction:
+[AGENT_PAIRED_EVALUATION](research/AGENT_PAIRED_EVALUATION.md).
+
+Commands/results:
+
+- `.venv/bin/pytest -q -W ignore`: **307 passed in 29.89 s**, all extras installed;
+  tests use synthetic fixtures plus integrity checks of committed actual LLM
+  outputs. No model calls occur in CI/tests.
+- `.venv/bin/ruff check src tests scripts`: pass; `.venv/bin/mypy src/f1_racelab`:
+  **100 source files**, pass.
+- `cd apps/web && npm run lint && npm run test:unit && npm run build`: pass,
+  **16 unit tests**. Existing large Three.js chunk warning retained, lazy loaded.
+- `npm run test:e2e`: **25/25 in 53.1 s**. Initial run 24/25 exposed a partial
+  evidence-label selector collision, fixed with exact matching. Final screenshot
+  text refinements passed the paired scenario again **1/1 in 5.1 s**.
+- Rendered desktop/mobile paired evidence screenshots reviewed: responsive
+  stacked investigations, bounded horizontal metrics-table scrolling, readable
+  evidence and no page overflow. Final production verification follows below.
+
+Docker API build completed, image
+`a47650c64fb89dc557deddaca0198adddfcc474f4639c68df9af09a527382d5d`.
+The unchanged scientific dependency install took 228.2 s; this is build/network
+cost, not inference latency. Disk reached 258 MiB free; reclaimed only the new
+1.11 GB Docker uv download cache after successful build. No datasets, model
+weights, user files, volumes or unrelated images removed. Host `uv cache prune`
+removed only 204 KiB of stale cache. No optional GPU execution verified.
+
+Issue #2 dependency observation: the unchanged `npm ci` reported 25 audit
+findings (7 high). `npm audit --omit=dev --json` reports two high dependency
+findings, Vite and Zod. The production web image serves static assets through
+Nginx; this is not an exploitability assessment or a clean dependency audit.
+No automatic/force dependency rewrite was applied in the agent-study branch.
+A separate dependency review remains, including the provider advisories listed
+in npm audit (GHSA-mrhx-c7xc-m3w5 and Vite's current advisory set).
+
+Final trace-binding safeguard: annotations must cite the exact diagnosis IDs.
+Focused service suite **5 passed in 1.43 s**, Ruff/mypy pass after the safeguard.
+The earlier full Python run had 307 tests; the added binding regression brings
+the inventory to 308 and will also run in remote CI.
+
+Final production proof: API image
+`c848c19b6ce9663bacc2b81ec53b8a8be97dda977d2f850b36688e4ab397defa`,
+web image `5c01fceca377f6c3b6168922367b7c3d31b03be843226ecb6977c32487e5b1ad`.
+`docker compose build api`, `docker compose build web`, and
+`docker compose up -d --wait api web inference` pass. All optional profile
+configuration validates. `scripts/smoke_compose.py --require-data --require-model`
+passes all three real packs, preserved actual model inference and Nginx
+simulated-live WebSocket. Full production Chromium **25/25 in 33.4 s**.
+An isolated `docker run --network none --read-only --tmpfs /tmp` with no mounts
+returns all 32 paired cases from the bundled artifact, with DuckDB/model/data
+absent. Rendered screenshots: `docs/images/agent-paired-{desktop,mobile}.png`.

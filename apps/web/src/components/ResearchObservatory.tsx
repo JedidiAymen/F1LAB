@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AgentInvestigation } from '@/components/AgentInvestigation'
+import { PairedAgentStudy } from '@/components/PairedAgentStudy'
 
 type Comparison = { model: string; rows: number; mae_s: number; bias_s: number; unmatched_rows: number; vs_persistence: { mean_delta: number; ci_low: number; ci_high: number; clusters: number } }
 type Race = { race_id: string; event: string; year: number; rows: number; mae_s: number; bias_s: number }
@@ -118,6 +119,7 @@ export function ResearchObservatory({ onBack }: { onBack: () => void }) {
         </section>
       </>}
       <AgentInvestigation />
+      <PairedAgentStudy />
     </main>
   )
 }

@@ -371,3 +371,14 @@ reason to compare unmatched protocols or favor neural complexity. Dataset qualit
 filters/shared-label vocabulary remain retrospective; only normalization fitting
 is strictly train-only. Expand sessions and causal reference availability before
 new neural claims. Also decouple Docker dependency caching from README edits.
+
+## Issue #2 — evaluate the proposed triage revision unchanged
+
+Compare foundation `5cdac66` with PR #1 `5a95ba2` in isolated imports; do not
+merge it or silently repair its missing-version/config evidence before measuring
+that proposal. Seed 1 is replication; seed 4 is a second known-family draw.
+Use identical model digest/options and alternating arm order. Resample fault
+families, retaining both seeds; the small taxonomy limits external validity.
+Citation existence and logical support are separate. Publish per-case engineering
+adjudication with explicit reasons, without calling it independent human review.
+The old 2/8 LLM result and scripted 200/200 remain separate.

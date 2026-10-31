@@ -1,5 +1,55 @@
 # F1LAB handoff — current checkpoint, 2026-10-31
 
+## Current Issue #2 review checkpoint — paired agent evaluation
+
+Branch `feat/issue-2-agent-paired-evaluation`, based on fetched/remote-verified
+foundation `5cdac66677e6abb513f84e3ede5f74dd74d00bb6` (CI 41226338083 green).
+Reviewed draft PR #1 `5a95ba26395cf8f7395a8396297409db17ebe02e`, passing CI
+41225692954 and 43 focused checks; kept it unchanged and unmerged. Found absent
+versions counted as disagreements and missing configuration keys hidden by the
+preflight tool; these are incomplete-evidence review findings, not repaired inputs.
+
+**Implemented and evaluated:** same-Qwen3/same-data paired process-isolated
+comparison, fixed seeds/options and source/model/input hashes; resumable atomic
+case evidence, writer lock and family-cluster bootstrap. Actual 32 model
+investigations on synthetic data: both arms **6/16 (37.5%)**, delta **0 pp,
+95% [−37.5,+37.5] pp**. PR #1 trades missing-data success for version success;
+three step-budget exhaustions and two invalid-table SQL calls retained. Prior
+2/8 LLM and 200/200 scripted results remain distinct. No improvement established.
+
+**Evidence review:** both arms 5/16 supported explanations under inspectable
+engineering adjudication, despite zero nonexistent citation IDs. All 32 verdicts
+have specific reasons/cited IDs. This is not independent blinded human labeling.
+Mean latencies 16.2647/16.6963 s are descriptive on a shared desktop; a 63.84 s
+memory-pressure control is retained. No model fine-tuning or real-incident claim.
+
+**Integrated demo:** existing Research & reliability workspace → “Same incident.
+Two investigations.” Select a paired fault, compare results, expand cited tools,
+read support reasons and input/model/source hashes. New GET-only
+`/api/v1/research/agent-paired` verifies bundle checksums/protocol/annotations and
+recomputes scores; returns 503 on corrupt/missing artifacts. Compose bundles
+272 KiB actual output on generated fixtures; no Ollama/raw F1 data needed for
+replay. Existing original eight-case replay remains available.
+
+**Files/reproduction:** [paired research study](research/AGENT_PAIRED_EVALUATION.md)
+contains model/dataset card, licensing, exact frozen worktree/runner commands,
+all metrics/negatives and artifact hashes. [Atlas](IMPLEMENTATION_ATLAS.md)
+maps runner/service/API/UI/tests. [Test evidence](TEST_EVIDENCE.md) records checks:
+307 Python, Ruff/mypy 100 files, 16 web units, 25 full dev browsers; screenshot
+refinements have a further focused browser pass. Publication SHA/PR/remote CI
+will be appended after verification; no merge is authorized.
+
+**Still not done:** multi-fault/ambiguous/incomplete/unknown-mechanism evaluation,
+real-manifest investigation, wider Driver DNA and inductive neural training,
+future-segment/corner study, annotated-RGB detector training, historical-cutoff
+overtake UI and remaining Issue #2 gates. GPU driver unavailable; storage and
+shared-host memory constrain large downloads/training. CPU and bounded-data work
+remain feasible; these constraints do not mark the full mandate complete.
+Next: publish this separate tested PR, then advance expanded inductive Driver DNA
+on another branch targeting foundation; keep all review PRs unmerged.
+
+## Previously published foundation milestones
+
 **Read this current digest first.** The long sections below the historical divider
 are retained implementation history; their old completion/status lists are not
 current. Base/fetched SHA: `129e4b106a7ad06afec124be44095c6f091e66e2`, branch
@@ -28,8 +78,8 @@ Full Python **297/297 (28.25 s)**; Ruff/mypy **99 files**; web lint/build and
 hashes, per-circuit/pair results, code map and caveats: [Driver DNA study](research/DRIVER_DNA.md).
 Docker dependency caching now excludes README changes. Final local Compose
 Chromium **23/23 (32.0 s)**, all three real replay packs, model health/inference
-and Nginx simulated-live WebSocket smoke checks pass. Follow-on publication
-is pending its final commit/push entry; the implementation and docs are verified.
+and Nginx simulated-live WebSocket smoke checks pass. Published as `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`, remote verified;
+GitHub Actions run 41226338083 passed Python, web and Compose.
 
 ## Done and proven in this checkpoint
 
@@ -946,3 +996,23 @@ Radio: **blocked** (protected audio, nothing downloaded), `docs/research/RADIO_I
 ## Engines layer (2026-10-29)
 DuckDB/Spark/pandas run the same SQL transformations with equivalence tests, engine-declaring registry, one-command CLI, Delta
 round trip, MAPE/bias. pandas is fastest at 83k rows. Databricks not tested. See `docs/research/ENGINES.md`.
+
+Issue #2 dependency observation: the unchanged `npm ci` reported 25 audit
+findings (7 high). `npm audit --omit=dev --json` reports two high dependency
+findings, Vite and Zod. The production web image serves static assets through
+Nginx; this is not an exploitability assessment or a clean dependency audit.
+No automatic/force dependency rewrite was applied in the agent-study branch.
+A separate dependency review remains, including the provider advisories listed
+in npm audit (GHSA-mrhx-c7xc-m3w5 and Vite's current advisory set).
+
+Final production proof: API image
+`c848c19b6ce9663bacc2b81ec53b8a8be97dda977d2f850b36688e4ab397defa`,
+web image `5c01fceca377f6c3b6168922367b7c3d31b03be843226ecb6977c32487e5b1ad`.
+`docker compose build api`, `docker compose build web`, and
+`docker compose up -d --wait api web inference` pass. All optional profile
+configuration validates. `scripts/smoke_compose.py --require-data --require-model`
+passes all three real packs, preserved actual model inference and Nginx
+simulated-live WebSocket. Full production Chromium **25/25 in 33.4 s**.
+An isolated `docker run --network none --read-only --tmpfs /tmp` with no mounts
+returns all 32 paired cases from the bundled artifact, with DuckDB/model/data
+absent. Rendered screenshots: `docs/images/agent-paired-{desktop,mobile}.png`.

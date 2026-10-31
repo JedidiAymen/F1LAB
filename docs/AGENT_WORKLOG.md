@@ -1394,3 +1394,28 @@ hashes, algorithms/units, exact commands, split caveats and next work in
 checks pass. Docker dependency layer no longer includes README to prevent
 unnecessary scientific dependency reinstall on documentation changes. Final
 container/publication evidence follows in the handoff. User helpers untouched.
+
+## 2026-10-31 — Issue #2 paired agent evaluation
+
+Fetched latest foundation `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`, clean tracked
+baseline and authorized owner identity; preserved two user feature scripts.
+Reviewed PR #1 at frozen `5a95ba2` and passing CI 41225692954; 43 focused tests.
+Found unknown model IDs counted as disagreements and absent config evidence
+silently dropped; kept PR unchanged. New isolated review branch targets foundation.
+
+Built the fixed-protocol subprocess evaluator, atomic resume/locking, same-input
+hash validation, paired known-family bootstrap and full case traces. Ran actual
+local Qwen3 inference: both arms 6/16 correct, delta 0 pp [−37.5,+37.5]. Preserved
+missing-data regression, three budget exhaustions, two hallucinated SQL-table
+errors and a 63.84 s memory-pressure case. All cases reviewed against cited
+observations: 5 supported explanations per arm; ID validity alone was misleading.
+No source/model change during inference; unloaded only the evaluated model after
+completion. No user processes or data removed.
+
+Integrated SHA-verified GET-only comparison API, existing lazy research workspace,
+side-by-side incident traces, support reasons, failure filter and lineage. Bundled
+272 KiB actual synthetic-warehouse output; no F1 footage or weights. UI browser
+review found an older partial-label test selector collision: made it exact.
+Screenshot review improved cohort names and accuracy-difference units. Exact
+results/reproduction/file map in the paired research document and atlas. Final
+checks, publication and remaining gates are recorded in TEST_EVIDENCE/handoff.
