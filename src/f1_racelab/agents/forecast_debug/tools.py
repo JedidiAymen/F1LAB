@@ -14,6 +14,8 @@ from typing import Any
 
 import pandas as pd
 
+from f1_racelab.agents.forecast_debug.triage import summarize
+
 MAX_ROWS = 50
 MAX_QUERY_CHARS = 12_000
 MAX_COLUMNS = 32
@@ -82,6 +84,7 @@ class ForecastTools:
             "run_sql": self.run_sql,
             "compare_forecasts": self.compare_forecasts,
             "config_diff": self.config_diff,
+            "incident_checks": self.incident_checks,
         }
 
     def close(self) -> None:
@@ -102,6 +105,8 @@ class ForecastTools:
                             "pipeline's bias against actual lap times."},
             {"name": "config_diff", "args": {}, "description": "Configuration keys whose values differ between "
                                                                 "the batch and live pipelines."},
+            {"name": "incident_checks", "args": {}, "description": "Compact read-only signals for coverage, model "
+             "version, feature skew, lap alignment, units and observed seasonal bias; not a root-cause label."},
         ]
 
     def call(self, name: str, args: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -191,6 +196,10 @@ class ForecastTools:
             LEFT JOIN features_batch f USING (race_id, driver, lap)
             GROUP BY 1 ORDER BY 1"""
         return {"group_by": group_by, **_records(self._con.execute(sql).df())}
+
+    def incident_checks(self) -> dict[str, Any]:
+        """Summarize independently checkable evidence before drawing a conclusion."""
+        return summarize(self._tables)
 
     def config_diff(self) -> dict[str, Any]:
         sql = """SELECT b.key, b.value AS batch_value, l.value AS live_value
