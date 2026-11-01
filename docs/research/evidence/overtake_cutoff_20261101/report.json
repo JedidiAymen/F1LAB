@@ -1,0 +1,80 @@
+{
+  "late_examples": [
+    {
+      "event": "Azerbaijan Grand Prix",
+      "follower": 4,
+      "lap": 43,
+      "leader": 27,
+      "leader_minus_follower_seconds": 0.14,
+      "observed_swap": 0,
+      "race_id": "9070",
+      "race_scored": false,
+      "year": 2023
+    },
+    {
+      "event": "Dutch Grand Prix",
+      "follower": 20,
+      "lap": 28,
+      "leader": 44,
+      "leader_minus_follower_seconds": 0.344,
+      "observed_swap": 0,
+      "race_id": "9149",
+      "race_scored": false,
+      "year": 2023
+    },
+    {
+      "event": "Azerbaijan Grand Prix",
+      "follower": 5,
+      "lap": 32,
+      "leader": 31,
+      "leader_minus_follower_seconds": 0.065,
+      "observed_swap": 0,
+      "race_id": "9904",
+      "race_scored": true,
+      "year": 2025
+    },
+    {
+      "event": "Japanese Grand Prix",
+      "follower": 43,
+      "lap": 13,
+      "leader": 30,
+      "leader_minus_follower_seconds": 58.893,
+      "observed_swap": 0,
+      "race_id": "11253",
+      "race_scored": true,
+      "year": 2026
+    },
+    {
+      "event": "Japanese Grand Prix",
+      "follower": 5,
+      "lap": 16,
+      "leader": 30,
+      "leader_minus_follower_seconds": 26.458,
+      "observed_swap": 0,
+      "race_id": "11253",
+      "race_scored": true,
+      "year": 2026
+    }
+  ],
+  "late_leader_rows": 5,
+  "late_leader_rows_in_scored_races": 3,
+  "limitations": [
+    "Gap-order changes are timing-inferred, not verified passes.",
+    "Future pit and neutralization exclusions define a retrospective selected cohort.",
+    "Cutoffs do not prove provider publication times or exact track positions.",
+    "No model was retrained and no revised prediction metrics were calculated."
+  ],
+  "new_strict_rows": 0,
+  "nonconsecutive_next_rows": 0,
+  "removed_saved_rows": 5,
+  "saved_pair_rows": 29608,
+  "shared_rows_with_changed_label": 0,
+  "shared_rows_with_changed_prior_rate": 2364,
+  "shared_rows_with_changed_prior_rate_in_scored_races": 2364,
+  "source_sha256": {
+    "pace": "993cfaeb810883509bd9348e98a3b8a700813f4f509eeddcec22bd2c2e190ece",
+    "pairs": "8c25cdbef56555d4594a81e665eef8b5490a68d5dc7220b057f87d6be4be419c",
+    "predictions": "0b15d93c81c4067c16ef4361e3b319259372ac5724b1a7bedc0c5595e54e267c"
+  },
+  "strict_pair_rows": 29603
+}

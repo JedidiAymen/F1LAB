@@ -576,11 +576,20 @@ test('driver dna lab shows evaluation, chance markers and confound controls', as
   await expect(page.getByLabel('Confound controls')).toContainText('metadata only')
 })
 
-test('overtake lab shows model comparison, paired gains and calibration', async ({ page }) => {
+test('overtake lab shows provisional scoring and audited cutoff findings', async ({ page }, testInfo) => {
   await page.goto('/')
   await page.getByRole('button', { name: /Overtakes/ }).click()
-  await expect(page.getByRole('heading', { name: /pass next lap/ })).toBeVisible()
-  await expect(page.getByLabel('Model comparison')).toContainText('lightgbm')
+  await expect(page.getByRole('heading', { name: /timing order change/ })).toBeVisible()
+  await expect(page.getByText(/not verified on-track passes/)).toBeVisible()
+  const audit = page.getByRole('region', { name: 'Overtake cutoff audit' })
+  await expect(audit).toContainText('2,364 retained pairs')
+  await audit.getByLabel('Affected overtake pair').selectOption('3')
+  await expect(audit.getByLabel('Selected cutoff finding')).toContainText('58.893 s later')
+  await expect(page.getByRole('table', { name: 'Model comparison', exact: true })).toContainText('lightgbm')
   await expect(page.getByLabel('Paired Brier difference')).toContainText('gap-only')
   await expect(page.getByRole('img', { name: /Reliability/ })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('overtake-audit-desktop.png'), fullPage: true })
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await audit.screenshot({ path: testInfo.outputPath('overtake-audit-mobile.png') })
 })

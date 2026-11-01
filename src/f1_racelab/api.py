@@ -24,6 +24,7 @@ from f1_racelab.ml.common import reliability
 from f1_racelab.ml.common.contracts import read_card
 from f1_racelab.ml.common.registry import ArtifactUnavailable
 from f1_racelab.ml.driver_dna import service as dna_service
+from f1_racelab.ml.overtake import audit_service as overtake_audit
 from f1_racelab.ml.overtake import benchmark as overtake_benchmark
 from f1_racelab.ml.pace import inference as pace_inference
 from f1_racelab.ml.pace import service as pace_service
@@ -489,7 +490,15 @@ def create_app(
             raise HTTPException(status_code=503, detail="Overtake results missing. Run: "
                                 "uv run python -m f1_racelab.ml.overtake.dataset && "
                                 "uv run python -m f1_racelab.ml.overtake.benchmark")
-        return {"evidence": "ml_evaluation_real", **json.loads(path.read_text())}
+        return {"evidence": "ml_evaluation_real", "evaluation_status": "provisional_retrospective",
+                "label_definition": "timing-inferred order swap; not verified on-track pass", **json.loads(path.read_text())}
+
+    @app.get("/api/v1/overtake/cutoff-audit")
+    def overtake_cutoff_audit() -> dict:
+        try:
+            return overtake_audit.load()
+        except (OSError, ValueError, KeyError) as exc:
+            raise HTTPException(status_code=503, detail="Overtake cutoff audit unavailable or invalid.") from exc
 
     @app.post("/api/v1/pace/predict")
     def pace_predict(features: pace_inference.PaceFeatures) -> dict:

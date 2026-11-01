@@ -15,6 +15,7 @@ Command: ``uv run python -m f1_racelab.ml.overtake.dataset``.
 """
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
@@ -80,25 +81,39 @@ def build(frame: pd.DataFrame) -> pd.DataFrame:
 
 def _prior_circuit_rate(pairs: pd.DataFrame) -> pd.Series:
     """Overtake rate per circuit using only races that started strictly earlier."""
+    if pairs[["race_id", "circuit", "race_start", "overtake"]].isna().any().any():
+        raise ValueError("Race identity, circuit, start and observed label are required")
+    if pairs.groupby("race_id")["circuit"].nunique(dropna=False).gt(1).any() or pairs.groupby("race_id")["race_start"].nunique(dropna=False).gt(1).any():
+        raise ValueError("Each race must have one circuit and start time")
     per_race = (pairs.groupby(["circuit", "race_id"], as_index=False)
                 .agg(start=("race_start", "first"), n=("overtake", "size"), k=("overtake", "sum")))
+    per_race["start"] = pd.to_datetime(per_race.start, utc=True, errors="coerce", format="mixed")
+    if per_race.start.isna().any():
+        raise ValueError("Each race must have a valid start time")
     prior = {}
     for circuit, part in per_race.groupby("circuit"):
-        part = part.sort_values("start")
-        cum_k, cum_n = part.k.cumsum().shift(1), part.n.cumsum().shift(1)
-        for race_id, k, n in zip(part.race_id, cum_k, cum_n, strict=True):
+        by_start = part.groupby("start", sort=True)[["k", "n"]].sum()
+        cumulative = by_start.cumsum().shift(1)
+        for race_id, start in zip(part.race_id, part.start, strict=True):
+            k, n = cumulative.loc[start, ["k", "n"]]
             prior[race_id] = k / n if n and n > 0 else np.nan
     return pairs.race_id.map(prior)
 
 
 def main() -> None:
-    OUT.mkdir(parents=True, exist_ok=True)
-    pairs = build(pd.read_parquet(PACE))
-    pairs.to_parquet(OUT / "pairs.parquet", index=False)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--pace', type=Path, default=PACE)
+    parser.add_argument('--out', type=Path, default=OUT)
+    args = parser.parse_args()
+    if (args.out / 'pairs.parquet').exists() or (args.out / 'dataset_summary.json').exists():
+        raise FileExistsError('Overtake dataset artifacts exist; choose a new --out directory')
+    args.out.mkdir(parents=True, exist_ok=True)
+    pairs = build(pd.read_parquet(args.pace))
+    pairs.to_parquet(args.out / "pairs.parquet", index=False)
     summary = {"pairs": len(pairs), "overtakes": int(pairs.overtake.sum()), "rate": float(pairs.overtake.mean()),
                "races": int(pairs.race_id.nunique()),
                "rate_by_year": pairs.groupby("year").overtake.mean().round(4).to_dict()}
-    (OUT / "dataset_summary.json").write_text(json.dumps(summary, indent=2, default=float))
+    (args.out / "dataset_summary.json").write_text(json.dumps(summary, indent=2, default=float))
     print(json.dumps(summary, indent=1, default=float))
 
 

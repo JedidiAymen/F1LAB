@@ -527,3 +527,10 @@ Real replay/model/WS smoke passes unchanged. Screenshot
 `docs/images/driver-dna-normalization.png` is rendered from the working UI and
 visually reviewed. Basic API/web and optional model-serving replica remain
 healthy; session-created disposable build caches were reclaimed afterward.
+
+
+### Overtake cutoff audit — 2026-11-01
+
+Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Five of 29,608 saved timing-inferred pairs contain a leader cutoff later than the follower cutoff; three are in previously scored races. A strict rebuild removes five and changes earlier-race circuit-prior features for 2,364 retained pairs. Existing labels, source frames, predictions and published scores were not overwritten; the scores remain provisional and have not been recomputed. New builds check cutoff order, consecutive next records, duplicate keys and tied race-start priors, and research commands refuse to overwrite existing artifacts. The API/UI presents the checksum-verified findings and clarifies retrospective outcome-based selection. Exact source hashes, audit, limits and commands: [overtake cutoff report](research/OVERTAKE_CUTOFF_AUDIT.md).
+
+Overtake cutoff audit verification: the initial full local Python suite (before adding the final tie and serialization regression checks) yielded 284 passed and 19 skipped in 28.35 s. Ruff and mypy passed, and the real-data audit was repeated byte-for-byte with SHA-256 `fc3576989f0253e19292bf2c29fc26d6239231cffda5a0a82ba87019cb3b9a59`. Frontend lint, 16 unit tests and production build passed. The first Chromium run exposed an ambiguous locator after adding a scroll region; the corrected interaction passed, including affected-pair selection and mobile overflow, with desktop/mobile screenshots inspected. See the subsequent checkpoint for the final updated test counts and any retraining evidence.
