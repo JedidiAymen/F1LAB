@@ -317,3 +317,8 @@ than proving neural models better. The unchanged teammate logistic result
 reflects cancellation of affine within-circuit scaling by its training scaler.
 A fully online protocol additionally needs causal quality filters and feature
 availability; this small normalization audit does not establish those.
+
+
+### Distance segments checkpoint — 2026-11-01
+
+Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Added fixed estimated shared-grid windows to the existing telemetry comparison and canonical replay clock. Segment delta is B−A at end minus B−A at start; displayed speed, raw threshold crossings, gear changes and missing-channel counts use saved telemetry. This is exploratory and is not surveyed corner detection, validated braking-point detection, a trained model or completed Corner Intelligence. Real Monza example, source hash, screenshots, synthetic tests, browser reproduction and limitations: [distance segment report](research/DISTANCE_SEGMENT_ANALYSIS.md).

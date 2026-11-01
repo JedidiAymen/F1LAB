@@ -371,3 +371,8 @@ reason to compare unmatched protocols or favor neural complexity. Dataset qualit
 filters/shared-label vocabulary remain retrospective; only normalization fitting
 is strictly train-only. Expand sessions and causal reference availability before
 new neural claims. Also decouple Docker dependency caching from README edits.
+
+
+### Distance segments checkpoint — 2026-11-01
+
+Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Added fixed estimated shared-grid windows to the existing telemetry comparison and canonical replay clock. Segment delta is B−A at end minus B−A at start; displayed speed, raw threshold crossings, gear changes and missing-channel counts use saved telemetry. This is exploratory and is not surveyed corner detection, validated braking-point detection, a trained model or completed Corner Intelligence. Real Monza example, source hash, screenshots, synthetic tests, browser reproduction and limitations: [distance segment report](research/DISTANCE_SEGMENT_ANALYSIS.md).

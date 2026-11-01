@@ -423,3 +423,8 @@ labels original scores transductive; UI shows protocols side by side. `tests/
 test_driver_dna_normalization.py` covers poisoning/contracts/optional data/tamper;
 research browser scenario checks real 19.8% logistic and no-inductive-neural warning.
 All metrics/units/caveats/reproduction are in `research/DRIVER_DNA.md`.
+
+
+### Distance segments checkpoint — 2026-11-01
+
+Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Added fixed estimated shared-grid windows to the existing telemetry comparison and canonical replay clock. Segment delta is B−A at end minus B−A at start; displayed speed, raw threshold crossings, gear changes and missing-channel counts use saved telemetry. This is exploratory and is not surveyed corner detection, validated braking-point detection, a trained model or completed Corner Intelligence. Real Monza example, source hash, screenshots, synthetic tests, browser reproduction and limitations: [distance segment report](research/DISTANCE_SEGMENT_ANALYSIS.md).

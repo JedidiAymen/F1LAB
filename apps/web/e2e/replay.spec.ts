@@ -133,6 +133,31 @@ test('telemetry crosshair follows the canonical replay clock on its reference la
   await expectSynchronized(page)
 })
 
+test('distance segment selection seeks the shared clock and uses real comparison samples', async ({ page, request }, testInfo) => {
+  const response = await request.get('/api/v1/replay/monza-2025/telemetry/lap-comparison')
+  expect(response.ok()).toBe(true)
+  const comparison = await response.json()
+  const index = Math.floor(3 * (comparison.samples.length - 1) / 12)
+  const sample = comparison.samples[index]
+  const analysis = page.getByRole('region', { name: 'Estimated distance segments' })
+  await analysis.getByRole('button', { name: '4', exact: true }).click()
+  await expect(analysis.getByRole('button', { name: '4', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(analysis).toContainText(`Segment 4: ${sample.distance_m.toFixed(0)}–`)
+  const start = (Date.parse(comparison.lap_a.start_utc) - Date.parse('2025-09-07T13:00:00Z')) / 1000
+  expect(await expectSynchronized(page)).toBeCloseTo(start + sample.elapsed_a_seconds, 2)
+  await expect(analysis.getByRole('table', { name: 'Selected segment comparison' })).toContainText(sample.speed_a_kmh.toFixed(1))
+  await expect(analysis).toContainText('not surveyed corners')
+  await analysis.screenshot({ path: testInfo.outputPath('segment-desktop.png') })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await analysis.getByRole('button', { name: '8', exact: true }).click()
+  await expect(analysis).toContainText('Segment 8:')
+  const scrollable = analysis.getByRole('region', { name: 'Scrollable segment comparison' })
+  await scrollable.evaluate((element) => { element.scrollLeft = element.scrollWidth })
+  await expect(analysis.getByRole('columnheader', { name: 'Lap B' })).toBeInViewport()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await analysis.screenshot({ path: testInfo.outputPath('segment-mobile.png') })
+})
+
 test('validated geometry and selected trail follow exact canonical seeks', async ({ page }, testInfo) => {
   const map = page.getByRole('region', { name: 'Circuit position map' })
   await expect(map).toHaveAttribute('data-geometry-id', /^openf1-driving-line:/)

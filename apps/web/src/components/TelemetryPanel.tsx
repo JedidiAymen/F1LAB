@@ -6,10 +6,13 @@ import {
 } from '@/lib/telemetry-comparison'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { distanceSegments } from '@/lib/telemetry-segments'
 
 const PLOT = { left: 74, right: 980, top: 40, bottom: 166, deltaTop: 218, deltaBottom: 294 }
 const formatSeconds = (value: number) => `${value >= 0 ? '+' : ''}${value.toFixed(3)} s`
 const formatValue = (value: number | null) => value === null ? 'Unavailable' : Number.isInteger(value) ? String(value) : value.toFixed(1)
+const crossingText = (values: number[], missing: number, total: number) => missing === total ? 'Unavailable'
+  : `${values.length ? values.join(', ') : 'None observed'}${missing ? ' · incomplete readings' : ''}`
 
 export function TelemetryPanel({ seconds, clockOriginUtc, comparison, available, loading, error, controls, onSeek }: {
   seconds: number
@@ -22,9 +25,12 @@ export function TelemetryPanel({ seconds, clockOriginUtc, comparison, available,
   onSeek: (seconds: number) => void
 }) {
   const [channelId, setChannelId] = useState<TelemetryChannelId>('speed')
+  const [segmentIndex, setSegmentIndex] = useState(0)
   const channel = TELEMETRY_CHANNELS.find((entry) => entry.id === channelId)!
   const cursor = comparison ? comparisonCursorAtSessionTime(comparison, clockOriginUtc, seconds) : null
   const lapStart = comparison ? referenceLapStartSessionSeconds(comparison, clockOriginUtc) : null
+  const segments = useMemo(() => distanceSegments(comparison?.samples ?? []), [comparison])
+  const selectedSegment = segments[Math.min(segmentIndex, segments.length - 1)]
   // Build full traces only when the artifact or channel changes, never on clock ticks.
   const plot = useMemo(() => {
     const samples = comparison?.samples ?? []
@@ -85,6 +91,9 @@ export function TelemetryPanel({ seconds, clockOriginUtc, comparison, available,
               <svg className="telemetry-chart" viewBox="0 0 1020 354" role="img"
                 aria-label={`${channel.label} and B minus A time across estimated distance. ${comparison.lap_a.lap_duration_seconds.toFixed(3)} second reference lap.`}>
                 <rect x="0" y="0" width="1020" height="354" fill="#151c21" />
+                {selectedSegment && <rect x={plot.x(selectedSegment.start.distance_m)} y={PLOT.top}
+                  width={plot.x(selectedSegment.end.distance_m) - plot.x(selectedSegment.start.distance_m)}
+                  height={PLOT.deltaBottom - PLOT.top} fill="#4dc9b0" opacity="0.1" />}
                 {[0, 0.25, 0.5, 0.75, 1].map((fraction) => {
                   const value = plot.max * fraction
                   const y = plot.y(value)
@@ -130,6 +139,26 @@ export function TelemetryPanel({ seconds, clockOriginUtc, comparison, available,
             </div>}
             {!cursor && lapStart !== null && <Button variant="outline" size="sm" onClick={() => onSeek(lapStart)}>Jump to reference lap</Button>}
           </div>
+          {selectedSegment && <section aria-label="Estimated distance segments" className="segment-analysis">
+            <h3>Distance segment analysis</h3>
+            <p>Equal shared-grid windows, not surveyed corners. Select a window to seek the existing replay clock to lap A’s estimated start position.</p>
+            <div className="segment-buttons" role="group" aria-label="Select distance segment">{segments.map((segment, index) =>
+              <Button key={segment.index} size="sm" variant={selectedSegment.index === segment.index ? 'secondary' : 'outline'}
+                aria-pressed={selectedSegment.index === segment.index} onClick={() => {
+                  setSegmentIndex(index)
+                  if (lapStart !== null) onSeek(lapStart + segment.start.elapsed_a_seconds)
+                }}>{segment.index}</Button>)}</div>
+            <p aria-live="polite">Segment {selectedSegment.index}: {selectedSegment.start.distance_m.toFixed(0)}–{selectedSegment.end.distance_m.toFixed(0)} m · B − A change {formatSeconds(selectedSegment.deltaSeconds)}. The final shared-grid point can precede either lap finish.</p>
+            <p>Scroll the comparison table horizontally on narrow screens.</p>
+            <div className="segment-table" tabIndex={0} role="region" aria-label="Scrollable segment comparison"><table aria-label="Selected segment comparison"><thead><tr><th>Measure</th><th>Lap A</th><th>Lap B</th></tr></thead><tbody>
+              <tr><th>Entry / minimum / exit speed (km/h)</th>{(['a', 'b'] as const).map((side) => <td key={side}>{[selectedSegment[side].entrySpeed, selectedSegment[side].minimumSpeed, selectedSegment[side].exitSpeed].map((value) => value.toFixed(1)).join(' / ')}</td>)}</tr>
+              <tr><th>Raw brake 0 → &gt;0 crossings (m)</th>{(['a', 'b'] as const).map((side) => <td key={side}>{crossingText(selectedSegment[side].brakeCrossings, selectedSegment[side].missingBrake, selectedSegment[side].sampleCount)}</td>)}</tr>
+              <tr><th>Throttle &lt;50 → ≥50 source % (m)</th>{(['a', 'b'] as const).map((side) => <td key={side}>{crossingText(selectedSegment[side].throttleCrossings, selectedSegment[side].missingThrottle, selectedSegment[side].sampleCount)}</td>)}</tr>
+              <tr><th>Gear changes (m)</th>{(['a', 'b'] as const).map((side) => <td key={side}>{crossingText(selectedSegment[side].gearShifts, selectedSegment[side].missingGear, selectedSegment[side].sampleCount)}</td>)}</tr>
+              <tr><th>Missing brake / throttle / gear grid values</th>{(['a', 'b'] as const).map((side) => <td key={side}>{selectedSegment[side].missingBrake} / {selectedSegment[side].missingThrottle} / {selectedSegment[side].missingGear}</td>)}</tr>
+            </tbody></table></div>
+            <p>Crossings use neighboring known grid values only; thresholds are analysis conventions, not verified physical braking points. Missing readings and estimated alignment limit interpretation.</p>
+          </section>}
           {cursor && <div className="telemetry-channel-readouts">
             <table aria-label="Canonical telemetry cursor readings">
               <thead><tr><th scope="col">CHANNEL</th><th scope="col">#{comparison.lap_a.driver_number}</th><th scope="col">#{comparison.lap_b.driver_number}</th><th scope="col">SOURCE UNITS</th></tr></thead>
