@@ -16,7 +16,7 @@ from typing import cast
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
-from starlette.responses import Response
+from starlette.responses import FileResponse, Response
 
 from f1_racelab.agents.forecast_debug import service as agent_service
 from f1_racelab.live.ingest import _registry as live_registry
@@ -34,6 +34,7 @@ from f1_racelab.models.qualifying_phase_lab import (
 )
 from f1_racelab.models.walkforward_lab import load_walkforward_lab, walkforward_event
 from f1_racelab.operations import HttpTelemetry, RequestTelemetryMiddleware
+from f1_racelab.racevision import cone_service
 from f1_racelab.session.catalog import DEFAULT_SESSION, SESSIONS
 from f1_racelab.session.contracts import WeatherPayload
 from f1_racelab.session.location_history import build_location_context
@@ -87,6 +88,8 @@ def create_app(
     qualifying_walkforward_path: Path | None = None,
     reliability_report_path: Path | None = None,
     agent_evaluation_path: Path | None = None,
+    racevision_dataset_path: Path | None = None,
+    racevision_run_path: Path | None = None,
 ) -> FastAPI:
     """Create an API bound to a local replay pack, allowing isolated fixtures."""
     paths = {slug: spec.pack_path for slug, spec in SESSIONS.items()}
@@ -100,6 +103,8 @@ def create_app(
         qualifying_phase_prediction_path or DEFAULT_PHASE_PREDICTION_ARTIFACTS
     )
     walkforward_path = Path(qualifying_walkforward_path or DEFAULT_WALKFORWARD_ARTIFACTS)
+    cone_dataset = racevision_dataset_path or PROJECT_ROOT / 'data/processed/racevision/fsoco_cone_20261101'
+    cone_run = racevision_run_path or PROJECT_ROOT / 'data/processed/racevision/fsoco_cone_probe_20261101'
     if pack_path or os.environ.get("F1LAB_REPLAY_PACK"):
         paths[DEFAULT_SESSION.slug] = pack_path or Path(os.environ["F1LAB_REPLAY_PACK"])
     @asynccontextmanager
@@ -128,6 +133,36 @@ def create_app(
     @app.get("/metrics", include_in_schema=False)
     def metrics() -> Response:
         return Response(telemetry.render(), media_type="text/plain; version=0.0.4")
+
+    def cone_study() -> dict:
+        try:
+            return cone_service.load_study(cone_dataset, cone_run)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(status_code=503, detail='Local cone study unavailable or failed integrity checks') from exc
+
+    @app.get('/api/v1/research/racevision/cones')
+    def cone_summary() -> dict:
+        study = cone_study()
+        return {'metrics': study['metrics'], 'frame_count': len(study['rows']),
+                'evidence': 'FSOCO Formula Student cone images; not Formula 1 footage'}
+
+    @app.get('/api/v1/research/racevision/cones/{frame_id}')
+    def cone_frame(frame_id: int) -> dict:
+        try:
+            return cone_service.frame(cone_dataset, cone_study(), frame_id)
+        except IndexError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(status_code=503, detail='Cone frame unavailable or failed integrity checks') from exc
+
+    @app.get('/api/v1/research/racevision/cones/{frame_id}/image')
+    def cone_image(frame_id: int) -> FileResponse:
+        try:
+            return FileResponse(cone_service.frame_image(cone_dataset, cone_study(), frame_id))
+        except IndexError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(status_code=503, detail='Cone image unavailable or failed integrity checks') from exc
 
     @app.get("/api/v1/pace/health")
     def pace_health() -> dict:

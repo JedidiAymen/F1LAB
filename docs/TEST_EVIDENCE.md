@@ -527,3 +527,10 @@ Real replay/model/WS smoke passes unchanged. Screenshot
 `docs/images/driver-dna-normalization.png` is rendered from the working UI and
 visually reviewed. Basic API/web and optional model-serving replica remain
 healthy; session-created disposable build caches were reclaimed afterward.
+
+
+### FSOCO cone detector probe — 2026-11-01
+
+Frozen model source `3c9a948f110879b7914daad61cc0a79eb4ed39a0`; local dataset manifest `646c9a4961bfeeaed19b35fdfdaad95db988b94a501fc6347284d25cddeefe42`. Trained a real SSDLite cone model on 100 sampled Formula Student frames, validated on 20 and tested on 20 prefix-held-out frames. Test mAP@50 was 0.021453 (fine-tuned) versus 0.021294 (class-collapsed COCO reference); both recalled 0/255 cones at confidence/IoU 0.5. This is a negative exploratory result, not a demonstrated improvement, Formula 1 car detector, video or tracking system. Prefix groups do not establish independent circuits. The local read-only gallery displays saved predictions; source images and weights remain local pending redistribution-rights verification. Full protocol, source/license caveats, artifacts, failure analysis and reproduction: [FSOCO probe report](research/RACEVISION_CONE_PROBE.md).
+
+Cone probe verification: full Python suite with local replay packs available yielded 299 passed, 1 skipped in 32.12 s (the optional detector-dependent test module was skipped in the basic environment). In the isolated detector environment, 4 synthetic matching/source tests passed. API synthetic fixtures passed 2 tests including checksum tampering and traversal rejection; Ruff and mypy (101 modules) passed. Frontend lint, 16 unit tests and production build passed. One Chromium real-artifact interaction covered threshold/model/frame selection and desktop/mobile layouts. Image-containing screenshots were inspected locally and not distributed. Independent COCO recomputation matched both saved mAP metrics to absolute tolerance 1e-12. No tracking/video evaluation was performed.
