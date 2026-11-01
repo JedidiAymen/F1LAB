@@ -1407,3 +1407,8 @@ remains the original frozen revision. Full contracts, units, reproduction,
 independent PR review and limitations: [correction](research/EVIDENCE_PREFLIGHT_CORRECTION.md).
 Next: immutable source/coverage gates and historical-impact audit, then the
 independent telemetry/Corner milestones. Published SHA/CI recorded after push.
+
+
+### Agent observational evidence gate — 2026-11-01
+
+Registered and replayed an observational agent gate. Initial, unknown-value hardening and materiality-wording replays retained separately. Blanket withholding blocked 10 false-clean proposals and 2 true-clean proposals; no claim of causal improvement.

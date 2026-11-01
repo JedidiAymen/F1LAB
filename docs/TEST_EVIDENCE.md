@@ -549,3 +549,7 @@ Python/web/clean Compose. Known placeholder identity strings are also unknown.
 The corrected tool output is not covered by the historical6/16 evaluation.
 
 PR #1 integration review: merged the current `feat/foundation` revision `5cdac66677e6abb513f84e3ede5f74dd74d00bb6` into this feature branch, preserving both independently appended documentation entries. Ruff and mypy (100 modules) passed; `PYTHONPATH=/tmp/f1lab-pr1-review/src /home/aymmzn/Documents/projects/F1LAB/.venv/bin/pytest -q -W ignore` produced 306 passed and 19 skipped in 26.11 s. This does not constitute a new LLM evaluation.
+
+### Agent observational gate — 2026-11-01
+
+`PYTHONPATH=src .venv/bin/pytest -q -W ignore` passed **331 tests**. Full Ruff and mypy passed. Frontend lint, 16 unit tests, production build and a Chromium replay interaction passed; desktop/mobile screenshots and 390px document overflow were reviewed. Browser testing used local replay-pack symlinks and a worktree-specific PYTHONPATH; unrelated reliability artifacts were absent and returned 503. `docker compose config --quiet` passed. API image packaging and the no-data smoke assertion are configured for CI; no local container rebuild was attempted with approximately 2.1 GB free. Four separately retained gate reports and their actual evidence limitations are documented in [the protocol](research/AGENT_EVIDENCE_GATE_PROTOCOL.md).

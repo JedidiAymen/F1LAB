@@ -1,3 +1,4 @@
+import { AgentEvidenceGate } from '@/components/AgentEvidenceGate'
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
@@ -117,6 +118,7 @@ export function ResearchObservatory({ onBack }: { onBack: () => void }) {
           <a href="http://127.0.0.1:5000" target="_blank" rel="noreferrer">Open local MLflow <ExternalLink size={12} /></a><p>Optional service on this computer. Registration-source SHA for an imported artifact is not its original training SHA.</p>
         </section>
       </>}
+      <AgentEvidenceGate />
       <AgentInvestigation />
     </main>
   )

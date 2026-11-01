@@ -1,0 +1,263 @@
+{
+  "scope": "actual Qwen3 outputs on previously inspected synthetic scenarios; no new LLM run",
+  "gate_revision": "174e74bdd8ff775e44d65a34f76e38e521dea5ea",
+  "results_sha256": "455e24c16c887b0408278d2f640b4de1b5bb6d857db94b7ed018c7c71fe9c797",
+  "protocol_sha256": "bbc53caed4aa8077f36619e9c155480ad6afb2734357e9aa651fb18b9ee2ed46",
+  "raw_results_sha256": "69bdcb70fba431a9e258b62f7bb71cfc9850d903dc283a7964f1c3e7e0147c95",
+  "summary": {
+    "cases": 16,
+    "original_correct": 6,
+    "clean_proposals": 12,
+    "false_clean_proposals": 10,
+    "true_clean_proposals": 2,
+    "false_clean_withheld": 10,
+    "true_clean_withheld": 2,
+    "clean_statuses": {
+      "insufficient": 4,
+      "signal_present": 8
+    },
+    "all_decisions": {
+      "abstain": 12,
+      "review_required": 4
+    }
+  },
+  "cases": [
+    {
+      "scenario_id": "regime_shift-s1",
+      "expected": "regime_shift",
+      "proposed": "no_material_discrepancy",
+      "original_correct": false,
+      "decision": "abstain",
+      "status": "insufficient",
+      "signals": []
+    },
+    {
+      "scenario_id": "regime_shift-s4",
+      "expected": "regime_shift",
+      "proposed": "no_material_discrepancy",
+      "original_correct": false,
+      "decision": "abstain",
+      "status": "insufficient",
+      "signals": []
+    },
+    {
+      "scenario_id": "stale_model_version-s1",
+      "expected": "stale_model_version",
+      "proposed": "stale_model_version",
+      "original_correct": true,
+      "decision": "review_required",
+      "status": "observations_only",
+      "signals": [
+        {
+          "code": "known_version_disagreement",
+          "description": "Known model versions differ on matched keys.",
+          "citation": "t1"
+        }
+      ]
+    },
+    {
+      "scenario_id": "stale_model_version-s4",
+      "expected": "stale_model_version",
+      "proposed": "stale_model_version",
+      "original_correct": true,
+      "decision": "review_required",
+      "status": "observations_only",
+      "signals": [
+        {
+          "code": "known_version_disagreement",
+          "description": "Known model versions differ on matched keys.",
+          "citation": "t1"
+        }
+      ]
+    },
+    {
+      "scenario_id": "feature_skew-s1",
+      "expected": "feature_skew",
+      "proposed": "no_material_discrepancy",
+      "original_correct": false,
+      "decision": "abstain",
+      "status": "signal_present",
+      "signals": [
+        {
+          "code": "known_feature_mismatch",
+          "description": "Known feature values differ on matched keys.",
+          "citation": "t1"
+        }
+      ]
+    },
+    {
+      "scenario_id": "feature_skew-s4",
+      "expected": "feature_skew",
+      "proposed": "no_material_discrepancy",
+      "original_correct": false,
+      "decision": "abstain",
+      "status": "signal_present",
+      "signals": [
+        {
+          "code": "known_feature_mismatch",
+          "description": "Known feature values differ on matched keys.",
+          "citation": "t1"
+        }
+      ]
+    },
+    {
+      "scenario_id": "missing_live_data-s1",
+      "expected": "missing_live_data",
+      "proposed": "no_material_discrepancy",
+      "original_correct": false,
+      "decision": "abstain",
+      "status": "signal_present",
+      "signals": [
+        {
+          "code": "unmatched_forecast_keys",
+          "description": "Forecast keys differ between pipelines.",
+          "citation": "t1"
+        }
+      ]
+    },
+    {
+      "scenario_id": "missing_live_data-s4",
+      "expected": "missing_live_data",
+      "proposed": "no_material_discrepancy",
+      "original_correct": false,
+      "decision": "abstain",
+      "status": "signal_present",
+      "signals": [
+        {
+          "code": "unmatched_forecast_keys",
+          "description": "Forecast keys differ between pipelines.",
+          "citation": "t1"
+        }
+      ]
+    },
+    {
+      "scenario_id": "unit_mismatch-s1",
+      "expected": "unit_mismatch",
+      "proposed": "no_material_discrepancy",
+      "original_correct": false,
+      "decision": "abstain",
+      "status": "signal_present",
+      "signals": [
+        {
+          "code": "large_prediction_scale_ratio",
+          "description": "Maximum live magnitude is at least ten times batch; cause is unknown.",
+          "citation": "t1"
+        }
+      ]
+    },
+    {
+      "scenario_id": "unit_mismatch-s4",
+      "expected": "unit_mismatch",
+      "proposed": "no_material_discrepancy",
+      "original_correct": false,
+      "decision": "abstain",
+      "status": "signal_present",
+      "signals": [
+        {
+          "code": "large_prediction_scale_ratio",
+          "description": "Maximum live magnitude is at least ten times batch; cause is unknown.",
+          "citation": "t1"
+        }
+      ]
+    },
+    {
+      "scenario_id": "config_drift-s1",
+      "expected": "config_drift",
+      "proposed": "config_drift",
+      "original_correct": true,
+      "decision": "review_required",
+      "status": "observations_only",
+      "signals": [
+        {
+          "code": "unmatched_forecast_keys",
+          "description": "Forecast keys differ between pipelines.",
+          "citation": "t1"
+        },
+        {
+          "code": "known_config_difference",
+          "description": "Known configuration values differ.",
+          "citation": "t1"
+        }
+      ]
+    },
+    {
+      "scenario_id": "config_drift-s4",
+      "expected": "config_drift",
+      "proposed": "config_drift",
+      "original_correct": true,
+      "decision": "review_required",
+      "status": "observations_only",
+      "signals": [
+        {
+          "code": "unmatched_forecast_keys",
+          "description": "Forecast keys differ between pipelines.",
+          "citation": "t1"
+        },
+        {
+          "code": "known_config_difference",
+          "description": "Known configuration values differ.",
+          "citation": "t1"
+        }
+      ]
+    },
+    {
+      "scenario_id": "lap_misalignment-s1",
+      "expected": "lap_misalignment",
+      "proposed": "no_material_discrepancy",
+      "original_correct": false,
+      "decision": "abstain",
+      "status": "signal_present",
+      "signals": [
+        {
+          "code": "unmatched_forecast_keys",
+          "description": "Forecast keys differ between pipelines.",
+          "citation": "t1"
+        },
+        {
+          "code": "possible_alignment_shift",
+          "description": "Previous-lap alignment is a heuristic clue.",
+          "citation": "t1"
+        }
+      ]
+    },
+    {
+      "scenario_id": "lap_misalignment-s4",
+      "expected": "lap_misalignment",
+      "proposed": "no_material_discrepancy",
+      "original_correct": false,
+      "decision": "abstain",
+      "status": "signal_present",
+      "signals": [
+        {
+          "code": "unmatched_forecast_keys",
+          "description": "Forecast keys differ between pipelines.",
+          "citation": "t1"
+        },
+        {
+          "code": "possible_alignment_shift",
+          "description": "Previous-lap alignment is a heuristic clue.",
+          "citation": "t1"
+        }
+      ]
+    },
+    {
+      "scenario_id": "no_material_discrepancy-s1",
+      "expected": "no_material_discrepancy",
+      "proposed": "no_material_discrepancy",
+      "original_correct": true,
+      "decision": "abstain",
+      "status": "insufficient",
+      "signals": []
+    },
+    {
+      "scenario_id": "no_material_discrepancy-s4",
+      "expected": "no_material_discrepancy",
+      "proposed": "no_material_discrepancy",
+      "original_correct": true,
+      "decision": "abstain",
+      "status": "insufficient",
+      "signals": []
+    }
+  ],
+  "limitations": "The gate withholds every clean proposal by design and never approves a cause. Withholding is not a root-cause accuracy gain; these cases were already inspected."
+}
