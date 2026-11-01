@@ -493,3 +493,18 @@ LightGBM 83.59% / 83.92% [76.52,90.76]. Three circuits are insufficient for a
 significant-gain claim; raw descriptors retain circuit shift. Original artifacts
 unchanged; no inductive neural retrain or expanded data. Report/hash, dependencies,
 per-circuit/pair scores and exact command: `research/DRIVER_DNA.md`.
+
+
+### Overtake cutoff audit — 2026-11-01
+
+Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Five of 29,608 saved timing-inferred pairs contain a leader cutoff later than the follower cutoff; three are in previously scored races. A strict rebuild removes five and changes earlier-race circuit-prior features for 2,364 retained pairs. Existing labels, source frames, predictions and published scores were not overwritten; the scores remain provisional and have not been recomputed. New builds check cutoff order, consecutive next records, duplicate keys and tied race-start priors, and research commands refuse to overwrite existing artifacts. The API/UI presents the checksum-verified findings and clarifies retrospective outcome-based selection. Exact source hashes, audit, limits and commands: [overtake cutoff report](research/OVERTAKE_CUTOFF_AUDIT.md).
+
+
+### Overtake retrospective audit — 2026-11-01
+
+2026-11-01 corrected Overtake retrospective: b9b2db0, 29,603 strict pairs, 22 folds, 65 scored races; raw LightGBM Brier 0.032841 vs gap logistic 0.040755. Outcome-selected previously inspected sample; not a new generalization claim. See research/OVERTAKE_CUTOFF_AUDIT.md.
+
+
+### Pace-source availability finding — 2026-11-01
+
+Further review found `laps_remaining` derives from the completed race's maximum lap, and Overtake's tyre fields refer to lap L+1. Pace's `laps_in_stint` and `stint_best_delta` also use next-lap stint information; clean/regime construction uses subsequent pit-out status and a full-race median. Existing overtake and pace scores remain provisional and do not prove strict as-of availability. Affected score changes have not been quantified; raw reconstruction and new evaluation are needed. See research/OVERTAKE_CUTOFF_AUDIT.md.

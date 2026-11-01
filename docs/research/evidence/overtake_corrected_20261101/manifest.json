@@ -1,0 +1,45 @@
+{
+  "dependencies": {
+    "joblib": "1.6.0",
+    "lightgbm": "4.7.0",
+    "numpy": "2.5.3",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.9.1"
+  },
+  "models": {
+    "fold-00.joblib": "b935efcdec0578a79f84f32aef5193ffbc01763ccab3fd97e8d27aa34d05b5aa",
+    "fold-01.joblib": "1c251f714ecd5ce0769c8dfad0b6b4cf0a14e72404d3dcb617f89448d57a6e24",
+    "fold-02.joblib": "867e6a2c04f978cfcf6460361561531f967f6e80a9f4c06cf4277d34633365c4",
+    "fold-03.joblib": "b62a2e301a305d20a2b2a885c9f2695f0e578bfa2aa2590333d3f53eab5a052e",
+    "fold-04.joblib": "9359d14f6662653daa3d6af53f87a55b6f45ec4d57d1fd014dff7038c31a52e9",
+    "fold-05.joblib": "5ab710d6c5797baf9cc2801ff28766a72d7e33140bb1c8637a75251aef5d29ce",
+    "fold-06.joblib": "2b684ab419d5158607b8ef762463f8e6546d15b2ba9b7718b5944666b8a2401b",
+    "fold-07.joblib": "d55c282c963924db1ac73583eaf5b13c79ba51b1cb1ccc38919834337be5844f",
+    "fold-08.joblib": "d4b4d901bb612e97743ffbb88f589554b3d928161fc8a8847539f832604d5caf",
+    "fold-09.joblib": "d303caf5e4f5d2a9268c560bbcafba44f30903116c8d0a7668cbf3f7cef46edd",
+    "fold-10.joblib": "0fa615db743ff0d8a175b835cd256ac762bb70870e5778bbf3d84ad82e0279d8",
+    "fold-11.joblib": "4fa3e114f86f7f946a76c0a5e111fcc51ded3092a57566ef713ddf398d0d971a",
+    "fold-12.joblib": "bb8c92d263d7b89df35a5e46f8d0efcc2f5234994b6b32efc70f78aedb39506c",
+    "fold-13.joblib": "bd8f5d908edc3d83aa53ff484eec65661636c0fbccf6c2dea6581bf97060cefc",
+    "fold-14.joblib": "9dc66b81ad00845d924e2005802302683f6f6dd71955aead3d571c1a1fc08374",
+    "fold-15.joblib": "eb355770edb4c8809e37d498f3a93977c5d0d81632a741e4c4406aa1a3835b9b",
+    "fold-16.joblib": "118cbf639005819822e6f96c74dfbb85ec66205196a9e9fb345f8b772ba1a23e",
+    "fold-17.joblib": "89a1d82f35de27f05d0ec0855c286caf5da5505fb232f5c13ce73bdd7db533b3",
+    "fold-18.joblib": "e7820d67f4cbab0b5b06508f73c21121203f03c652bef64c52fe433fc4bcf102",
+    "fold-19.joblib": "a6f01e94b6db70aec8063a46527b47e4e515a431f3121d07cf85a097e6a1f616",
+    "fold-20.joblib": "f2e8df89b4b0cb3f4051a9361c5e4454450419944416389c1257ca1212c51115",
+    "fold-21.joblib": "6914cd112bf535c3e567ebda1459032632372d5099ed36c4e7e1174866a22162"
+  },
+  "pair_dataset_sha256": "d159df2087178bce480ba42b51b254b35b3e5e7f795ab1d8b0fefc6e678849fa",
+  "prediction_sha256": "0498947116dbde48c7844c6aed615f42184b5aee12389f4972479685733106d4",
+  "python": "3.12.13",
+  "schema_version": 1,
+  "source_revision": "b9b2db0b9120d164ca5fab281d09b595059fda5a",
+  "status": "retrospective, provisional; not live inference",
+  "summary_sha256": "2e36dccc3d7e6ca4bcbd82f3431bf4aabb2eab91f11103ceeebbe26e3485343c",
+  "training_code_sha256": {
+    "src/f1_racelab/ml/overtake/benchmark.py": "2b65c4d268b6277b4051b3c278704dacc5114eaf7a9cf152672fe65d0f01e40a",
+    "src/f1_racelab/ml/overtake/dataset.py": "cc5142ac849bfc484d5a976a42471a62ea359b1bd3dad529c21fb31ae8d8e249"
+  },
+  "warning": "Joblib artifacts are trusted-local research files; verify hashes and never load untrusted pickles."
+}

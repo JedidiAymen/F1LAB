@@ -3,6 +3,11 @@
 .ot h3 { margin: 18px 0 8px; font-size: 14px; }
 .ot-lede, .ot-note { color: #96a4ad; font-size: 12px; line-height: 1.5; max-width: 760px; }
 .ot-note { padding-left: 10px; border-left: 2px solid #e7c47a; }
+.ot-audit { margin: 20px 0; padding: 14px; border: 1px solid #695c40; border-radius: 7px; background: #201d17; }
+.ot-audit p { color: #d4cbb9; font-size: 12px; line-height: 1.6; }
+.ot-audit label { display: grid; gap: 6px; font-size: 12px; }
+.ot-audit select { max-width: 100%; min-width: 0; padding: 8px; color: #eee6d8; background: #241f19; border: 1px solid #77684c; border-radius: 5px; }
+.ot-table-scroll { overflow-x: auto; }
 .ot-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 12px; font-variant-numeric: tabular-nums; }
 .ot-table th { text-align: left; padding: 7px 8px; color: #7e8d96; font-size: 9px; letter-spacing: .08em; border-bottom: 1px solid #28343c; }
 .ot-table td { padding: 6px 8px; border-bottom: 1px solid #1b262d; }
@@ -16,3 +21,11 @@
 .ot-rel circle { fill: #e10600; fill-opacity: .75; }
 .ot-rel text { fill: #7f8d96; font-size: 8px; }
 @media (max-width: 800px) { .ot-grid { grid-template-columns: 1fr; } .ot-paired li { grid-template-columns: 1fr; } }
+.ot-history { margin: 20px 0; padding: 14px; border: 1px solid #35474d; border-radius: 7px; background: #111b20; }
+.ot-history p { color: #b8c8cb; font-size: 12px; line-height: 1.6; }
+.ot-history-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.ot-history label { display: grid; gap: 6px; margin: 10px 0; font-size: 12px; min-width: 0; }
+.ot-history select { width: 100%; min-width: 0; padding: 8px; color: #dce9e9; background: #15242a; border: 1px solid #405158; border-radius: 5px; }
+.ot-history-result { border-left: 2px solid #4dc9b0; padding-left: 12px; }
+.ot-history-result strong { color: #74e1c2; font-size: 24px; }
+@media (max-width: 600px) { .ot-history-controls { grid-template-columns: minmax(0, 1fr); } }

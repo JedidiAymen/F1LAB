@@ -423,3 +423,18 @@ labels original scores transductive; UI shows protocols side by side. `tests/
 test_driver_dna_normalization.py` covers poisoning/contracts/optional data/tamper;
 research browser scenario checks real 19.8% logistic and no-inductive-neural warning.
 All metrics/units/caveats/reproduction are in `research/DRIVER_DNA.md`.
+
+
+### Overtake cutoff audit — 2026-11-01
+
+Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Five of 29,608 saved timing-inferred pairs contain a leader cutoff later than the follower cutoff; three are in previously scored races. A strict rebuild removes five and changes earlier-race circuit-prior features for 2,364 retained pairs. Existing labels, source frames, predictions and published scores were not overwritten; the scores remain provisional and have not been recomputed. New builds check cutoff order, consecutive next records, duplicate keys and tied race-start priors, and research commands refuse to overwrite existing artifacts. The API/UI presents the checksum-verified findings and clarifies retrospective outcome-based selection. Exact source hashes, audit, limits and commands: [overtake cutoff report](research/OVERTAKE_CUTOFF_AUDIT.md).
+
+
+### Overtake retrospective audit — 2026-11-01
+
+Overtake: dataset.py enforces time ordering; audit_overtake_cutoffs.py records impact; historical.py validates and joins local saved predictions and cutoffs; OvertakeHistory.tsx displays them. See research/OVERTAKE_CUTOFF_AUDIT.md.
+
+
+### Pace-source availability finding — 2026-11-01
+
+Further review found `laps_remaining` derives from the completed race's maximum lap, and Overtake's tyre fields refer to lap L+1. Pace's `laps_in_stint` and `stint_best_delta` also use next-lap stint information; clean/regime construction uses subsequent pit-out status and a full-race median. Existing overtake and pace scores remain provisional and do not prove strict as-of availability. Affected score changes have not been quantified; raw reconstruction and new evaluation are needed. See research/OVERTAKE_CUTOFF_AUDIT.md.

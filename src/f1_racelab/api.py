@@ -24,7 +24,9 @@ from f1_racelab.ml.common import reliability
 from f1_racelab.ml.common.contracts import read_card
 from f1_racelab.ml.common.registry import ArtifactUnavailable
 from f1_racelab.ml.driver_dna import service as dna_service
+from f1_racelab.ml.overtake import audit_service as overtake_audit
 from f1_racelab.ml.overtake import benchmark as overtake_benchmark
+from f1_racelab.ml.overtake import historical as overtake_historical
 from f1_racelab.ml.pace import inference as pace_inference
 from f1_racelab.ml.pace import service as pace_service
 from f1_racelab.models.prediction_lab import load_prediction_lab, prediction_event
@@ -87,6 +89,10 @@ def create_app(
     qualifying_walkforward_path: Path | None = None,
     reliability_report_path: Path | None = None,
     agent_evaluation_path: Path | None = None,
+    overtake_pace_path: Path | None = None,
+    overtake_pairs_path: Path | None = None,
+    overtake_run_path: Path | None = None,
+    overtake_expected_pace_sha: str | None = None,
 ) -> FastAPI:
     """Create an API bound to a local replay pack, allowing isolated fixtures."""
     paths = {slug: spec.pack_path for slug, spec in SESSIONS.items()}
@@ -489,7 +495,42 @@ def create_app(
             raise HTTPException(status_code=503, detail="Overtake results missing. Run: "
                                 "uv run python -m f1_racelab.ml.overtake.dataset && "
                                 "uv run python -m f1_racelab.ml.overtake.benchmark")
-        return {"evidence": "ml_evaluation_real", **json.loads(path.read_text())}
+        return {"evidence": "ml_evaluation_real", "evaluation_status": "provisional_retrospective",
+                "label_definition": "timing-inferred order swap; not verified on-track pass", **json.loads(path.read_text())}
+
+    @app.get("/api/v1/overtake/cutoff-audit")
+    def overtake_cutoff_audit() -> dict:
+        try:
+            return overtake_audit.load()
+        except (OSError, ValueError, KeyError) as exc:
+            raise HTTPException(status_code=503, detail="Overtake cutoff audit unavailable or invalid.") from exc
+
+    def overtake_history():
+        try:
+            expected = overtake_expected_pace_sha or overtake_audit.load()['source_sha256']['pace']
+            return overtake_historical.load(overtake_pace_path or overtake_historical.PACE,
+                                            overtake_pairs_path or overtake_historical.DATASET,
+                                            overtake_run_path or overtake_historical.RUN, expected)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(status_code=503, detail='Historical overtake artifacts unavailable or invalid.') from exc
+
+    @app.get('/api/v1/overtake/historical/catalog')
+    def overtake_history_catalog() -> dict:
+        frame = overtake_history()
+        try:
+            summary = json.loads(((overtake_run_path or overtake_historical.RUN) / 'summary.json').read_text())
+        except (OSError, ValueError) as exc:
+            raise HTTPException(status_code=503, detail='Historical overtake summary unavailable or invalid.') from exc
+        return {'events': overtake_historical.catalog(frame), 'corrected_summary': summary,
+                'status': 'retrospective outcome-selected saved forecasts; not live inference'}
+
+    @app.get('/api/v1/overtake/historical/cases')
+    def overtake_history_cases(race_id: str = Query(min_length=1, max_length=32, pattern=r'^[A-Za-z0-9_-]+$')) -> dict:
+        try:
+            return {'race_id': race_id, 'cases': overtake_historical.cases(overtake_history(), race_id),
+                    'status': 'retrospective outcome-selected saved forecasts; not live inference'}
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @app.post("/api/v1/pace/predict")
     def pace_predict(features: pace_inference.PaceFeatures) -> dict:

@@ -527,3 +527,24 @@ Real replay/model/WS smoke passes unchanged. Screenshot
 `docs/images/driver-dna-normalization.png` is rendered from the working UI and
 visually reviewed. Basic API/web and optional model-serving replica remain
 healthy; session-created disposable build caches were reclaimed afterward.
+
+
+### Overtake cutoff audit — 2026-11-01
+
+Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Five of 29,608 saved timing-inferred pairs contain a leader cutoff later than the follower cutoff; three are in previously scored races. A strict rebuild removes five and changes earlier-race circuit-prior features for 2,364 retained pairs. Existing labels, source frames, predictions and published scores were not overwritten; the scores remain provisional and have not been recomputed. New builds check cutoff order, consecutive next records, duplicate keys and tied race-start priors, and research commands refuse to overwrite existing artifacts. The API/UI presents the checksum-verified findings and clarifies retrospective outcome-based selection. Exact source hashes, audit, limits and commands: [overtake cutoff report](research/OVERTAKE_CUTOFF_AUDIT.md).
+
+Overtake cutoff audit verification: the initial full local Python suite (before adding the final tie and serialization regression checks) yielded 284 passed and 19 skipped in 28.35 s. Ruff and mypy passed, and the real-data audit was repeated byte-for-byte with SHA-256 `fc3576989f0253e19292bf2c29fc26d6239231cffda5a0a82ba87019cb3b9a59`. Frontend lint, 16 unit tests and production build passed. The first Chromium run exposed an ambiguous locator after adding a scroll region; the corrected interaction passed, including affected-pair selection and mobile overflow, with desktop/mobile screenshots inspected. See the subsequent checkpoint for the final updated test counts and any retraining evidence.
+
+
+### Overtake retrospective audit — 2026-11-01
+
+Corrected overtake: source b9b2db0; 22 trusted local fold artifacts reloaded and 113,170 predictions matched exactly. Dataset, model and prediction hashes and reproduction commands: research/OVERTAKE_CUTOFF_AUDIT.md.
+
+Verification on the overtake review worktree with local data: `PYTHONPATH=src .venv/bin/pytest -q` **305 passed**; `.venv/bin/ruff check src/f1_racelab/ml/overtake src/f1_racelab/api.py tests/test_overtake.py` and `.venv/bin/mypy src/f1_racelab/ml/overtake src/f1_racelab/api.py` passed. `npm run lint`, `npm run test:unit` (**16 passed**) and `npm run build` passed; Vite reported pre-existing large chunks. A real-data Chromium test with the API on the worktree PYTHONPATH passed race, pair and model selections and a 390px overflow check. Desktop and mobile screenshots were visually inspected and linked in the audit. This browser test requires the local replay packs and corrected research artifacts; clean-checkout missing-data behavior is covered by the API test. An initial local browser invocation imported the owner's editable foundation checkout and failed; setting worktree PYTHONPATH fixed the test setup.
+
+
+### Pace-source availability finding — 2026-11-01
+
+Further review found `laps_remaining` derives from the completed race's maximum lap, and Overtake's tyre fields refer to lap L+1. Pace's `laps_in_stint` and `stint_best_delta` also use next-lap stint information; clean/regime construction uses subsequent pit-out status and a full-race median. Existing overtake and pace scores remain provisional and do not prove strict as-of availability. Affected score changes have not been quantified; raw reconstruction and new evaluation are needed. See research/OVERTAKE_CUTOFF_AUDIT.md.
+
+Packaging follow-up: the bundled aggregate cutoff audit is whitelisted in `.dockerignore`, copied into the API image, and checked by the Compose smoke script without local race data. Ruff and `docker compose config --quiet` passed locally. Clean container build/execution is delegated to CI because the local filesystem has approximately 2.1 GB free; no local image run is claimed.
