@@ -179,3 +179,8 @@ optional study. Logistic Task A 38.43% → 19.79%; LightGBM 30.21% → 12.33%;
 Task B remains ~89%/~84%. This **does not** complete Driver DNA: still three
 races, no inductive neural model or future-segment evaluation. Next step is
 expanded held-out sessions and causal calibration, not relabeling old neural scores.
+
+
+### Race Pace multi-horizon study — 2026-11-01
+
+Multi-horizon Pace exploratory study implemented and evaluated on prior data; complete decision population, fair pit-state baseline, verified publication latency and a fresh holdout remain outstanding.

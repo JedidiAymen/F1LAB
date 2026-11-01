@@ -1,0 +1,20 @@
+import { expect, test } from '@playwright/test'
+
+test('multi-horizon study changes model comparison and discloses selection', async ({ page, request }, testInfo) => {
+  const response = await request.get('/api/v1/research/pace-multihorizon')
+  expect(response.ok()).toBeTruthy()
+  const studyData = await response.json()
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Research & reliability' }).click()
+  const study = page.getByRole('region', { name: 'Multi-horizon pace study' })
+  await expect(study.getByRole('img', { name: /Mean absolute error by forecast horizon/ })).toBeVisible()
+  await expect(study).toContainText('conditional on survival')
+  await study.getByLabel('Pace forecast horizon').selectOption('3')
+  await expect(study.getByRole('table', { name: 'Horizon model errors' })).toContainText(studyData.summary.horizons['3'].models.lightgbm.mae.toFixed(3))
+  await study.getByLabel('Pace forecast horizon').selectOption('5')
+  await expect(study.getByRole('table', { name: 'Horizon model errors' })).toContainText(studyData.summary.horizons['5'].models.last_observed.mae.toFixed(3))
+  await study.screenshot({ path: testInfo.outputPath('pace-horizons-desktop.png') })
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await study.screenshot({ path: testInfo.outputPath('pace-horizons-mobile.png') })
+})

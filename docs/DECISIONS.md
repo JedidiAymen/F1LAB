@@ -371,3 +371,8 @@ reason to compare unmatched protocols or favor neural complexity. Dataset qualit
 filters/shared-label vocabulary remain retrospective; only normalization fitting
 is strictly train-only. Expand sessions and causal reference availability before
 new neural claims. Also decouple Docker dependency caching from README edits.
+
+
+### Race Pace multi-horizon study — 2026-11-01
+
+Pace horizon work excluded features derived from future race length, next-lap stint, retrospective regime and clean-lap status. An incomplete first training directory is preserved, unscored. Do not promote a model from this selected exploratory study.

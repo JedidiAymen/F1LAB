@@ -423,3 +423,8 @@ labels original scores transductive; UI shows protocols side by side. `tests/
 test_driver_dna_normalization.py` covers poisoning/contracts/optional data/tamper;
 research browser scenario checks real 19.8% logistic and no-inductive-neural warning.
 All metrics/units/caveats/reproduction are in `research/DRIVER_DNA.md`.
+
+
+### Race Pace multi-horizon study — 2026-11-01
+
+pace/multihorizon.py constructs exact-key targets and prior recorded-lap features; multihorizon_service.py serves verified summary; MultiHorizonStudy.tsx displays it. Details and local artifact hashes in research/RACE_PACE_MULTIHORIZON_PROTOCOL.md.

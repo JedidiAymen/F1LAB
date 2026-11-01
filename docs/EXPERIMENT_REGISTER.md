@@ -493,3 +493,8 @@ LightGBM 83.59% / 83.92% [76.52,90.76]. Three circuits are insufficient for a
 significant-gain claim; raw descriptors retain circuit shift. Original artifacts
 unchanged; no inductive neural retrain or expanded data. Report/hash, dependencies,
 per-circuit/pair scores and exact command: `research/DRIVER_DNA.md`.
+
+
+### Race Pace multi-horizon study — 2026-11-01
+
+EXP-PACE-MULTIHORIZON-01, source b919e55152ff318d8e58161e3feada0f9718e0c4: 66 fold bundles, 65 previously inspected scored races per horizon, recorded-lap-selected. Five-lap MAE: median anchor 2.780 s, last recorded lap 3.209 s, LightGBM 3.695 s. See research/RACE_PACE_MULTIHORIZON_PROTOCOL.md.
