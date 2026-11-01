@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import './OvertakeLab.css'
+import { OvertakeHistory } from './OvertakeHistory'
 
 type Row = { model: string; n: number; brier: number; log_loss: number; auc: number; average_precision: number; ece: number }
 type Paired = { model: string; baseline: string; mean_delta: number; ci_low: number; ci_high: number; clusters: number }
@@ -74,11 +75,12 @@ export function OvertakeLab({ onBack }: { onBack: () => void }) {
       {auditError && <p role="status" className="ot-note">Cutoff audit is unavailable or failed its integrity check.</p>}
       {audit && <section aria-label="Overtake cutoff audit" className="ot-audit">
         <h3>Decision-time audit</h3>
-        <p>Of {audit.saved_pair_rows.toLocaleString()} saved pairs, {audit.late_leader_rows} use a leader cutoff after the follower's cutoff; {audit.late_leader_rows_in_scored_races} are in scored races. A strict rebuild removes those pairs and changes the historical circuit-rate feature for {audit.shared_rows_with_changed_prior_rate.toLocaleString()} retained pairs ({audit.shared_rows_with_changed_prior_rate_in_scored_races.toLocaleString()} in scored races). Revised model scores have not been calculated.</p>
+        <p>Of {audit.saved_pair_rows.toLocaleString()} saved pairs, {audit.late_leader_rows} use a leader cutoff after the follower's cutoff; {audit.late_leader_rows_in_scored_races} are in scored races. A strict rebuild removes those pairs and changes the historical circuit-rate feature for {audit.shared_rows_with_changed_prior_rate.toLocaleString()} retained pairs ({audit.shared_rows_with_changed_prior_rate_in_scored_races.toLocaleString()} in scored races). Corrected retrospective scores are available in the historical explorer when local research artifacts are present; the earlier scores remain below.</p>
         <label>Affected pair <select aria-label="Affected overtake pair" value={selected} onChange={(event) => setSelected(Number(event.target.value))}>{audit.late_examples.map((row, index) => <option key={`${row.race_id}-${row.lap}-${row.follower}`} value={index}>{row.year} {row.event} · lap {row.lap}</option>)}</select></label>
         {audit.late_examples[selected] && <p role="status" aria-label="Selected cutoff finding">Follower #{audit.late_examples[selected].follower} / proposed leader #{audit.late_examples[selected].leader}: leader cutoff {audit.late_examples[selected].leader_minus_follower_seconds.toFixed(3)} s later; {audit.late_examples[selected].race_scored ? 'race included in saved scoring' : 'race outside saved scoring'}. This is a timing observation, not a causal explanation.</p>}
         <p>{audit.nonconsecutive_next_rows} saved pairs had nonconsecutive next records. Estimated cutoffs and publication latency remain uncertain.</p>
       </section>}
+      <OvertakeHistory />
       {error && <p className="ot-note" role="alert">Unavailable: {error}</p>}
       {data && (
         <>
@@ -117,7 +119,7 @@ export function OvertakeLab({ onBack }: { onBack: () => void }) {
             </section>
           </div>
           <div className="ot-table-scroll" role="region" aria-label="Scrollable season comparison" tabIndex={0}><table className="ot-table" aria-label="By season">
-            <thead><tr><th>SEASON</th><th>PAIRS</th><th>PASS RATE</th><th>MEAN FORECAST</th><th>BRIER</th><th>AUC</th></tr></thead>
+            <thead><tr><th>SEASON</th><th>PAIRS</th><th>SWAP RATE</th><th>MEAN FORECAST</th><th>BRIER</th><th>AUC</th></tr></thead>
             <tbody>
               {data.by_year.map((row) => (
                 <tr key={row.year}>

@@ -951,3 +951,8 @@ round trip, MAPE/bias. pandas is fastest at 83k rows. Databricks not tested. See
 ### Overtake cutoff audit — 2026-11-01
 
 Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Five of 29,608 saved timing-inferred pairs contain a leader cutoff later than the follower cutoff; three are in previously scored races. A strict rebuild removes five and changes earlier-race circuit-prior features for 2,364 retained pairs. Existing labels, source frames, predictions and published scores were not overwritten; the scores remain provisional and have not been recomputed. New builds check cutoff order, consecutive next records, duplicate keys and tied race-start priors, and research commands refuse to overwrite existing artifacts. The API/UI presents the checksum-verified findings and clarifies retrospective outcome-based selection. Exact source hashes, audit, limits and commands: [overtake cutoff report](research/OVERTAKE_CUTOFF_AUDIT.md).
+
+
+### Overtake retrospective audit — 2026-11-01
+
+Overtake review branch: audit found 5 late leader cutoffs and 2,364 changed prior-rate rows. Corrected strict dataset has 29,603 pairs; 22 saved folds scored 22,634 pairs in 65 previously inspected races, raw LightGBM Brier 0.032841 and gap logistic 0.040755. 113,170 reloaded predictions matched. Historical UI reads locally stored forecasts, not live inference. Outcome selection and provider timing limit validity. Source, hashes, commands, metrics and limitations: research/OVERTAKE_CUTOFF_AUDIT.md. No model promotion or merge.

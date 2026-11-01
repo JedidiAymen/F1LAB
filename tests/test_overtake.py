@@ -143,3 +143,36 @@ def test_research_commands_preserve_existing_artifacts(monkeypatch, tmp_path):
     with pytest.raises(FileExistsError, match='new --out'):
         benchmark.main()
     assert summary.read_text() == 'old metrics'
+
+
+def test_historical_predictions_link_to_cutoff_and_detect_tampering(tmp_path):
+    import hashlib
+    import json
+
+    from fastapi.testclient import TestClient
+
+    from f1_racelab.api import create_app
+    from f1_racelab.ml.overtake import historical
+
+    pace, pairs, run = tmp_path / 'pace.parquet', tmp_path / 'pairs.parquet', tmp_path / 'run'
+    run.mkdir()
+    pd.DataFrame([{'race_id': 'r', 'lap': 1, 'driver_number': 1, 'cutoff': pd.Timestamp('2025-01-01T12:00:00Z')},
+                  {'race_id': 'r', 'lap': 1, 'driver_number': 2, 'cutoff': pd.Timestamp('2025-01-01T12:00:01Z')}]).to_parquet(pace)
+    pd.DataFrame([{'race_id': 'r', 'event': 'Synthetic GP', 'year': 2025, 'race_start': pd.Timestamp('2025-01-01'),
+                   'lap': 1, 'driver_number': 2, 'a_driver_number': 1, 'overtake': 1,
+                   'interval': 0.5, 'intervals_age_s': 0.1}]).to_parquet(pairs)
+    pd.DataFrame([{'model': model, 'race_id': 'r', 'lap': 1, 'driver_number': 2, 'a_driver_number': 1,
+                   'y': 1, 'p': 0.25} for model in historical.MODELS]).to_parquet(run / 'predictions.parquet')
+    (run / 'summary.json').write_text('{}')
+    digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+    (run / 'manifest.json').write_text(json.dumps({'pair_dataset_sha256': digest(pairs),
+        'prediction_sha256': digest(run / 'predictions.parquet'), 'summary_sha256': digest(run / 'summary.json')}))
+    client = TestClient(create_app(overtake_pace_path=pace, overtake_pairs_path=pairs, overtake_run_path=run,
+                                   overtake_expected_pace_sha=digest(pace)))
+    assert client.get('/api/v1/overtake/historical/catalog').json()['events'][0]['pairs'] == 1
+    case = client.get('/api/v1/overtake/historical/cases', params={'race_id': 'r'}).json()['cases'][0]
+    assert case['timing_order_swapped'] and case['probabilities']['logistic_gap'] == 0.25
+    assert case['cutoff_utc'] == '2025-01-01T12:00:01+00:00'
+    assert client.get('/api/v1/overtake/historical/cases', params={'race_id': 'missing'}).status_code == 404
+    (run / 'predictions.parquet').write_bytes(b'tampered')
+    assert client.get('/api/v1/overtake/historical/catalog').status_code == 503

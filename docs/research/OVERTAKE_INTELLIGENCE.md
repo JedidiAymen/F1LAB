@@ -1,6 +1,6 @@
 # Overtake Intelligence: retrospective timing-order changes
 
-**Status: provisional.** A subsequent [cutoff and label audit](OVERTAKE_CUTOFF_AUDIT.md) found five pairs whose proposed leader's feature cutoff occurred after the follower's cutoff, three in previously scored races. Removing them changes the historical circuit-rate feature for 2,364 retained pairs. These saved metrics have not been recomputed on a corrected dataset. Later pit and neutralization outcomes select the cohort, and timing-inferred order changes are not verified on-track passes; this is not an unconditional live probability.
+**Status: provisional.** A subsequent [cutoff and label audit](OVERTAKE_CUTOFF_AUDIT.md) found five pairs whose proposed leader's feature cutoff occurred after the follower's cutoff, three in previously scored races. Removing them changes the historical circuit-rate feature for 2,364 retained pairs. A corrected retrospective backtest has since been run; see the audit for its separate metrics and limitations. Later pit and neutralization outcomes select the cohort, and timing-inferred order changes are not verified on-track passes; this is not an unconditional live probability.
 
 Status: evaluated on real data; read-only API `GET /api/v1/overtake/summary`; UI workspace "Overtakes" (model table, paired gains, reliability, per-season); not a live system.
 

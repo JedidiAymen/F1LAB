@@ -1399,3 +1399,8 @@ container/publication evidence follows in the handoff. User helpers untouched.
 ### Overtake cutoff audit — 2026-11-01
 
 Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Five of 29,608 saved timing-inferred pairs contain a leader cutoff later than the follower cutoff; three are in previously scored races. A strict rebuild removes five and changes earlier-race circuit-prior features for 2,364 retained pairs. Existing labels, source frames, predictions and published scores were not overwritten; the scores remain provisional and have not been recomputed. New builds check cutoff order, consecutive next records, duplicate keys and tied race-start priors, and research commands refuse to overwrite existing artifacts. The API/UI presents the checksum-verified findings and clarifies retrospective outcome-based selection. Exact source hashes, audit, limits and commands: [overtake cutoff report](research/OVERTAKE_CUTOFF_AUDIT.md).
+
+
+### Overtake retrospective audit — 2026-11-01
+
+Audited timing cutoffs; rebuilt and trained a corrected retrospective overtake study at b9b2db0. 22 folds reproduced 113,170 saved predictions exactly; outcome-dependent selection remains.
