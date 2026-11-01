@@ -1031,3 +1031,5 @@ PR #1 stays at `5a95ba26395cf8f7395a8396297409db17ebe02e`; foundation stays at
 `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. No PR/main merge or attribution change.
 After testing, removed disposable build cache (Docker reported 2.956 GB; shared
 runtime layers remain), restoring about 3.2 GiB free; no images/volumes/data deleted.
+
+The paired-agent interface now shows the full frozen PR #1 candidate revision from the saved protocol and warns that later PR changes were not evaluated. The 6/16 result is for `5a95ba26395cf8f7395a8396297409db17ebe02e`, not subsequent correctness revision `3476708dc44f1e1a27bcc6eb3eea75482bbb2e5c`. This is a provenance clarification, not a new LLM run.

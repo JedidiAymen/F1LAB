@@ -225,7 +225,11 @@ local all-extras verification (307 full-run passes before the final added bindin
 regression, then 5 focused service passes; 308-test local inventory). Web CI has
 16 unit passes, build/lint pass. Compose CI actually builds and checks the bundled
 32-case API without raw F1 data. Browser evidence remains local, not a CI job.
-PR #1 stays at `5a95ba26395cf8f7395a8396297409db17ebe02e`; foundation stays at
+At the time of the frozen evaluation, PR #1 was at `5a95ba26395cf8f7395a8396297409db17ebe02e`; foundation was at
 `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. No PR/main merge or attribution change.
 After testing, removed disposable build cache (Docker reported 2.956 GB; shared
 runtime layers remain), restoring about 3.2 GiB free; no images/volumes/data deleted.
+
+### Post-evaluation PR #1 changes
+
+PR #1 subsequently advanced to `3476708dc44f1e1a27bcc6eb3eea75482bbb2e5c` with corrected handling of unknown and incomplete evidence. The saved 6/16 candidate result remains the result for `5a95ba26395cf8f7395a8396297409db17ebe02e`; the corrected version has not been evaluated in this paired study. Do not infer unchanged or improved LLM performance from these corrections.

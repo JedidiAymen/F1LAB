@@ -28,11 +28,12 @@ export function PairedAgentStudy() {
   const active = ids.includes(selected ?? '') ? selected : ids[0]
   return <section className="research-panel" aria-label="Paired agent study">
     <h2>Same incident. Two investigations.</h2>
-    <p>Frozen foundation agent versus draft PR #1. Actual local Qwen3 output on 16 paired synthetic cases; both use the same data and generation limits. The review PR remains unmerged.</p>
+    <p>Frozen foundation agent versus a frozen revision of draft PR #1. Actual local Qwen3 output on 16 paired synthetic cases; both use the same data and generation limits. The review PR remains unmerged.</p>
     {!data && !error && <p role="status">Loading the paired evidence…</p>}
     {error && <p role="status">{error}</p>}
     {data && <>
       <Badge variant="outline">{data.evidence}</Badge>
+      <p aria-label="Frozen candidate provenance">Candidate: PR #1 at <code>{data.protocol.sources.candidate.commit}</code>. Later changes to that PR have not been evaluated by this study.</p>
       <div className="research-table-scroll"><table aria-label="Paired model scores"><thead><tr><th>Implementation</th><th>Correct / cases</th><th>False clean</th><th>Unresolved</th><th>Supported explanations</th><th>Mean time</th><th>Tool calls</th><th>Failed workers</th></tr></thead><tbody>{(['baseline', 'candidate'] as Arm[]).map((arm) => {
         const score = data.summary.arms[arm]
         return <tr key={arm}><th scope="row">{arm === 'baseline' ? 'Foundation' : 'PR #1'}</th><td>{Math.round(score.accuracy * score.cases)} / {score.cases} ({percent(score.accuracy)})</td><td>{score.false_no_discrepancy}</td><td>{score.invalid_or_undetermined}</td><td>{data.cases.filter((row) => row.arm === arm && row.support.verdict === 'supported').length} / {score.cases}</td><td>{score.mean_seconds.toFixed(2)} s</td><td>{score.tool_calls}</td><td>{score.failed_workers}</td></tr>

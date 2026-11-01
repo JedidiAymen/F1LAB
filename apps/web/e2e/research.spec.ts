@@ -56,6 +56,8 @@ test('paired agent replay compares the same incident and distinguishes citation 
   await page.getByRole('button', { name: 'Research & reliability' }).click()
   const study = page.getByLabel('Paired agent study', { exact: true })
   await expect(study.getByRole('table', { name: 'Paired model scores' })).toContainText('Foundation')
+  await expect(study.getByLabel('Frozen candidate provenance')).toContainText('5a95ba26395cf8f7395a8396297409db17ebe02e')
+  await expect(study.getByLabel('Frozen candidate provenance')).toContainText('Later changes to that PR have not been evaluated')
   await expect(study.getByLabel('Paired uncertainty')).toContainText('fault-family bootstrap')
   await study.getByRole('button', { name: /stale model version-s1/ }).click()
   await expect(study.getByLabel('candidate investigation')).toContainText('Correct label')

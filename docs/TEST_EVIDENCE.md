@@ -602,3 +602,5 @@ PR #1 stays at `5a95ba26395cf8f7395a8396297409db17ebe02e`; foundation stays at
 `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. No PR/main merge or attribution change.
 After testing, removed disposable build cache (Docker reported 2.956 GB; shared
 runtime layers remain), restoring about 3.2 GiB free; no images/volumes/data deleted.
+
+PR #3 frozen-revision provenance clarification: frontend lint, 16 unit tests and production build passed; the paired-agent Playwright interaction passed (one Chromium case, including desktop/mobile rendering and read-only request checks). The result data and saved traces were not changed; the corrected PR #1 head was not reevaluated.
