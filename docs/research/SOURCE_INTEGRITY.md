@@ -29,3 +29,7 @@ PYTHONPATH=src .venv/bin/python scripts/audit_source_integrity.py data/processed
 - The qualifying workflow uses practice/qualifying session results and drivers rather than these race laps; no direct dependency on session 11234 was found. For session 11230, 19 result rows versus 22 driver rows warrants separate review, not an assertion of three missing entrants: DNS/DNQ/entry evidence is needed. A manifest's 2023–2025 description despite containing 2026 is a separate provenance-description defect; old artifacts remain unchanged.
 
 Further work: integrate gated snapshots and manifests into each new data producer; independently audit qualifying result coverage; establish provider-specific missing-channel and timestamp policies; measure source lineage across all historical snapshots. This is not a complete provider-ingestion solution.
+
+### Reference coverage follow-up
+
+When a cross-endpoint completed-lap reference is supplied, observed key shortfalls or a positive-lap reference driver with no source rows now require review. Zero-lap reference entries are not by themselves evidence of missing race data. Dataset creation checks the original archived audit as well as re-screening the bytes, so dropping a supplied reference cannot silently release a quarantined source. References remain fallible cross-endpoint evidence rather than an independent proof of completeness; preserve their provenance and investigate discrepancies.

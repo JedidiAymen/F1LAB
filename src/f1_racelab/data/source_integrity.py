@@ -45,6 +45,12 @@ def _timestamp_known(value: object) -> bool:
 def audit_laps(payload: bytes, session_key: int, *, reference_completed: dict[int, int] | None = None,
                session_window_utc: tuple[str, str] | None = None) -> dict:
     """Screen source rows without inferring a guaranteed expected row count."""
+    if reference_completed is not None and any(
+        not isinstance(driver, int) or isinstance(driver, bool) or driver <= 0
+        or not isinstance(count, int) or isinstance(count, bool) or count < 0
+        for driver, count in reference_completed.items()
+    ):
+        raise ValueError("Reference driver IDs and completed laps must be nonnegative integers")
     rows = json.loads(payload)
     if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
         raise ValueError("Source response must be a JSON array of objects")
@@ -103,13 +109,18 @@ def audit_laps(payload: bytes, session_key: int, *, reference_completed: dict[in
         observed = {row["driver_number"] for row in drivers}
         report["reference_drivers_without_lap_rows"] = sorted(set(reference_completed) - observed)
         report["lap_drivers_not_in_reference"] = sorted(observed - set(reference_completed))
+        report["reference_coverage_shortfall_drivers"] = [row["driver_number"] for row in drivers
+            if row["reference_completed_laps"] is not None
+            and row["observed_keys_within_reference"] < row["reference_completed_laps"]]
+        report["reference_positive_drivers_without_lap_rows"] = sorted(
+            driver for driver in set(reference_completed) - observed if reference_completed[driver] > 0)
     errors = invalid_keys or wrong_session or duplicates or invalid_times or invalid_durations
     if errors:
         report["status"] = "broken"
         report["findings"].append("Schema, identity, key, timestamp or duration contract violation")
-    elif late or sparse or outside_window:
+    elif late or sparse or outside_window or report.get("reference_coverage_shortfall_drivers") or report.get("reference_positive_drivers_without_lap_rows"):
         report["status"] = "review"
-        report["findings"].append("Late first laps or gaps require inspection; this heuristic is not a completeness proof")
+        report["findings"].append("Coverage, time-window or reference discrepancies require inspection; screening is not a completeness proof")
     else:
         report["status"] = "unknown"
         report["findings"].append("No screening anomaly detected; provider completeness remains unknown")
@@ -171,18 +182,22 @@ def dataset_manifest(sources: list[dict], output: Path, *, transform_sha256: str
         raise ValueError("Sources, transformation SHA-256, feature contract and cutoff are required")
     inputs = []
     for source in sources:
+        # Preserve the original screen, including optional reference evidence.
+        # Re-screening without that reference must not release a quarantined input.
+        require_research_input(source["audit"], acknowledge_unknown=unknown_rationale)
         snapshot = Path(source["snapshot"])
         if snapshot.is_symlink():
             raise ValueError("Source snapshot cannot be a symlink")
         data = snapshot.read_bytes()
-        if sha256(data) != source["source_sha256"]:
+        if sha256(data) != source["source_sha256"] or source["audit"].get("content_sha256") != source["source_sha256"]:
             raise ValueError("Source snapshot checksum mismatch")
         if source["provider"] != "OpenF1" or source["endpoint"] != "laps":
             raise ValueError("This gate currently supports only OpenF1 laps")
         report = audit_laps(data, int(source["parameters"]["session_key"]))
         require_research_input(report, acknowledge_unknown=unknown_rationale)
         inputs.append({"provider": source["provider"], "endpoint": source["endpoint"],
-                       "parameters": source["parameters"], "sha256": source["source_sha256"]})
+                       "parameters": source["parameters"], "sha256": source["source_sha256"],
+                       "original_audit": source["audit"]})
     inputs.sort(key=lambda row: json.dumps(row, sort_keys=True))
     identity = {"schema_version": 1, "sources": inputs, "transform_sha256": transform_sha256,
                 "feature_contract": feature_contract, "cutoff": cutoff, "output_sha256": sha256_file(output),
@@ -237,6 +252,9 @@ def verify_dataset_manifest(store: Path, manifest: dict, output: Path) -> None:
         data = path.read_bytes()
         if sha256(data) != source_hash:
             raise ValueError("Source snapshot checksum mismatch")
+        if source["original_audit"].get("content_sha256") != source_hash:
+            raise ValueError("Original source audit checksum mismatch")
+        require_research_input(source["original_audit"], acknowledge_unknown=manifest["unknown_rationale"])
         if source["provider"] != "OpenF1" or source["endpoint"] != "laps":
             raise ValueError("Unsupported source contract")
         require_research_input(audit_laps(data, int(source["parameters"]["session_key"])),

@@ -145,3 +145,16 @@ def test_large_lap_numbers_do_not_allocate_a_range():
     rows = json.loads(sample((1, 2)))
     rows[1]["lap_number"] = 10**9
     assert audit_laps(json.dumps(rows).encode(), 1)["status"] == "review"
+
+
+def test_reference_shortfall_cannot_be_released_by_omitting_reference(tmp_path):
+    payload = sample()
+    report = audit_laps(payload, 1, reference_completed={1: 4, 2: 3})
+    assert report["status"] == "review" and report["reference_coverage_shortfall_drivers"] == [1]
+    source = archive(tmp_path, payload, provider="OpenF1", endpoint="laps", parameters={"session_key": 1},
+                     retrieved_at_utc=None, report=report)
+    output = tmp_path / "dataset"
+    output.write_bytes(b"synthetic")
+    with pytest.raises(ValueError, match="requires review"):
+        dataset_manifest([source], output, transform_sha256="a" * 64, feature_contract={"lap": "count"},
+                         cutoff="lap start", unknown_rationale="Reference cannot be ignored")
