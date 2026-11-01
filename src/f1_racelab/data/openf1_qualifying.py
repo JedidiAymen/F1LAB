@@ -113,6 +113,41 @@ class OpenF1Client:
         self.hashes[resource] = hashlib.sha256(payload).hexdigest()
         return rows
 
+    def get_verified_laps(self, session_key: int, *, snapshot_store: Path,
+                          acknowledge_unknown: str | None = None,
+                          reference_completed: dict[int, int] | None = None) -> tuple[list[dict], dict]:
+        """Opt-in research gate preserving exact bytes and rejecting suspect data.
+
+        Legacy cache timestamps are unknown; a newly fetched response is stamped
+        after download. This does not change existing callers or establish that
+        every provider lap is present.
+        """
+        from f1_racelab.data.source_integrity import archive, gated_lap_snapshot, sha256
+
+        resource = f"laps?session_key={session_key}"
+        path = self.cache_root / "laps" / f"{hashlib.sha256(resource.encode()).hexdigest()[:20]}.json"
+        existed = path.is_file()
+        if existed:
+            payload = path.read_bytes()
+            try:
+                parsed = json.loads(payload)
+                if not isinstance(parsed, list) or any(not isinstance(row, dict) for row in parsed):
+                    raise ValueError("Expected an array of objects")
+            except (ValueError, UnicodeDecodeError):
+                archive(snapshot_store, payload, provider="OpenF1", endpoint="laps", parameters={"session_key": session_key},
+                        retrieved_at_utc=None, source_location=str(path), report={"status": "broken", "content_sha256": sha256(payload),
+                                                       "findings": ["Invalid JSON object array"]})
+                raise ValueError("Cached laps are invalid; original preserved and snapshot quarantined") from None
+        rows = self.get("laps", session_key=session_key)
+        payload = path.read_bytes()
+        if sha256(payload) != self.hashes[resource]:
+            raise ValueError("Cached source changed during verification")
+        snapshot = gated_lap_snapshot(snapshot_store, payload, session_key,
+                                      retrieved_at_utc=None if existed else datetime.now(UTC).isoformat(),
+                                      acknowledge_unknown=acknowledge_unknown, reference_completed=reference_completed,
+                                      source_location=str(path))
+        return rows, snapshot
+
 
 def conventional_weekends(meetings: list[dict], sessions: list[dict]) -> list[dict]:
     """Number completed race meetings chronologically; keep full FP1/2/3 format."""

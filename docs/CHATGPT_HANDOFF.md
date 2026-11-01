@@ -946,3 +946,12 @@ Radio: **blocked** (protected audio, nothing downloaded), `docs/research/RADIO_I
 ## Engines layer (2026-10-29)
 DuckDB/Spark/pandas run the same SQL transformations with equivalence tests, engine-declaring registry, one-command CLI, Delta
 round trip, MAPE/bias. pandas is fastest at 83k rows. Databricks not tested. See `docs/research/ENGINES.md`.
+
+
+### Source integrity checkpoint — 2026-11-01
+
+Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Implemented opt-in OpenF1 lap screening, immutable local snapshots/quarantine, audit records, and content-addressed dataset contracts in `src/f1_racelab/data/source_integrity.py`; added `OpenF1Client.get_verified_laps`, `scripts/audit_source_integrity.py`, and synthetic regression tests. The Australia old cache has 45 rows (20 late-start drivers); the refreshed copy has 1,008 rows and remains completeness-unknown. Saved Race Pace excludes that session; qualifying has no direct race-laps dependency; corrected PR #4 uses the refreshed source. No old artifacts overwritten, new model trained, or broad completeness asserted. Existing pipelines have not yet been migrated to the opt-in gate. Real source hashes, impact, exact commands, licensing and limitations: [source-integrity report](research/SOURCE_INTEGRITY.md).
+
+Status matrix for this checkpoint: implemented/validated — existing replay and the synthetic-tested opt-in source screens; implemented but scientifically incomplete — Race Pace coverage and Driver DNA future evaluation; research-only — paired agent evaluation (6/16 per arm on the frozen synthetic protocol); partial — source lineage adoption and Corner Intelligence; external-data/resource work — RaceVision dataset rights and suitable annotations remain to be established; not started as a completed workflow — durable Redis job processing. The previous Australia response is excluded from the saved Race Pace cohort, and the qualifying 19/22 discrepancy is unresolved. Refer to the source report for scope and preservation details.
+
+Source-integrity follow-up: optional completed-lap reference shortfalls trigger review, and dataset-manifest creation retains the original audit gate rather than silently dropping that reference. A synthetic regression test covers this failure mode; references are not treated as infallible.
