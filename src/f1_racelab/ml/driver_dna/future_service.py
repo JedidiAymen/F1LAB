@@ -12,6 +12,7 @@ from f1_racelab.ml.driver_dna.future_data import OUT, ROOT, SESSIONS
 
 DEFAULT = OUT / "verified"
 BUNDLED = ROOT / "docs/research/evidence/dna_future_20261031"
+FAILURES = ROOT / "docs/research/evidence/dna_future_failures_20261101"
 
 
 def report(root: Path = DEFAULT) -> dict:
@@ -55,3 +56,17 @@ def incident(case_id: int, root: Path = DEFAULT) -> dict:
             "seconds": np.linspace(0, dataset["window_seconds"], dataset["grid"]).tolist(),
             "channels": {name: x[index].tolist() for index, name in enumerate(dataset["channels"])},
             "cutoff_seconds": dataset["window_seconds"]}
+
+
+def failure_analysis(root: Path = FAILURES, study_root: Path = BUNDLED) -> dict:
+    """Validate the aggregate decomposition against its frozen source study."""
+    payload = (root / "report.json").read_bytes()
+    if hashlib.sha256(payload).hexdigest() != (root / "report.sha256").read_text().strip():
+        raise ValueError("Failure analysis checksum mismatch")
+    result = json.loads(payload)
+    study_payload = (study_root / "study.json").read_bytes()
+    if hashlib.sha256(study_payload).hexdigest() != result["study_sha256"]:
+        raise ValueError("Failure analysis source study mismatch")
+    if json.loads(study_payload)["prediction_sha256"] != result["predictions_sha256"]:
+        raise ValueError("Failure analysis source prediction mismatch")
+    return result

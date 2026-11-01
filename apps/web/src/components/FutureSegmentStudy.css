@@ -15,3 +15,6 @@
 .dna-future h4 { font-size: 13px; margin: 20px 0 8px; }
 .dna-future code, .dna-future pre { overflow-wrap: anywhere; white-space: pre-wrap; font-size: 11px; }
 @media (max-width: 700px) { .future-controls, .future-failures { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+.future-failure-analysis { margin-top: 28px; padding: 16px; border: 1px solid #38434b; border-radius: 8px; min-width: 0; }
+.future-failure-analysis h3 { font-size: 16px; color: #e7eff4; }
+.future-failure-analysis th:first-child { position: sticky; left: 0; z-index: 1; background: #151c21; }

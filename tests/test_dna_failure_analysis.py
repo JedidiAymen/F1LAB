@@ -1,8 +1,14 @@
 import importlib.util
+import json
+import shutil
 from pathlib import Path
 
 import pandas as pd
 import pytest
+from fastapi.testclient import TestClient
+
+from f1_racelab.api import create_app
+from f1_racelab.ml.driver_dna import future_service
 
 spec = importlib.util.spec_from_file_location('dna_failure_analysis', Path(__file__).parents[1] / 'scripts/analyze_dna_future_errors.py')
 assert spec and spec.loader
@@ -26,3 +32,28 @@ def test_paired_error_difference_and_event_driver_bootstrap():
 def test_empty_slice_has_no_invented_metrics():
     frame = pd.DataFrame({'session_key': pd.Series(dtype=int), 'driver_number': pd.Series(dtype=int)})
     assert analysis.summarize(frame) == {'rows': 0, 'clusters': 0, 'models': {}}
+
+
+def test_failure_report_links_to_exact_study_and_rejects_tampering(tmp_path):
+    root = tmp_path / 'failures'
+    study = tmp_path / 'study'
+    shutil.copytree(future_service.FAILURES, root)
+    shutil.copytree(future_service.BUNDLED, study)
+    result = future_service.failure_analysis(root, study)
+    assert result['total_test']['rows'] == 1597
+    assert result['slices']['retrospective_lap_change'][0]['rows'] == 1097
+    (study / 'study.json').write_text('{}')
+    with pytest.raises(ValueError, match='source study mismatch'):
+        future_service.failure_analysis(root, study)
+    shutil.copyfile(future_service.BUNDLED / 'study.json', study / 'study.json')
+    payload = json.loads((root / 'report.json').read_text())
+    payload['total_test']['rows'] = 1
+    (root / 'report.json').write_text(json.dumps(payload))
+    with pytest.raises(ValueError, match='checksum'):
+        future_service.failure_analysis(root, study)
+
+
+def test_failure_analysis_api_returns_bundled_research_evidence():
+    response = TestClient(create_app()).get('/api/v1/driver-dna/future-failures')
+    assert response.status_code == 200
+    assert response.json()['status'] == 'exploratory; previously inspected events'
