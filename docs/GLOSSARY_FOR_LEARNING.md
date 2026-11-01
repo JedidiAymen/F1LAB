@@ -328,3 +328,8 @@ known taxonomy, not robustness to unseen faults. **Citation validity** asks whet
 a referenced tool ID exists. **Evidence support** asks whether that observation
 actually warrants the explanation; a correct label can still contain unsupported
 claims. Engineering adjudication is inspectable but is not blinded human labeling.
+
+
+### Corrected agent evaluation — 2026-11-01
+
+False clean: an incident with a planted fault diagnosed as no material discrepancy. A citation ID can exist while the cited observation contradicts the explanation.

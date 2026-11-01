@@ -1434,3 +1434,8 @@ PR #1 stays at `5a95ba26395cf8f7395a8396297409db17ebe02e`; foundation stays at
 `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. No PR/main merge or attribution change.
 After testing, removed disposable build cache (Docker reported 2.956 GB; shared
 runtime layers remain), restoring about 3.2 GiB free; no images/volumes/data deleted.
+
+
+### Corrected agent evaluation — 2026-11-01
+
+Completed corrected preflight Qwen3 paired run: 32/32 workers, 6/16 each; candidate false-clean 10 vs baseline 8. Six selected candidate claims reviewed, without estimating aggregate support.

@@ -512,3 +512,8 @@ hashes and exact commands: [paired study](research/AGENT_PAIRED_EVALUATION.md).
 Small actual-output bundle: `docs/research/evidence/forecast_debug_paired_20261031/`.
 No weights or external dataset/broadcast assets redistributed. PR #1 remains
 unmerged; missing metadata findings are documented without changing its inputs.
+
+
+### Corrected agent evaluation — 2026-11-01
+
+EXP-AGENT-CORRECTED-01: foundation 5cdac66 vs corrected candidate 486bba7, 16 paired known cases, actual Qwen3 8B: 6/16 each, candidate 10 false-clean vs 8 baseline. Bootstrap [−37.5,+37.5] percentage points; selected semantic review only.

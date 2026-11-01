@@ -1033,3 +1033,8 @@ After testing, removed disposable build cache (Docker reported 2.956 GB; shared
 runtime layers remain), restoring about 3.2 GiB free; no images/volumes/data deleted.
 
 The paired-agent interface now shows the full frozen PR #1 candidate revision from the saved protocol and warns that later PR changes were not evaluated. The 6/16 result is for `5a95ba26395cf8f7395a8396297409db17ebe02e`, not subsequent correctness revision `3476708dc44f1e1a27bcc6eb3eea75482bbb2e5c`. This is a provenance clarification, not a new LLM run.
+
+
+### Corrected agent evaluation — 2026-11-01
+
+Corrected-agent draft stacks on PR #3 and separately evaluates PR #1 head 486bba7 against foundation 5cdac66. Actual Qwen3 8B: 32/32 workers, 6/16 correct per arm, false-clean 8 baseline vs 10 candidate, known-family bootstrap difference [−37.5,+37.5] points. Six candidate claims received a targeted unblinded review; rest unreviewed. Sanitized traces, source hashes, reproduction and exact limitations: research/AGENT_CORRECTED_EVAL_PROTOCOL.md. No agent promotion or merge.

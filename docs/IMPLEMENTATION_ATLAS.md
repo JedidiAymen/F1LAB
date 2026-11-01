@@ -440,3 +440,8 @@ All metrics/units/caveats/reproduction are in `research/DRIVER_DNA.md`.
   interactions. Compose includes the small synthetic-warehouse output bundle.
 - Inputs/outputs, algorithm, seconds/proportions, review findings and exact
   reproduction: `research/AGENT_PAIRED_EVALUATION.md`. No external data download.
+
+
+### Corrected agent evaluation — 2026-11-01
+
+service.load_corrected verifies saved corrected run and exposes sanitized observations; CorrectedAgentStudy.tsx compares agents and selected trace review. Projection script does not execute the agent.

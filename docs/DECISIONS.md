@@ -382,3 +382,8 @@ families, retaining both seeds; the small taxonomy limits external validity.
 Citation existence and logical support are separate. Publish per-case engineering
 adjudication with explicit reasons, without calling it independent human review.
 The old 2/8 LLM result and scripted 200/200 remain separate.
+
+
+### Corrected agent evaluation — 2026-11-01
+
+Do not promote corrected evidence-first agent: no measured accuracy gain on the known small synthetic cohort, and candidate false-clean decisions increased. A citation identifier is not proof of claim support.

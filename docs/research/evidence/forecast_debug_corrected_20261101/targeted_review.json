@@ -1,0 +1,30 @@
+{
+  "method": "Unblinded engineering review of six selected candidate cases only. Verdicts apply to the identified claim, not the entire explanation; remaining candidate and all baseline explanations were not reviewed. These selected failures are not a representative support-rate estimate.",
+  "cases": {
+    "feature_skew-s1": {
+      "verdict": "contradicted",
+      "reason": "The explanation claims feature alignment, while cited t1 reports 4,320 of 4,320 matched tyre-age values differ."
+    },
+    "feature_skew-s4": {
+      "verdict": "contradicted",
+      "reason": "The explanation claims feature alignment, while cited t1 reports 4,320 of 4,320 matched tyre-age values differ."
+    },
+    "missing_live_data-s1": {
+      "verdict": "insufficient",
+      "reason": "The coverage-consistency claim does not account for the 668 batch-only keys in cited t1."
+    },
+    "missing_live_data-s4": {
+      "verdict": "contradicted",
+      "reason": "The explanation says there is no evidence of missing data, while cited t1 reports 661 batch-only keys."
+    },
+    "unit_mismatch-s1": {
+      "verdict": "insufficient",
+      "reason": "The claim that the gap is within expected noise is unsupported by cited t1: its mean absolute gap is 10,061.14196 seconds, with no noise bound supplied."
+    },
+    "unit_mismatch-s4": {
+      "verdict": "insufficient",
+      "reason": "The claim that the gap is within expected noise is unsupported by cited t1: its mean absolute gap is 15,004.98635 seconds, with no noise bound supplied."
+    }
+  },
+  "results_sha256": "455e24c16c887b0408278d2f640b4de1b5bb6d857db94b7ed018c7c71fe9c797"
+}

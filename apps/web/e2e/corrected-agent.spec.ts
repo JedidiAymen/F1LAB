@@ -1,0 +1,20 @@
+import { expect, test } from '@playwright/test'
+
+test('corrected paired study exposes scoped reviews and cited tool evidence', async ({ page }, testInfo) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Research & reliability' }).click()
+  const study = page.getByRole('region', { name: 'Corrected preflight agent evaluation' })
+  await expect(study.getByRole('table', { name: 'Corrected agent scores' })).toContainText('6 / 16')
+  const candidate = study.getByRole('article', { name: 'candidate corrected evaluation trace' })
+  await expect(candidate).toContainText('4,320 of 4,320')
+  await candidate.getByText('t1: incident_checks · cited').click()
+  await expect(candidate).toContainText('4320')
+  await study.getByLabel('Corrected agent incident').selectOption('missing_live_data-s4')
+  await expect(candidate).toContainText('661 batch-only keys')
+  await study.getByLabel('Corrected agent incident').selectOption('stale_model_version-s1')
+  await expect(candidate).toContainText('not reviewed')
+  await study.screenshot({ path: testInfo.outputPath('corrected-agent-desktop.png') })
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await study.screenshot({ path: testInfo.outputPath('corrected-agent-mobile.png') })
+})

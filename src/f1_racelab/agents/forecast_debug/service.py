@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_RUN = ROOT / "data/processed/agents/forecast_debug/20261031/ollama_qwen3_8b"
 BUNDLED_RUN = ROOT / "docs/research/evidence/forecast_debug_20261031"
 PAIRED_RUN = ROOT / "docs/research/evidence/forecast_debug_paired_20261031"
+CORRECTED_RUN = ROOT / "docs/research/evidence/forecast_debug_corrected_20261101"
 
 
 def load_paired(root: Path = PAIRED_RUN) -> dict:
@@ -74,3 +75,44 @@ def load_run(root: Path = DEFAULT_RUN) -> dict:
             "source_sha256": {"results.json": hashlib.sha256(results_bytes).hexdigest(),
                               "traces.jsonl": hashlib.sha256(traces_bytes).hexdigest()},
             "support_status": "Citation existence is automatic; logical support needs trace review."}
+
+
+def load_corrected(root: Path = CORRECTED_RUN) -> dict:
+    """Expose sanitized actual traces and a clearly scoped partial review."""
+    from f1_racelab.agents.forecast_debug.paired import paired_summary
+
+    files = {}
+    for name in ("protocol", "results", "targeted_review"):
+        payload = (root / f"{name}.json").read_bytes()
+        checksum = hashlib.sha256(payload).hexdigest()
+        if (root / f"{name}.sha256").read_text().strip() != checksum:
+            raise ValueError(f"Corrected {name} checksum mismatch")
+        files[name] = (json.loads(payload), checksum)
+    protocol, results, review = (files[name][0] for name in ("protocol", "results", "targeted_review"))
+    frozen = {key: value for key, value in protocol.items() if key not in {"created_at_utc", "protocol_sha256"}}
+    if hashlib.sha256(json.dumps(frozen, sort_keys=True).encode()).hexdigest() != protocol["protocol_sha256"]:
+        raise ValueError("Protocol identity mismatch")
+    if results["protocol_sha256"] != protocol["protocol_sha256"]:
+        raise ValueError("Results use a different protocol")
+    summary = paired_summary(results["cases"])
+    if summary != results["summary"]:
+        raise ValueError("Saved scores do not match cases")
+    if review["results_sha256"] != files["results"][1]:
+        raise ValueError("Targeted review refers to different results")
+    candidate_ids = {row["scenario_id"] for row in results["cases"] if row["arm"] == "candidate"}
+    if not set(review["cases"]).issubset(candidate_ids):
+        raise ValueError("Review references unknown cases")
+    cases = []
+    for row in results["cases"]:
+        diagnosis = row.get("diagnosis", {})
+        support = review["cases"].get(row["scenario_id"]) if row["arm"] == "candidate" else None
+        if support and support["verdict"] not in {"contradicted", "insufficient"}:
+            raise ValueError("Unexpected targeted review verdict")
+        cases.append({**{key: row[key] for key in ("scenario_id", "arm", "expected", "predicted", "correct", "seconds", "status")},
+                      "explanation": diagnosis.get("explanation", "No diagnosis recovered"),
+                      "evidence_ids": diagnosis.get("evidence", []), "support": support,
+                      "trace": [{key: step[key] for key in ("tool_id", "action", "args", "observation") if key in step}
+                                for step in diagnosis.get("trace", []) if "tool_id" in step]})
+    return {"evidence": results["evidence"], "summary": summary, "cases": cases, "protocol": protocol,
+            "support_method": review["method"], "source_sha256": {name: value[1] for name, value in files.items()},
+            "raw_results_sha256": results["raw_results_sha256"]}
