@@ -141,3 +141,5 @@ npm run test:e2e
 
 See [the three-session evidence](docs/REPLAY_GOLDEN_SESSIONS.md) for exact
 source/clock semantics, checks, screenshots and remaining limitations.
+
+Replay telemetry includes exploratory [estimated distance-window comparisons](docs/research/DISTANCE_SEGMENT_ANALYSIS.md) linked to the shared clock. These are not surveyed corners or validated braking points.

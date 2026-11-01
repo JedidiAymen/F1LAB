@@ -1212,3 +1212,12 @@ button:focus-visible {
     justify-content: center;
   }
 }
+
+.segment-analysis { margin-top: 22px; padding: 16px; border: 1px solid #34434a; border-radius: 8px; min-width: 0; }
+.segment-analysis h3 { color: #e8f1f1; font-size: 15px; margin: 0 0 8px; }
+.segment-analysis p { color: #a9b8bc; font-size: 12px; line-height: 1.6; margin: 10px 0; }
+.segment-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+.segment-table { overflow-x: auto; }
+.segment-table table { width: 100%; min-width: 450px; table-layout: fixed; border-collapse: collapse; font-size: 12px; }
+.segment-table th, .segment-table td { padding: 8px; border-bottom: 1px solid #34434a; text-align: left; vertical-align: top; }
+.segment-table th:first-child { position: sticky; left: 0; z-index: 1; width: 44%; background: #151c21; }

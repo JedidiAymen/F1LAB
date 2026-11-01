@@ -946,3 +946,8 @@ Radio: **blocked** (protected audio, nothing downloaded), `docs/research/RADIO_I
 ## Engines layer (2026-10-29)
 DuckDB/Spark/pandas run the same SQL transformations with equivalence tests, engine-declaring registry, one-command CLI, Delta
 round trip, MAPE/bias. pandas is fastest at 83k rows. Databricks not tested. See `docs/research/ENGINES.md`.
+
+
+### Distance segments checkpoint — 2026-11-01
+
+Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Added fixed estimated shared-grid windows to the existing telemetry comparison and canonical replay clock. Segment delta is B−A at end minus B−A at start; displayed speed, raw threshold crossings, gear changes and missing-channel counts use saved telemetry. This is exploratory and is not surveyed corner detection, validated braking-point detection, a trained model or completed Corner Intelligence. Real Monza example, source hash, screenshots, synthetic tests, browser reproduction and limitations: [distance segment report](research/DISTANCE_SEGMENT_ANALYSIS.md).

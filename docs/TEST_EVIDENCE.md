@@ -527,3 +527,10 @@ Real replay/model/WS smoke passes unchanged. Screenshot
 `docs/images/driver-dna-normalization.png` is rendered from the working UI and
 visually reviewed. Basic API/web and optional model-serving replica remain
 healthy; session-created disposable build caches were reclaimed afterward.
+
+
+### Distance segments checkpoint — 2026-11-01
+
+Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Added fixed estimated shared-grid windows to the existing telemetry comparison and canonical replay clock. Segment delta is B−A at end minus B−A at start; displayed speed, raw threshold crossings, gear changes and missing-channel counts use saved telemetry. This is exploratory and is not surveyed corner detection, validated braking-point detection, a trained model or completed Corner Intelligence. Real Monza example, source hash, screenshots, synthetic tests, browser reproduction and limitations: [distance segment report](research/DISTANCE_SEGMENT_ANALYSIS.md).
+
+Distance-segment checkpoint verification: frontend lint, 18 unit tests and TypeScript/Vite production build passed. Ruff and mypy (99 source modules) passed; 35 targeted Python telemetry/library/API tests passed. Chromium ran two real-data interactions (segment selection and existing crosshair), both passed, including synchronized clock and mobile table scroll. Desktop/mobile screenshots in `docs/images/distance-segments-{desktop,mobile}.png` were rendered from the live local interface and inspected. Browser test output used an isolated temporary folder; the existing replay and telemetry source artifacts were read, not overwritten.
