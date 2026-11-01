@@ -11,6 +11,7 @@ def _frame(swap=True, pit_on_l1=False, neutral=0):
         for driver, base in ((1, 10.0), (2, 10.5)):
             gap = base if lap == 1 else (base if not swap else (10.6 if driver == 1 else 10.2))
             rows.append({"race_id": "r", "year": 2025, "event": "x", "circuit": "c", "race_start": pd.Timestamp("2025-03-01"),
+                         "cutoff": pd.Timestamp("2025-03-01") + pd.Timedelta(seconds=lap * 100 + (0 if driver == 1 else 1)),
                          "lap": lap, "driver_number": driver, "gap_to_leader": gap,
                          "interval_ahead": 0.5 if driver == 2 else 0.0, "anchor_seconds": 90.0, "last1": 0.0,
                          "tyre_age_next": 5.0, "compound_next": "MEDIUM", "laps_remaining": 40.0,
@@ -31,6 +32,25 @@ def test_swap_is_labelled_positive_and_no_swap_negative():
 def test_pit_involved_and_neutralised_pairs_are_dropped_not_labelled_negative():
     assert dataset.build(_frame(pit_on_l1=True)).query("lap == 1").empty
     assert dataset.build(_frame(neutral=1)).empty
+
+
+def test_future_leader_cutoff_and_nonconsecutive_next_lap_are_not_used():
+    frame = _frame()
+    frame.loc[(frame.driver_number == 1) & (frame.lap == 1), 'cutoff'] += pd.Timedelta(seconds=2)
+    assert dataset.build(frame).query('lap == 1').empty
+    missing_leader_lap = _frame().query('not (driver_number == 1 and lap == 2)')
+    assert dataset.build(missing_leader_lap).query('lap == 1').empty
+
+
+def test_missing_cutoff_and_duplicate_source_keys_fail_closed():
+    import pytest
+
+    frame = _frame()
+    frame.loc[0, 'cutoff'] = pd.NaT
+    with pytest.raises(ValueError, match='valid cutoff'):
+        dataset.build(frame)
+    with pytest.raises(ValueError, match='Duplicate'):
+        dataset.build(pd.concat([_frame(), _frame().iloc[[0]]], ignore_index=True))
 
 
 def test_circuit_prior_rate_uses_only_earlier_races():
