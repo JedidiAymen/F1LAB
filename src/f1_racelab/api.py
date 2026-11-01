@@ -18,6 +18,7 @@ from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnec
 from pydantic import ValidationError
 from starlette.responses import Response
 
+from f1_racelab.agents.forecast_debug import gate_service
 from f1_racelab.agents.forecast_debug import service as agent_service
 from f1_racelab.live.ingest import _registry as live_registry
 from f1_racelab.ml.common import reliability
@@ -151,6 +152,13 @@ def create_app(
         except (OSError, ValueError, KeyError) as exc:
             raise HTTPException(status_code=503, detail="Reliability artifact unavailable or invalid. "
                                 "Run python -m f1_racelab.ml.common.reliability.") from exc
+
+    @app.get("/api/v1/research/agent-evidence-gate")
+    def agent_evidence_gate() -> dict:
+        try:
+            return gate_service.load()
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(status_code=503, detail="Evidence gate study unavailable or invalid.") from exc
 
     @app.get("/api/v1/research/agent-evaluation")
     def agent_evaluation() -> dict:

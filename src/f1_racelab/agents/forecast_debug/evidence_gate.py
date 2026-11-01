@@ -26,6 +26,10 @@ def _positive(value: Any) -> bool:
     return n is not None and n > 0
 
 
+def _known_text(value: Any) -> bool:
+    return isinstance(value, str) and bool(value.strip()) and value.strip().casefold() not in {'unknown', 'none', 'null', 'nan', 'n/a'}
+
+
 def _known_mismatch(count: Any, info: Any) -> bool:
     n = _number(count)
     known = _number(info.get('known_pairs')) if isinstance(info, dict) else None
@@ -39,11 +43,10 @@ def _signals(check: dict) -> list[dict[str, str]]:
     if isinstance(coverage, dict) and (_positive(coverage.get('batch_only_keys')) or _positive(coverage.get('live_only_keys'))):
         signals.append({'code': 'unmatched_forecast_keys', 'description': 'Forecast keys differ between pipelines.'})
     versions = check.get('model_version_coverage')
-    if isinstance(versions, dict) and _positive(versions.get('known_pairs')) and _positive(check.get('model_version_disagreements_on_matched')):
+    if _known_mismatch(check.get('model_version_disagreements_on_matched'), versions):
         signals.append({'code': 'known_version_disagreement', 'description': 'Known model versions differ on matched keys.'})
     configs = check.get('config_differences')
-    if isinstance(configs, list) and any(isinstance(row, dict) and all(isinstance(row.get(key), str) and row[key].strip()
-                                                                       for key in ('key', 'batch', 'live'))
+    if isinstance(configs, list) and any(isinstance(row, dict) and all(_known_text(row.get(key)) for key in ('key', 'batch', 'live'))
                                          and row['batch'] != row['live'] for row in configs):
         signals.append({'code': 'known_config_difference', 'description': 'Known configuration values differ.'})
     features = check.get('feature_comparison')
@@ -111,3 +114,11 @@ def assess(proposed: str, citations: list[str], trace: list[dict[str, Any]]) -> 
         result['decision'] = 'review_required'
         result['status'] = 'observations_only'
     return result
+
+
+def run_gated_agent(model: Any, tools: Any, *, max_steps: int = 12) -> tuple[Any, dict[str, Any]]:
+    """Opt-in wrapper retains the original diagnosis and appends a separate gate result."""
+    from f1_racelab.agents.forecast_debug.agent import run_agent
+
+    diagnosis = run_agent(model, tools, max_steps=max_steps)
+    return diagnosis, assess(diagnosis.root_cause, diagnosis.evidence, diagnosis.trace)

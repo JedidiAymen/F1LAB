@@ -26,6 +26,7 @@ def test_unknown_and_nonfinite_values_never_become_positive_mismatch():
               'model_version_disagreements_on_matched': 3, 'model_version_coverage': {'known_pairs': 0},
               'feature_comparison': {'mismatched_values_on_matched': {'tyre_age': 4},
                                      'value_coverage_on_matched': {'tyre_age': {'known_pairs': 0}}},
+              'config_differences': [{'key': 'model_version', 'batch': 'unknown', 'live': 'v2'}],
               'prediction_comparison_seconds': {'max_abs_batch_value': 90, 'max_abs_live_value': float('inf')}}
     result = assess('no_material_discrepancy', ['t1'], trace(checks))
     assert result['decision'] == 'abstain' and result['status'] == 'insufficient' and result['signals'] == []
@@ -47,3 +48,32 @@ def test_signals_require_review_and_do_not_confirm_causal_label():
     assert result['decision'] == 'review_required' and result['status'] == 'observations_only'
     assert result['signals'][0]['code'] == 'large_prediction_scale_ratio'
     assert assess('no_material_discrepancy', ['t1'], trace({'schema_version': 2}))['decision'] == 'abstain'
+
+
+def test_bundled_gate_study_and_fail_closed_api(monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from f1_racelab.agents.forecast_debug import gate_service
+    from f1_racelab.api import create_app
+
+    client = TestClient(create_app())
+    report = client.get('/api/v1/research/agent-evidence-gate')
+    assert report.status_code == 200
+    assert report.json()['summary']['true_clean_withheld'] == 2
+    assert client.post('/api/v1/research/agent-evidence-gate').status_code == 405
+    def missing():
+        raise FileNotFoundError('missing')
+    monkeypatch.setattr(gate_service, 'load', missing)
+    assert client.get('/api/v1/research/agent-evidence-gate').status_code == 503
+
+
+def test_opt_in_wrapper_preserves_proposed_diagnosis(monkeypatch):
+    from types import SimpleNamespace
+
+    from f1_racelab.agents.forecast_debug import agent, evidence_gate
+
+    proposal = SimpleNamespace(root_cause='no_material_discrepancy', evidence=['t1'],
+                               trace=trace({'schema_version': 2, 'forecast_coverage': {'batch_only_keys': 2}}))
+    monkeypatch.setattr(agent, 'run_agent', lambda model, tools, max_steps: proposal)
+    original, gate = evidence_gate.run_gated_agent(object(), object(), max_steps=2)
+    assert original is proposal and gate['status'] == 'contradicted' and gate['decision'] == 'abstain'
