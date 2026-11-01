@@ -19,3 +19,5 @@ Implementation checkpoint: `scripts/racevision/fetch_fsoco_subset.py` range-fetc
 A third synthetic test validates image/annotation checksums and bounding-box loading. Before training, the protocol also rejects duplicate image content across splits. The supported prefixes and counts remain frozen above.
 
 Before running any model, also register 1,000 seeded test-frame bootstrap resamples for recall at confidence 0.5 and IoU 0.5. These intervals are conditional on the selected frames, which may be correlated, and cannot quantify uncertainty across recording sequences or circuits. COCO AP remains a point estimate.
+
+Before held-out scoring, reload the saved candidate state dictionary with PyTorch's weights-only loader. Save a SHA-256 for the predictions as well as the model and source manifest. The generic COCO baseline collapses original categories without an additional cross-class suppression pass; duplicate baseline boxes may therefore count as false positives.

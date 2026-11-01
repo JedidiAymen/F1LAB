@@ -237,11 +237,15 @@ def main() -> None:
         history.append({'epoch': epoch + 1, 'mean_training_loss': float(np.mean(losses)), 'validation': validation})
         print(json.dumps(history[-1]), flush=True)
     torch.save(model.state_dict(), args.out / 'detector.pth')
+    model.load_state_dict(torch.load(args.out / 'detector.pth', map_location=device, weights_only=True))
     candidate, candidate_predictions = evaluate(model, datasets['test'], device)
     baseline = ssdlite320_mobilenet_v3_large(weights=weights).to(device)
     baseline_metrics, baseline_predictions = evaluate(baseline, datasets['test'], device)
+    predictions_path = args.out / 'test_predictions.json'
+    predictions_path.write_text(json.dumps({'baseline': baseline_predictions, 'fine_tuned': candidate_predictions}))
     output = {'protocol': 'docs/research/FSOCO_CONE_PROTOCOL.md', 'dataset_manifest_sha256': digest(manifest_path),
               'source_revision': args.source_revision, 'model_sha256': digest(args.out / 'detector.pth'),
+              'test_predictions_sha256': digest(predictions_path),
               'pretrained_sha256': digest(args.pretrained_weights), 'seed': 42, 'epochs': 3, 'batch_size': 4,
               'device': str(device), 'gpu': torch.cuda.get_device_name(0) if device.type == 'cuda' else None,
               'python': platform.python_version(), 'torch': torch.__version__, 'torchvision': torchvision.__version__,
@@ -249,7 +253,6 @@ def main() -> None:
               'peak_gpu_bytes': torch.cuda.max_memory_allocated() if device.type == 'cuda' else None,
               'training_history': history, 'baseline': baseline_metrics, 'fine_tuned': candidate}
     (args.out / 'metrics.json').write_text(json.dumps(output, indent=2, allow_nan=False) + '\n')
-    (args.out / 'test_predictions.json').write_text(json.dumps({'baseline': baseline_predictions, 'fine_tuned': candidate_predictions}))
     print(json.dumps(output, indent=2), flush=True)
 
 
