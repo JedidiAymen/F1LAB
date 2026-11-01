@@ -172,6 +172,14 @@ baselines; (3) extend agent fault scenarios/evidence scoring; (4) annotated
 camera subset plus storage/GPU gate. Jenkins/Kubernetes remain optional.
 Publication state and exact final checks: `CHATGPT_HANDOFF.md`.
 
+### 2026-10-31 follow-on — Driver DNA normalization audit
+Implemented/evaluated/API/UI: explicit transductive labels, train-only tensor
+normalization contract, same-split classical comparison and checksum-verified
+optional study. Logistic Task A 38.43% → 19.79%; LightGBM 30.21% → 12.33%;
+Task B remains ~89%/~84%. This **does not** complete Driver DNA: still three
+races, no inductive neural model or future-segment evaluation. Next step is
+expanded held-out sessions and causal calibration, not relabeling old neural scores.
+
 ## 2026-11-01 — evidence preflight correctness (PR #1)
 
 Starting SHA `5a95ba26395cf8f7395a8396297409db17ebe02e`. Updated

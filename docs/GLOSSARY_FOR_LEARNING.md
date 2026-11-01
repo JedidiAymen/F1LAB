@@ -304,6 +304,20 @@ unrelated user helpers under `ml/features/` remain untracked and untouched.
 - **Lazy code import:** the Three.js module is fetched when opened; the replay
   still has one clock. A smaller initial bundle is not measured faster loading.
 
+### Driver DNA normalization availability
+
+**Transductive:** preprocessing may use an unlabeled held-out cohort's
+statistics. It can remove that circuit's shape, but assumes that cohort is
+available. Unlabeled does not mean training-only. **Inductive normalization:**
+fit preprocessing on explicit training rows, freeze it, transform future/test
+examples without refitting. Test-value poisoning must leave fitted moments
+unchanged. In this repository logistic cross-circuit accuracy falls 38.4% to
+19.8% when that target-cohort access is removed; this changes the task rather
+than proving neural models better. The unchanged teammate logistic result
+reflects cancellation of affine within-circuit scaling by its training scaler.
+A fully online protocol additionally needs causal quality filters and feature
+availability; this small normalization audit does not establish those.
+
 ## 2026-11-01 — evidence preflight correctness (PR #1)
 
 Starting SHA `5a95ba26395cf8f7395a8396297409db17ebe02e`. Updated

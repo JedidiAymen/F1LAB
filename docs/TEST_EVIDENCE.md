@@ -505,6 +505,29 @@ Hardened-tool solvability rerun:
 → 200/200 synthetic cases, 875 tool calls, zero tool errors. This tests the
 scripted reference after SQL limits; it does **not** improve the 2/8 LLM result.
 
+## 2026-10-31 — Driver DNA follow-on
+
+Real command: `OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 .venv/bin/python -m f1_racelab.ml.driver_dna.normalization_study`.
+Existing 1,749 laps, three races, 11 shared drivers, 1,046 Task A test laps,
+19 Task B pairs. Full inputs/output hashes and real scores: `research/DRIVER_DNA.md`.
+Synthetic-only tests: eight new normalization/service cases (test-only poisoning,
+invalid indices, zero variance, shape/nonfinite and checksum rejection).
+`.venv/bin/pytest -q -W ignore` → **297 passed, 28.25 s**. Ruff clean;
+mypy clean, 99 source files. `cd apps/web && npm run lint && npm run build` pass;
+`npm run test:unit` → 16 pass; `npm run test:e2e` → **23 passed, 51.5 s**.
+Targeted real-data normalization browser test passes, screenshot generated.
+The earlier sandboxed TestClient run was interrupted after stalling; full run
+with runtime access passed, no tests were silently skipped locally.
+No new neural training, larger dataset, fresh holdout or generalized driver-style
+score is claimed. Compose CI for the preceding milestone succeeded remotely.
+
+Final updated local production images built and started healthy; all **23/23
+Compose Chromium tests pass (32.0 s)**, including the normalization table.
+Real replay/model/WS smoke passes unchanged. Screenshot
+`docs/images/driver-dna-normalization.png` is rendered from the working UI and
+visually reviewed. Basic API/web and optional model-serving replica remain
+healthy; session-created disposable build caches were reclaimed afterward.
+
 ## 2026-11-01 — evidence preflight correctness (PR #1)
 
 Starting SHA `5a95ba26395cf8f7395a8396297409db17ebe02e`. Updated
@@ -524,3 +547,5 @@ this isolated older-base checkout; they are not passes. No frontend source
 changed. Existing frontend CI was green before edits; new PR CI will rerun
 Python/web/clean Compose. Known placeholder identity strings are also unknown.
 The corrected tool output is not covered by the historical6/16 evaluation.
+
+PR #1 integration review: merged the current `feat/foundation` revision `5cdac66677e6abb513f84e3ede5f74dd74d00bb6` into this feature branch, preserving both independently appended documentation entries. Ruff and mypy (100 modules) passed; `PYTHONPATH=/tmp/f1lab-pr1-review/src /home/aymmzn/Documents/projects/F1LAB/.venv/bin/pytest -q -W ignore` produced 306 passed and 19 skipped in 26.11 s. This does not constitute a new LLM evaluation.

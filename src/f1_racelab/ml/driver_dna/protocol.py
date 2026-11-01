@@ -13,6 +13,8 @@ either split are dropped. Uncertainty: bootstrap over teammate pairs.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
 import pandas as pd
 
@@ -22,6 +24,11 @@ TRAIN_FRACTION = 0.6
 
 
 def normalise_per_circuit(x: np.ndarray, meta: pd.DataFrame) -> np.ndarray:
+    """Transductive: held-out circuit statistics use its entire unlabeled cohort.
+
+    Retained for exact reproduction of the original study. This is not an
+    inductive preprocessing transform for unseen circuits or future laps.
+    """
     out = np.empty_like(x)
     for circuit in meta.circuit.unique():
         idx = np.flatnonzero((meta.circuit == circuit).to_numpy())
@@ -29,6 +36,37 @@ def normalise_per_circuit(x: np.ndarray, meta: pd.DataFrame) -> np.ndarray:
         mean, std = block.mean(axis=0, keepdims=True), block.std(axis=0, keepdims=True) + 1e-6
         out[idx] = (block - mean) / std
     return out
+
+
+@dataclass(frozen=True)
+class TrainNormalization:
+    mean: np.ndarray
+    scale: np.ndarray
+    train_rows: int
+
+
+def fit_train_normalization(x: np.ndarray, train: np.ndarray) -> TrainNormalization:
+    """Fit channel/grid or feature statistics using only explicit training rows."""
+    indices = np.asarray(train)
+    if x.ndim < 2 or indices.ndim != 1 or not len(indices) or indices.dtype.kind not in "iu":
+        raise ValueError("Need a feature tensor and nonempty one-dimensional integer training indices")
+    if len(np.unique(indices)) != len(indices) or indices.min() < 0 or indices.max() >= len(x):
+        raise ValueError("Training indices must be unique and inside the tensor")
+    block = x[indices]
+    if not np.isfinite(block).all():
+        raise ValueError("Training values must be finite")
+    mean = block.mean(axis=0, dtype=np.float64)
+    scale = block.std(axis=0, dtype=np.float64) + 1e-6
+    mean.setflags(write=False)
+    scale.setflags(write=False)
+    return TrainNormalization(mean=mean, scale=scale, train_rows=len(indices))
+
+
+def apply_train_normalization(x: np.ndarray, stats: TrainNormalization) -> np.ndarray:
+    """Transform without fitting or accessing any other examples."""
+    if x.shape[1:] != stats.mean.shape or not np.isfinite(x).all():
+        raise ValueError("Transform shape must match finite fitted features")
+    return ((x - stats.mean) / stats.scale).astype(np.float32)
 
 
 def shared_drivers(meta: pd.DataFrame) -> list[str]:

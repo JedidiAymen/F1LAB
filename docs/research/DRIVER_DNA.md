@@ -29,3 +29,81 @@ Task B controls: lap number and lap time alone 53.5% [48.9, 59.3]; shape feature
 * Teammates also differ by car set-up, tyre state and traffic; the controls remove pace and stint position only. This is separability of sampled laps, not proof of innate driving style.
 * Task A cannot separate driver from car for drivers who kept the same team. By-driver accuracy is in `baselines.json` and `nets.json`; Monza is hardest (TCN 15.9%).
 * Three races and 11 shared drivers is small; no claim should be made about the wider grid. More sessions can be added by fetching `car_data` (about 120 MB per race).
+
+## EXP-DNA-NORM-01 — normalization availability audit (2026-10-31)
+
+Source checkpoint `7238387d206125413d1403b739909cc3e787bade`, with modified
+worktree. The original Task A scores use **transductive** normalization: each
+circuit's mean/std includes the full unlabeled held-out circuit cohort. The
+neural protocol also uses full-circuit moments before teammate splitting.
+No held-out labels are used in those moments, but this is still different from
+training-only preprocessing. It can be legitimate offline domain adaptation;
+it is not evidence of performance on a new circuit without access to its cohort.
+Original artifacts/results remain unchanged and are now explicitly labeled.
+
+Implemented `protocol.fit_train_normalization` / `apply_train_normalization`:
+input `[N, features...]` tensors and explicit unique training indices; fit mean
+and std in float64 over training rows only, add `1e-6` to scale, make fitted
+arrays read-only; output dimensionless float32 z-scores. Reject empty/invalid
+indices, nonfinite train/transform data and incompatible shapes. A held-out
+poisoning regression proves that changing test values cannot change fitted
+statistics or training transforms. These tensor helpers are available for a
+future inductive neural study; **no new neural model was trained** here.
+
+`normalization_study.py` reuses the existing inspected dataset/split indices and
+original model factories. It compares the original per-circuit handcrafted
+standardization with raw handcrafted descriptors: logistic's StandardScaler and
+classifier fit only on each training fold, and LightGBM only fits training data.
+No held-out circuit mean/std is used in the latter condition. Same 1,749 laps,
+three races, 11 shared drivers; Task A scores 1,046 shared-driver laps, Task B
+19 teammate pairs. Training-only normalization does not make the retrospective
+quality filter or closed shared-driver vocabulary a fully online protocol.
+
+| Model | Task A original transductive | Task A train-only normalization | Task B original | Task B train-only [95% pair-bootstrap CI] |
+| --- | ---: | ---: | ---: | ---: |
+| Handcrafted logistic | 38.43% | **19.79%** | 88.80% | 88.80% [81.82,95.04] |
+| Handcrafted LightGBM | 30.21% | **12.33%** | 83.59% | 83.92% [76.52,90.76] |
+
+Train-only Task A by held-out circuit (Brazil / Monaco / Monza): logistic
+18.87% / 23.81% / 13.76%; LightGBM 9.07% / 16.67% / 10.09%. Uniform chance
+is 9.09%, not a class-imbalance-adjusted majority baseline. With three circuits,
+do not claim a significant improvement or broad generalization. The large
+cross-circuit drop shows how much the earlier result depends on unlabeled
+target-circuit normalization. This is a negative availability finding, not a
+reason to replace a stronger simple model with a neural model.
+
+Task B logistic's equality is expected: an affine same-circuit preprocessing
+step is cancelled by its training-only StandardScaler (up to roundoff). Tree
+results differ slightly; the paired uncertainty does not establish a gain.
+The original TCN/contrastive scores cannot be compared directly to these new
+train-only scores; there is **no** inductive neural benchmark yet.
+Handcrafted `accel_p95`/`decel_p05` are adjacent normalized-distance-grid speed
+changes, not physically measured longitudinal acceleration in m/s².
+
+```bash
+OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 \
+  .venv/bin/python -m f1_racelab.ml.driver_dna.normalization_study
+.venv/bin/pytest -q tests/test_driver_dna_normalization.py -W ignore
+# API: existing GET /api/v1/driver-dna/summary
+# UI: Driver DNA → training-only normalization comparison
+```
+
+Output `data/processed/driver_dna/normalization_study.json` plus SHA sidecar;
+source SHA/dirty flag, dependencies, complete per-circuit/per-pair scores and
+input hashes are recorded. Inputs unchanged:
+`laps.npz` SHA `d58b779dd532c5ae9aa5e435a4d774ee49e33703aa52c8f5355308c56cfd774f`;
+`laps_meta.parquet` SHA `df74abadef5adeb3a9c920a902aeb171240631227d909df3c8e26048de8c5b12`.
+Output SHA `ba8e21be1b2ccef3f381409d3db0a6de700d090b450e39cb0915e8221b4670b4`.
+Data source/license is unchanged: cached [OpenF1](https://openf1.org/docs/),
+with the project's non-commercial/source-rights caveats in `DATA_CONTRACTS.md`.
+No new provider requests, footage or source data redistribution.
+
+API serves the additional study when present and verifies its sidecar; missing
+optional study retains old results with explicit transductive warnings; altered
+study fails closed. UI shows both protocols and warns against cross-protocol
+neural comparisons. Synthetic tests cover held-out poisoning, zero variance,
+shape/finite/index validation, optional report and checksum tamper. Real-data
+browser test selects Driver DNA and verifies the 19.8% result and warnings.
+This milestone fixes the normalization distinction; expansion beyond three
+races, inductive neural training, masked/self-supervised encoders, future-segment
+prediction, corner modeling and embedding retrieval remain not done.
