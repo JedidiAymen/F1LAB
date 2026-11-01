@@ -143,3 +143,8 @@ npm run test:e2e
 
 See [the three-session evidence](docs/REPLAY_GOLDEN_SESSIONS.md) for exact
 source/clock semantics, checks, screenshots and remaining limitations.
+
+
+### Corrected agent evaluation — 2026-11-01
+
+A second [corrected preflight agent evaluation](docs/research/AGENT_CORRECTED_EVAL_PROTOCOL.md) scored 6/16 for both agents on previously inspected synthetic cases; selected trace reviews found unsupported or contradicted claims. This is not production validation.

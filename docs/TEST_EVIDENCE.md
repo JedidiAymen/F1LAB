@@ -604,3 +604,12 @@ After testing, removed disposable build cache (Docker reported 2.956 GB; shared
 runtime layers remain), restoring about 3.2 GiB free; no images/volumes/data deleted.
 
 PR #3 frozen-revision provenance clarification: frontend lint, 16 unit tests and production build passed; the paired-agent Playwright interaction passed (one Chromium case, including desktop/mobile rendering and read-only request checks). The result data and saved traces were not changed; the corrected PR #1 head was not reevaluated.
+
+
+### Corrected agent evaluation — 2026-11-01
+
+Corrected agent actual local run and trace provenance: research/AGENT_CORRECTED_EVAL_PROTOCOL.md. Synthetic cases; no real incident or unseen-fault validation.
+
+Corrected-agent review branch: `PYTHONPATH=src .venv/bin/pytest -q` **310 passed** using local dependencies; `ruff check src tests scripts` and `mypy src/f1_racelab` passed. `npm run lint`, `npm run test:unit` (**16 passed**) and `npm run build` passed (Vite large-chunk warning). Chromium exercised the actual bundled synthetic results, switched incidents, inspected a cited tool response and checked 390px document overflow; desktop/mobile screenshots were visually reviewed. Local browser setup required a replay-pack symlink and worktree-specific PYTHONPATH; unrelated reliability artifacts were absent and returned 503. The trace review is deliberately partial and unblinded.
+
+Packaging follow-up: the sanitized corrected-agent results, protocol and targeted review are whitelisted and included in the API image. Compose smoke now requires all 32 bundled cases to load without Ollama or race datasets. Local Ruff and Compose config passed; clean image build/run remains for CI because only approximately 2.1 GB was free locally.

@@ -88,6 +88,7 @@ def create_app(
     reliability_report_path: Path | None = None,
     agent_evaluation_path: Path | None = None,
     agent_paired_path: Path | None = None,
+    agent_corrected_path: Path | None = None,
 ) -> FastAPI:
     """Create an API bound to a local replay pack, allowing isolated fixtures."""
     paths = {slug: spec.pack_path for slug, spec in SESSIONS.items()}
@@ -160,6 +161,13 @@ def create_app(
         except (OSError, ValueError, KeyError, TypeError) as exc:
             raise HTTPException(status_code=503, detail="Saved LLM evaluation unavailable or invalid. "
                                 "See docs/research/FORECAST_DEBUG_AGENT.md for reproduction.") from exc
+
+    @app.get("/api/v1/research/agent-corrected")
+    def agent_corrected() -> dict:
+        try:
+            return agent_service.load_corrected(agent_corrected_path or agent_service.CORRECTED_RUN)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(status_code=503, detail="Corrected agent study unavailable or invalid.") from exc
 
     @app.get("/api/v1/research/agent-paired")
     def agent_paired() -> dict:

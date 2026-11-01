@@ -20,6 +20,7 @@ COPY --from=build /app/src /app/src
 COPY --from=build /app/uv.lock /app/uv.lock
 COPY docs/research/evidence/forecast_debug_20261031 /app/docs/research/evidence/forecast_debug_20261031
 COPY docs/research/evidence/forecast_debug_paired_20261031 /app/docs/research/evidence/forecast_debug_paired_20261031
+COPY docs/research/evidence/forecast_debug_corrected_20261101 /app/docs/research/evidence/forecast_debug_corrected_20261101
 ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH=/app/src PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2
 USER 10001:10001

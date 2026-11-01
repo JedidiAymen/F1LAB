@@ -32,6 +32,9 @@ def smoke(base_url: str, *, require_data: bool = False, require_model: bool = Fa
         paired.raise_for_status()
         assert len(paired.json()["cases"]) == 32
         assert "synthetic" in paired.json()["evidence"]
+        corrected = client.get("/api/v1/research/agent-corrected")
+        corrected.raise_for_status()
+        assert len(corrected.json()["cases"]) == 32
         sessions = client.get("/api/v1/replays").json()
         assert len(sessions) == 3
         checked = []
