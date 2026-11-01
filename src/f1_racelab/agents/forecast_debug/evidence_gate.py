@@ -109,7 +109,7 @@ def assess(proposed: str, citations: list[str], trace: list[dict[str, Any]]) -> 
         return result
     result['signals'] = observed
     if proposed == 'no_material_discrepancy':
-        result['status'] = 'contradicted'
+        result['status'] = 'signal_present'
     else:
         result['decision'] = 'review_required'
         result['status'] = 'observations_only'

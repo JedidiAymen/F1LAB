@@ -10,13 +10,13 @@ def trace(observation, *, final=None):
     return steps
 
 
-def test_multiple_observations_contradict_clean_claim_without_assigning_cause():
+def test_multiple_observations_flag_clean_claim_without_assigning_cause():
     checks = {'schema_version': 2, 'forecast_coverage': {'batch_only_keys': 2, 'live_only_keys': 0},
               'model_version_disagreements_on_matched': 1, 'model_version_coverage': {'known_pairs': 4},
               'feature_comparison': {'mismatched_values_on_matched': {'tyre_age': 3},
                                      'value_coverage_on_matched': {'tyre_age': {'known_pairs': 4}}}}
     result = assess('no_material_discrepancy', ['t1'], trace(checks, final=['t1']))
-    assert result['decision'] == 'abstain' and result['status'] == 'contradicted'
+    assert result['decision'] == 'abstain' and result['status'] == 'signal_present'
     assert {x['code'] for x in result['signals']} == {'unmatched_forecast_keys', 'known_version_disagreement', 'known_feature_mismatch'}
     assert 'not causal' in result['warning']
 
@@ -76,4 +76,4 @@ def test_opt_in_wrapper_preserves_proposed_diagnosis(monkeypatch):
                                trace=trace({'schema_version': 2, 'forecast_coverage': {'batch_only_keys': 2}}))
     monkeypatch.setattr(agent, 'run_agent', lambda model, tools, max_steps: proposal)
     original, gate = evidence_gate.run_gated_agent(object(), object(), max_steps=2)
-    assert original is proposal and gate['status'] == 'contradicted' and gate['decision'] == 'abstain'
+    assert original is proposal and gate['status'] == 'signal_present' and gate['decision'] == 'abstain'
