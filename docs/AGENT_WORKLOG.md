@@ -1394,3 +1394,16 @@ hashes, algorithms/units, exact commands, split caveats and next work in
 checks pass. Docker dependency layer no longer includes README to prevent
 unnecessary scientific dependency reinstall on documentation changes. Final
 container/publication evidence follows in the handoff. User helpers untouched.
+
+## 2026-11-01 — evidence preflight correctness (PR #1)
+
+Starting SHA `5a95ba26395cf8f7395a8396297409db17ebe02e`. Updated
+`agents/forecast_debug/triage.py:summarize,config_evidence` and
+`tools.py:config_diff`: known comparisons only, explicit missing/nonfinite/invalid
+counts, missing/conflicting config evidence, finite prediction denominators.
+Added eighteen incomplete/conflicting-evidence cases; focused 57 tests pass,
+Ruff/mypy99 files pass. No new LLM result/promotion; historical6/16 candidate
+remains the original frozen revision. Full contracts, units, reproduction,
+independent PR review and limitations: [correction](research/EVIDENCE_PREFLIGHT_CORRECTION.md).
+Next: immutable source/coverage gates and historical-impact audit, then the
+independent telemetry/Corner milestones. Published SHA/CI recorded after push.

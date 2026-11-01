@@ -141,3 +141,7 @@ npm run test:e2e
 
 See [the three-session evidence](docs/REPLAY_GOLDEN_SESSIONS.md) for exact
 source/clock semantics, checks, screenshots and remaining limitations.
+
+Evidence preflight handles missing/conflicting metadata explicitly; this is a
+[correctness correction](docs/research/EVIDENCE_PREFLIGHT_CORRECTION.md), not
+a demonstrated LLM accuracy improvement or a production diagnostic system.

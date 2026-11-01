@@ -179,3 +179,16 @@ optional study. Logistic Task A 38.43% → 19.79%; LightGBM 30.21% → 12.33%;
 Task B remains ~89%/~84%. This **does not** complete Driver DNA: still three
 races, no inductive neural model or future-segment evaluation. Next step is
 expanded held-out sessions and causal calibration, not relabeling old neural scores.
+
+## 2026-11-01 — evidence preflight correctness (PR #1)
+
+Starting SHA `5a95ba26395cf8f7395a8396297409db17ebe02e`. Updated
+`agents/forecast_debug/triage.py:summarize,config_evidence` and
+`tools.py:config_diff`: known comparisons only, explicit missing/nonfinite/invalid
+counts, missing/conflicting config evidence, finite prediction denominators.
+Added eighteen incomplete/conflicting-evidence cases; focused 57 tests pass,
+Ruff/mypy99 files pass. No new LLM result/promotion; historical6/16 candidate
+remains the original frozen revision. Full contracts, units, reproduction,
+independent PR review and limitations: [correction](research/EVIDENCE_PREFLIGHT_CORRECTION.md).
+Next: immutable source/coverage gates and historical-impact audit, then the
+independent telemetry/Corner milestones. Published SHA/CI recorded after push.

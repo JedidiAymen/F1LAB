@@ -527,3 +527,25 @@ Real replay/model/WS smoke passes unchanged. Screenshot
 `docs/images/driver-dna-normalization.png` is rendered from the working UI and
 visually reviewed. Basic API/web and optional model-serving replica remain
 healthy; session-created disposable build caches were reclaimed afterward.
+
+## 2026-11-01 — evidence preflight correctness (PR #1)
+
+Starting SHA `5a95ba26395cf8f7395a8396297409db17ebe02e`. Updated
+`agents/forecast_debug/triage.py:summarize,config_evidence` and
+`tools.py:config_diff`: known comparisons only, explicit missing/nonfinite/invalid
+counts, missing/conflicting config evidence, finite prediction denominators.
+Added eighteen incomplete/conflicting-evidence cases; focused 57 tests pass,
+Ruff/mypy99 files pass. No new LLM result/promotion; historical6/16 candidate
+remains the original frozen revision. Full contracts, units, reproduction,
+independent PR review and limitations: [correction](research/EVIDENCE_PREFLIGHT_CORRECTION.md).
+Next: immutable source/coverage gates and historical-impact audit, then the
+independent telemetry/Corner milestones. Published SHA/CI recorded after push.
+
+Final local PR #1 verification: **298 passed,19 skipped in27.25 s**, Ruff
+clean, mypy99 files. Skips are explicit absent optional/local-artifact tests in
+this isolated older-base checkout; they are not passes. No frontend source
+changed. Existing frontend CI was green before edits; new PR CI will rerun
+Python/web/clean Compose. Known placeholder identity strings are also unknown.
+The corrected tool output is not covered by the historical6/16 evaluation.
+
+PR #1 integration review: merged the current `feat/foundation` revision `5cdac66677e6abb513f84e3ede5f74dd74d00bb6` into this feature branch, preserving both independently appended documentation entries. Ruff and mypy (100 modules) passed; `PYTHONPATH=/tmp/f1lab-pr1-review/src /home/aymmzn/Documents/projects/F1LAB/.venv/bin/pytest -q -W ignore` produced 306 passed and 19 skipped in 26.11 s. This does not constitute a new LLM evaluation.
