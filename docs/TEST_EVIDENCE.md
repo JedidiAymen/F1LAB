@@ -546,3 +546,5 @@ Verification on the overtake review worktree with local data: `PYTHONPATH=src .v
 ### Pace-source availability finding — 2026-11-01
 
 Further review found `laps_remaining` derives from the completed race's maximum lap, and Overtake's tyre fields refer to lap L+1. Pace's `laps_in_stint` and `stint_best_delta` also use next-lap stint information; clean/regime construction uses subsequent pit-out status and a full-race median. Existing overtake and pace scores remain provisional and do not prove strict as-of availability. Affected score changes have not been quantified; raw reconstruction and new evaluation are needed. See research/OVERTAKE_CUTOFF_AUDIT.md.
+
+Packaging follow-up: the bundled aggregate cutoff audit is whitelisted in `.dockerignore`, copied into the API image, and checked by the Compose smoke script without local race data. Ruff and `docker compose config --quiet` passed locally. Clean container build/execution is delegated to CI because the local filesystem has approximately 2.1 GB free; no local image run is claimed.
