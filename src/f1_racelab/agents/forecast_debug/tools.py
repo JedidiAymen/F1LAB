@@ -14,7 +14,7 @@ from typing import Any
 
 import pandas as pd
 
-from f1_racelab.agents.forecast_debug.triage import summarize
+from f1_racelab.agents.forecast_debug.triage import config_evidence, summarize
 
 MAX_ROWS = 50
 MAX_QUERY_CHARS = 12_000
@@ -202,7 +202,8 @@ class ForecastTools:
         return summarize(self._tables)
 
     def config_diff(self) -> dict[str, Any]:
-        sql = """SELECT b.key, b.value AS batch_value, l.value AS live_value
-                 FROM pipeline_config b JOIN pipeline_config l ON b.key = l.key
-                 WHERE b.pipeline = 'batch' AND l.pipeline = 'live' AND b.value <> l.value ORDER BY b.key"""
-        return {"differences": _records(self._con.execute(sql).df())["rows"]}
+        evidence = config_evidence(self._tables.get("pipeline_config", pd.DataFrame()))
+        return {"differences": [{"key": row["key"], "batch_value": row["batch"], "live_value": row["live"]}
+                                for row in evidence["config_differences"]],
+                "unknown_values": evidence["config_unknown_values"], "conflicts": evidence["config_conflicts"],
+                "coverage": evidence["config_coverage"]}

@@ -504,3 +504,23 @@ Hardened-tool solvability rerun:
 `.venv/bin/python -m f1_racelab.agents.forecast_debug.evaluate --agent reference --seeds 25 --out data/processed/agents/forecast_debug/20261031_reference`
 → 200/200 synthetic cases, 875 tool calls, zero tool errors. This tests the
 scripted reference after SQL limits; it does **not** improve the 2/8 LLM result.
+
+## 2026-11-01 — evidence preflight correctness (PR #1)
+
+Starting SHA `5a95ba26395cf8f7395a8396297409db17ebe02e`. Updated
+`agents/forecast_debug/triage.py:summarize,config_evidence` and
+`tools.py:config_diff`: known comparisons only, explicit missing/nonfinite/invalid
+counts, missing/conflicting config evidence, finite prediction denominators.
+Added eighteen incomplete/conflicting-evidence cases; focused 57 tests pass,
+Ruff/mypy99 files pass. No new LLM result/promotion; historical6/16 candidate
+remains the original frozen revision. Full contracts, units, reproduction,
+independent PR review and limitations: [correction](research/EVIDENCE_PREFLIGHT_CORRECTION.md).
+Next: immutable source/coverage gates and historical-impact audit, then the
+independent telemetry/Corner milestones. Published SHA/CI recorded after push.
+
+Final local PR #1 verification: **298 passed,19 skipped in27.25 s**, Ruff
+clean, mypy99 files. Skips are explicit absent optional/local-artifact tests in
+this isolated older-base checkout; they are not passes. No frontend source
+changed. Existing frontend CI was green before edits; new PR CI will rerun
+Python/web/clean Compose. Known placeholder identity strings are also unknown.
+The corrected tool output is not covered by the historical6/16 evaluation.

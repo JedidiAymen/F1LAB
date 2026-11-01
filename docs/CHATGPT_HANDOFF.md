@@ -1,3 +1,29 @@
+# Current review checkpoint — 2026-11-01
+
+## 2026-11-01 — evidence preflight correctness (PR #1)
+
+Starting SHA `5a95ba26395cf8f7395a8396297409db17ebe02e`. Updated
+`agents/forecast_debug/triage.py:summarize,config_evidence` and
+`tools.py:config_diff`: known comparisons only, explicit missing/nonfinite/invalid
+counts, missing/conflicting config evidence, finite prediction denominators.
+Added eighteen incomplete/conflicting-evidence cases; focused 57 tests pass,
+Ruff/mypy99 files pass. No new LLM result/promotion; historical6/16 candidate
+remains the original frozen revision. Full contracts, units, reproduction,
+independent PR review and limitations: [correction](research/EVIDENCE_PREFLIGHT_CORRECTION.md).
+Next: immutable source/coverage gates and historical-impact audit, then the
+independent telemetry/Corner milestones. Published SHA/CI recorded after push.
+
+Implemented/validated: replay/shared clock, simulator, Docker/MLflow/Prometheus;
+research-only: existing qualifying/pace/DNA and saved LLM evaluations with
+negative results preserved. Partial: corrected preflight and data provenance.
+Not started: real CV training, durable Redis jobs, full Corner/Radio workflows.
+Hardware re-audit now detects RTX3050 6GB; previous GPU-driver-unavailable notes
+are historical, not the current hardware state. Disk about2.2GiB free; avoid
+large downloads and concurrent builds. Owner identity and two original untracked
+feature helpers preserved. Review branches remain separate and unmerged.
+
+Earlier digest follows; read correction research note for current scope.
+
 # F1LAB handoff — current checkpoint, 2026-10-31
 
 **Read this current digest first.** The long sections below the historical divider
@@ -915,3 +941,10 @@ Radio: **blocked** (protected audio, nothing downloaded), `docs/research/RADIO_I
 ## Engines layer (2026-10-29)
 DuckDB/Spark/pandas run the same SQL transformations with equivalence tests, engine-declaring registry, one-command CLI, Delta
 round trip, MAPE/bias. pandas is fastest at 83k rows. Databricks not tested. See `docs/research/ENGINES.md`.
+
+Final local PR #1 verification: **298 passed,19 skipped in27.25 s**, Ruff
+clean, mypy99 files. Skips are explicit absent optional/local-artifact tests in
+this isolated older-base checkout; they are not passes. No frontend source
+changed. Existing frontend CI was green before edits; new PR CI will rerun
+Python/web/clean Compose. Known placeholder identity strings are also unknown.
+The corrected tool output is not covered by the historical6/16 evaluation.
