@@ -174,3 +174,7 @@ reference lap's UTC start and the `session_time_seconds` of the same
 seeks the existing playback clock. The distance remains a derived coordinate,
 not another clock or a surveyed location. Other session artifacts are shown
 only after the corresponding local CLI output exists.
+
+### Race Pace source availability audit — 2026-11-01
+
+The legacy Race Pace frame is not a fully decision-time-safe population. It requires a recorded consecutive next lap, calculates `laps_remaining` from the completed race maximum, computes `laps_in_stint` and `stint_best_delta` using the following-lap stint, and uses retrospective pit-out and full-race median information in clean/regime labels. Treat legacy “strict” metrics and dependent Overtake features as provisional. Do not assume these fields are safe for live inference. The [multi-horizon protocol](research/RACE_PACE_MULTIHORIZON_PROTOCOL.md) reconstructs lagged recorded durations and excludes these features but remains selected on later data availability; publication latency is not verified.

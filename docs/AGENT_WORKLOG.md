@@ -1394,3 +1394,8 @@ hashes, algorithms/units, exact commands, split caveats and next work in
 checks pass. Docker dependency layer no longer includes README to prevent
 unnecessary scientific dependency reinstall on documentation changes. Final
 container/publication evidence follows in the handoff. User helpers untouched.
+
+
+### Race Pace multi-horizon study — 2026-11-01
+
+Pace horizon study: interrupted first run after identifying future-derived features; registered amended input contract, trained 66 fold bundles, verified 173,188 predictions exactly, recorded negative 3/5-lap results and imported report to local MLflow.

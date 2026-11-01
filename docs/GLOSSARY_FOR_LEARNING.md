@@ -317,3 +317,8 @@ than proving neural models better. The unchanged teammate logistic result
 reflects cancellation of affine within-circuit scaling by its training scaler.
 A fully online protocol additionally needs causal quality filters and feature
 availability; this small normalization audit does not establish those.
+
+
+### Race Pace multi-horizon study — 2026-11-01
+
+Recorded-lap selection: an evaluation includes a decision only when later lap data exist; retired, missing or censored outcomes disappear and results need not describe all live decisions.

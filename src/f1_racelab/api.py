@@ -26,6 +26,7 @@ from f1_racelab.ml.common.registry import ArtifactUnavailable
 from f1_racelab.ml.driver_dna import service as dna_service
 from f1_racelab.ml.overtake import benchmark as overtake_benchmark
 from f1_racelab.ml.pace import inference as pace_inference
+from f1_racelab.ml.pace import multihorizon_service as pace_horizons
 from f1_racelab.ml.pace import service as pace_service
 from f1_racelab.models.prediction_lab import load_prediction_lab, prediction_event
 from f1_racelab.models.qualifying_phase_lab import (
@@ -490,6 +491,13 @@ def create_app(
                                 "uv run python -m f1_racelab.ml.overtake.dataset && "
                                 "uv run python -m f1_racelab.ml.overtake.benchmark")
         return {"evidence": "ml_evaluation_real", **json.loads(path.read_text())}
+
+    @app.get("/api/v1/research/pace-multihorizon")
+    def pace_multihorizon() -> dict:
+        try:
+            return pace_horizons.load()
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(status_code=503, detail="Multi-horizon pace study unavailable or invalid.") from exc
 
     @app.post("/api/v1/pace/predict")
     def pace_predict(features: pace_inference.PaceFeatures) -> dict:

@@ -946,3 +946,14 @@ Radio: **blocked** (protected audio, nothing downloaded), `docs/research/RADIO_I
 ## Engines layer (2026-10-29)
 DuckDB/Spark/pandas run the same SQL transformations with equivalence tests, engine-declaring registry, one-command CLI, Delta
 round trip, MAPE/bias. pandas is fastest at 83k rows. Databricks not tested. See `docs/research/ENGINES.md`.
+
+
+### Race Pace multi-horizon study — 2026-11-01
+
+Multi-horizon Pace branch: prior strict inputs leaked eventual race-length and next-stint information; first partial run was interrupted and retained. Amended model uses prior recorded durations and timestamp-aligned weather/gaps, but source rows still require a recorded next lap. On previously inspected races, at h=5 LightGBM MAE 3.695 s vs 3.209 recent lap and 2.780 median anchor; paired interval vs recent lap [−0.055,+1.179] s. 66 fold bundles, 173,188 predictions exactly reproduced; local MLflow completed-study import 4e4d3bb577f748c0b0aaa291ddbe4e49. Dataset/model cards, all horizons, hashes, commands, uncertainty and limits: research/RACE_PACE_MULTIHORIZON_PROTOCOL.md. No promotion or merge.
+
+### Review branches related to this study
+
+- [PR #9](https://github.com/JedidiAymen/F1LAB/pull/9), `feat/overtake-cutoff-audit` at `bffb98d25f3e825462f5b28100774b1c918825a2`: corrected retrospective overtake research and the same later source-availability warning. Independent of this branch; both edit shared docs and will require deliberate integration review.
+- [PR #10](https://github.com/JedidiAymen/F1LAB/pull/10), `feat/agent-corrected-evaluation` at `c75cf448bc016c2757403ff0aa8ad2ac8258e5f3`: actual corrected-preflight paired evaluation; stacked on PR #3 at `0b9c14b46cd6de7a03c1d983e1def95edf3d9c6e`. It also edits the Research Observatory and handoff, so integration requires review rather than assuming the branches combine cleanly.
+- No review PR is merged. Foundation at experiment creation was `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`; source used for the revised pace fit is `b919e55152ff318d8e58161e3feada0f9718e0c4`. Earlier data/model artifacts and the interrupted unscored fit remain intact.

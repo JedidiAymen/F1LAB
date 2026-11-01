@@ -1,5 +1,7 @@
 # Race Pace Intelligence
 
+> **Availability audit, 2026-11-01:** The older “strict” and scenario-based results below remain historical, provisional analyses. `laps_remaining` uses the completed race's maximum lap; `laps_in_stint` and `stint_best_delta` use following-lap stint membership; clean/regime construction depends on subsequent pit-out status and a full-race median. Source rows also require a recorded next lap. These results therefore do not establish a fully decision-time-safe, unconditional forecast. The effect on old scores has not been measured. An amended, recorded-lap-selected [multi-horizon study](RACE_PACE_MULTIHORIZON_PROTOCOL.md) excludes those inputs but does not resolve provider publication latency or survivorship. No historical metrics were overwritten.
+
 ## 1. Research question
 Given everything known at the end of lap L, how well can the next green-flag clean lap
 duration (lap L+1) be forecast, and does ML beat transparent baselines? Matters for
@@ -17,7 +19,7 @@ a few unneutralised laps survive as "green" (Saudi 2023 lap 27, +56 s).
 
 ## 3. Architecture / contract
 `ml/pace/dataset.py` builds one row per (driver, lap L) with cutoff = end of lap L.
-Features are as-of the cutoff (laps ≤ L; latest weather/interval observation ≤ cutoff;
+The original protocol intended features to be as-of the cutoff (laps ≤ L; latest weather/interval observation ≤ cutoff;
 race-control messages ≤ cutoff) except two labelled **scenario inputs**: tyre compound and
 age at lap L+1. Target `delta_seconds = lap(L+1) − median(last 3 clean laps)`; the forecast is
 anchor + delta. Green clean = not lap 1, not in/out-lap, regime green (no yellow, SC/VSC with
@@ -97,7 +99,7 @@ Command: `uv run python -m f1_racelab.ml.pace.audit` (reads `data/processed/race
 
 **Bug found by this work:** the artifact had been pickled with `LgbmBundle` defined in `__main__` (benchmark run via `python -m`), so it could not be loaded by any other process. The class moved to `ml/pace/bundle.py`, and `python -m f1_racelab.ml.pace.benchmark --refit-only` re-saved the artifact from `pace_frame.parquet` without rerunning the walk-forward. New artifact SHA-256 `98b611f3…adf8c2`. Tests: `tests/test_pace_inference.py` (schema rejection, tamper, version mismatch, HTTP 422/503/200). Full suite: 210 passed.
 
-## Strict decision-time protocol (Milestone 1, gate B)
+## Previously described strict decision-time protocol (availability audit pending)
 
 Command: `uv run python -m f1_racelab.ml.pace.strict` -> `data/processed/race_pace/strict_protocol.json`. Code `ml/pace/strict.py`, tests `tests/test_pace_strict.py` (synthetic, including a check that lap L+1's tyre is not visible). Real data, 65 scored races, 59,414 scored rows.
 

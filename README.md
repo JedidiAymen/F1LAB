@@ -20,7 +20,7 @@ git-ignored (OpenF1 terms are non-commercial, see
 | Replay and Race Control | Three historical races, shared clock, 2D map, race control | Deterministic seek; see [replay docs](docs/RACE_CONTROL_UI.md) |
 | Strategy and What-If | Deterministic simulator, seeded Monte Carlo | Assumption-driven, calibrated on Monza 2025 only |
 | Driver DNA | Three-race telemetry study; handcrafted, TCN and contrastive encoders; API/UI | 1,749 laps. Cross-circuit logistic accuracy falls **38.4% → 19.8%** under train-only normalization; teammate accuracy remains 88.8%. Original neural scores are transductive; no inductive neural result. |
-| Overtake Intelligence | Historical walk-forward comparison, calibration and API/UI | LightGBM Brier 0.0329 vs gap-only logistic 0.0407; isotonic calibration did not improve proper scores. |
+| Overtake Intelligence | Retrospective, provisional walk-forward comparison and API/UI | Timing-inferred labels and future-dependent cohort/features limit interpretation; see the [source audit](docs/research/RACE_PACE_MULTIHORIZON_PROTOCOL.md). |
 | Neural qualifying | Evaluated exploratory variants | No reliable gain over existing ensemble; not served. |
 | Forecast Debug Agent | Local Ollama evaluation and read-only incident replay | **2/8 diagnoses correct**, 17.43 s mean latency on synthetic planted faults; not production-ready. Scripted reference accuracy is not LLM accuracy. |
 | Research & reliability | Saved forecast comparisons, season bias, input drift, provenance and agent traces | Reuses inspected experiments; no fresh holdout or live drift claim. |
@@ -141,3 +141,8 @@ npm run test:e2e
 
 See [the three-session evidence](docs/REPLAY_GOLDEN_SESSIONS.md) for exact
 source/clock semantics, checks, screenshots and remaining limitations.
+
+
+### Race Pace multi-horizon study — 2026-11-01
+
+The exploratory [multi-horizon pace study](docs/research/RACE_PACE_MULTIHORIZON_PROTOCOL.md) found a lower observed MAE for the rolling-median baseline than LightGBM at three and five laps on a recorded-lap-selected, previously inspected cohort. These are not live forecasts.
