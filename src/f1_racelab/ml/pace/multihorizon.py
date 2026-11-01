@@ -26,14 +26,13 @@ from f1_racelab.ml.common.guards import (
     chronological_group_folds,
 )
 from f1_racelab.ml.common.metrics import cluster_bootstrap_delta
-from f1_racelab.ml.pace import dataset as ds
 from f1_racelab.ml.pace.bundle import LgbmBundle
-from f1_racelab.ml.pace.strict import decision_frame
 
 KEYS = ['race_id', 'driver_number', 'lap']
 HORIZONS = (1, 3, 5)
-NUMERIC = [c for c in ds.NUMERIC if c != 'laps_in_stint_next']
-CATEGORICAL = ds.CATEGORICAL
+NUMERIC = ['lap', 'last1', 'last2', 'last3', 'track_temp', 'air_temp', 'humidity', 'wind_speed',
+           'rainfall', 'weather_age_s', 'interval_ahead', 'gap_to_leader', 'intervals_age_s']
+CATEGORICAL: list[str] = []
 
 
 def sha(path: Path) -> str:
@@ -57,7 +56,22 @@ def make_population(frame: pd.DataFrame, horizon: int) -> tuple[pd.DataFrame, di
     times = times.sort_values(KEYS)
     if times.groupby(['race_id', 'driver_number']).time.diff().le(pd.Timedelta(0)).any():
         raise ValueError('Nonmonotonic source cutoffs')
-    base = decision_frame(frame).dropna(subset=['anchor_seconds']).copy()
+    base = frame.copy()
+    # Each history value comes from a source record strictly before the decision lap.
+    # No retrospectively inferred clean-lap, pit, stint or race-length fields are used.
+    for step in (1, 2, 3):
+        history = frame[KEYS + ['next_lap_seconds']].copy()
+        history['lap'] = history['lap'] + step
+        history = history.rename(columns={'next_lap_seconds': f'_observed_{step}'})
+        base = base.merge(history, on=KEYS, how='left', validate='one_to_one')
+        values = pd.to_numeric(base[f'_observed_{step}'], errors='coerce')
+        base[f'_observed_{step}'] = values.where(np.isfinite(values) & (values > 0))
+    observed = base[['_observed_1', '_observed_2', '_observed_3']]
+    base = base.loc[observed.notna().sum(axis=1) >= 2].copy()
+    observed = base[['_observed_1', '_observed_2', '_observed_3']]
+    base['anchor_seconds'] = observed.median(axis=1)
+    for step in (1, 2, 3):
+        base[f'last{step}'] = base[f'_observed_{step}'] - base.anchor_seconds
     # Exact joins, not row offsets, distinguish absent source records from horizons.
     target = frame[KEYS + ['next_lap_seconds', 'regime_next', 'next_is_out_lap',
                            'next_is_in_lap', 'eligible_green_next']].copy()
@@ -88,8 +102,8 @@ def make_population(frame: pd.DataFrame, horizon: int) -> tuple[pd.DataFrame, di
     return result, counts
 
 
-def last_clean_delta(frame: pd.DataFrame) -> np.ndarray:
-    """Most recent clean lap among L..L-2; fall back to the median anchor."""
+def last_observed_delta(frame: pd.DataFrame) -> np.ndarray:
+    """Most recent recorded lap among L..L-2; fall back to the median anchor."""
     return frame[['last1', 'last2', 'last3']].bfill(axis=1).iloc[:, 0].fillna(0.0).to_numpy(float)
 
 
@@ -107,15 +121,9 @@ def walk_forward(frame: pd.DataFrame, horizon: int, output: Path) -> pd.DataFram
         median = anchor + model.median.predict(x)
         # Use raw quantiles so crossings remain visible in the study.
         q10, q90 = anchor + model.q10.predict(x), anchor + model.q90.predict(x)
-        last = anchor + last_clean_delta(test)
-        baseline = last.copy()
-        if horizon == 1:
-            pitted = train.just_pitted
-            adjustment = float(train.loc[pitted, 'target_delta'].median()) if pitted.any() else 0.0
-            baseline = np.where(test.just_pitted.to_numpy(), anchor + adjustment, last)
+        last = anchor + last_observed_delta(test)
         part = test[KEYS + ['year', 'event', 'circuit', 'target_seconds', 'target_outcome']].copy()
-        part = part.assign(horizon=horizon, fold=fold, anchor=anchor, last_clean=last,
-                           pit_rule=baseline, lightgbm=median, q10=q10, q90=q90)
+        part = part.assign(horizon=horizon, fold=fold, anchor=anchor, last_observed=last, lightgbm=median, q10=q10, q90=q90)
         parts.append(part)
         joblib.dump({'model': model, 'train_ids': train_ids, 'test_ids': test_ids}, output / f'h{horizon}-fold-{fold:02d}.joblib')
     if not parts:
@@ -128,19 +136,19 @@ def summarise(predictions: pd.DataFrame) -> dict:
     for horizon, frame in predictions.groupby('horizon'):
         y = frame.target_seconds.to_numpy(float)
         stats = {}
-        for name in ('anchor', 'last_clean', 'pit_rule', 'lightgbm'):
+        for name in ('anchor', 'last_observed', 'lightgbm'):
             err = np.abs(y - frame[name].to_numpy(float))
             stats[name] = {'mae': float(err.mean()), 'median_ae': float(np.median(err)),
                            'rmse': float(np.sqrt(np.mean(err ** 2)))}
         low, high = frame.q10.to_numpy(float), frame.q90.to_numpy(float)
-        delta = cluster_bootstrap_delta(np.abs(y - frame.lightgbm), np.abs(y - frame.last_clean),
+        delta = cluster_bootstrap_delta(np.abs(y - frame.lightgbm), np.abs(y - frame.last_observed),
                                         frame.race_id.to_numpy(), draws=5000, seed=42)
         def groups(column: str, subset: pd.DataFrame = frame) -> dict:
             return {str(key): {'n': len(group), 'lightgbm_mae': float((group.target_seconds - group.lightgbm).abs().mean()),
-                               'last_clean_mae': float((group.target_seconds - group.last_clean).abs().mean())}
+                               'last_observed_mae': float((group.target_seconds - group.last_observed).abs().mean())}
                     for key, group in subset.groupby(column)}
         result[str(horizon)] = {'rows': len(frame), 'races': int(frame.race_id.nunique()), 'models': stats,
-                                'paired_lightgbm_vs_last_clean': delta,
+                                'paired_lightgbm_vs_last_observed': delta,
                                 'interval': {'coverage': float(((y >= low) & (y <= high)).mean()),
                                              'mean_width_raw': float((high - low).mean()),
                                              'crossings': int((low > high).sum()),
