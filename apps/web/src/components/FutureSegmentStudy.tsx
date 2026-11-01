@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { FutureFailureAnalysis } from './FutureFailureAnalysis'
 import './FutureSegmentStudy.css'
 
 type Metrics = { mae_s: number; median_ae_s: number; rmse_s: number }
@@ -62,6 +63,7 @@ export default function FutureSegmentStudy() {
       })}</tbody></table></div>
       <p>Full-test conditional driver-bootstrap intervals compare error with persistence; they do not estimate performance on a population of new circuits.</p>
       <p>The no-head-context TCN still adds its learned residual to the last completed lap; only additional context inputs to the neural head are removed.</p>
+      <FutureFailureAnalysis />
       {data.results.filter((row) => row.model === model).map((row) => <p key={row.model} aria-label="Future paired comparison">{label(row.model)} minus last-lap MAE: {row.paired_vs_persistence_s.toFixed(3)} s, 95% conditional interval [{row.conditional_driver_bootstrap_95_s.map((v) => v.toFixed(3)).join(', ')}] s. Lower is better. No automatic promotion.</p>)}
       <label>Held-out lap<select aria-label="Future study lap" value={caseId ?? ''} onChange={(event) => setSelected(Number(event.target.value))}>{cases.map((row) => <option key={row.case_id} value={row.case_id}>{row.circuit} · {row.driver} · lap {row.lap_number}</option>)}</select></label>
       <div className="future-failures" aria-label="Future study failure cases">{failures.map((row) => <button key={row.case_id} onClick={() => setSelected(row.case_id)} aria-pressed={caseId === row.case_id}>{row.circuit} · {row.driver} · L{row.lap_number}<strong>{Math.abs(Number(row[model]) - row.remaining_seconds).toFixed(2)} s error</strong></button>)}</div>

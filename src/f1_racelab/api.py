@@ -484,6 +484,13 @@ def create_app(
         except (OSError, ValueError, KeyError, TypeError) as exc:
             raise HTTPException(status_code=503, detail="Future-performance study unavailable or invalid; run future_data and future_study.") from exc
 
+    @app.get("/api/v1/driver-dna/future-failures")
+    def dna_future_failures() -> dict:
+        try:
+            return dna_future.failure_analysis()
+        except (OSError, ValueError, KeyError) as exc:
+            raise HTTPException(status_code=503, detail="Exploratory failure analysis unavailable or invalid.") from exc
+
     @app.get("/api/v1/driver-dna/future-study/{case_id}")
     def dna_future_incident(case_id: int) -> dict:
         try:

@@ -511,3 +511,8 @@ clean demo bundles aggregate output, not raw telemetry/weights.
 Exact source paths, units, algorithm, provider/license, hashes, failures, commands,
 metrics/intervals and remaining scope: [study](research/DRIVER_DNA_FUTURE_SEGMENT.md).
 Full DL/Corner/CV mandate remains incomplete; no trained replacement promoted.
+
+
+### Driver DNA error decomposition — 2026-11-01
+
+Stacked on draft PR #4 head `968013b937ed352ffb8ae2b5c3c66efd8582de14`; no new training or untouched test. Recomputed exploratory slices from the saved 1,597 test predictions. In the outcome-defined ≤1 s lap-change group, 1,097 laps had persistence MAE 0.279 s versus TCN seed 7 4.577 s; this retrospective group is not available at forecast time. Full-cohort persistence remains 5.2198 s versus 8.1130 s for that TCN. Conditional session-driver bootstrap intervals cover only the inspected two events. The as-of prior-context slice and other models, checksums, exact reproduction and limitations are in [the failure analysis](research/DRIVER_DNA_FAILURE_ANALYSIS.md).

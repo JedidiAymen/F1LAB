@@ -141,3 +141,5 @@ npm run test:e2e
 
 See [the three-session evidence](docs/REPLAY_GOLDEN_SESSIONS.md) for exact
 source/clock semantics, checks, screenshots and remaining limitations.
+
+An [exploratory Driver DNA error decomposition](docs/research/DRIVER_DNA_FAILURE_ANALYSIS.md) explains performance across previously inspected laps; outcome-defined groups are not forecast inputs.
