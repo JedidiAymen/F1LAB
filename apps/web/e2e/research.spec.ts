@@ -1,5 +1,27 @@
 import { expect, test } from '@playwright/test'
 
+test('cone research displays actual saved predictions and supports held-out frame review', async ({ page, request }, testInfo) => {
+  const source = await request.get('/api/v1/research/racevision/cones')
+  test.skip(!source.ok(), 'Local optional cone study artifacts are required')
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Research & reliability' }).click()
+  const study = page.getByRole('region', { name: 'Cone perception research' })
+  await expect(study).toContainText('not Formula 1 footage')
+  await expect(study.getByRole('table', { name: 'Cone detector metrics' })).toContainText('0.021')
+  await expect(study.getByRole('img', { name: 'Formula Student held-out frame 1' })).toBeVisible()
+  await expect(study.getByLabel('Cone frame summary')).toContainText('Frame 1')
+  await study.screenshot({ path: testInfo.outputPath('cones-failure-private.png') })
+  await study.getByLabel('Cone confidence threshold').fill('0.05')
+  await expect.poll(async () => study.locator('.cone-prediction').count()).toBeGreaterThan(0)
+  await study.getByLabel('Cone study model').selectOption('baseline')
+  await study.getByLabel('Cone study frame').selectOption('2')
+  await expect(study.getByLabel('Cone frame summary')).toContainText('Frame 2')
+  await study.screenshot({ path: testInfo.outputPath('cones-desktop-private.png') })
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await study.screenshot({ path: testInfo.outputPath('cones-mobile-private.png') })
+})
+
 test('research observatory filters real failure cases and exposes provenance on desktop and mobile', async ({ page }, testInfo) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Research & reliability' }).click()

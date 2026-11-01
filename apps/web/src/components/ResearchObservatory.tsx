@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AgentInvestigation } from '@/components/AgentInvestigation'
+import { ConeResearch } from '@/components/ConeResearch'
 
 type Comparison = { model: string; rows: number; mae_s: number; bias_s: number; unmatched_rows: number; vs_persistence: { mean_delta: number; ci_low: number; ci_high: number; clusters: number } }
 type Race = { race_id: string; event: string; year: number; rows: number; mae_s: number; bias_s: number }
@@ -117,6 +118,7 @@ export function ResearchObservatory({ onBack }: { onBack: () => void }) {
           <a href="http://127.0.0.1:5000" target="_blank" rel="noreferrer">Open local MLflow <ExternalLink size={12} /></a><p>Optional service on this computer. Registration-source SHA for an imported artifact is not its original training SHA.</p>
         </section>
       </>}
+      <ConeResearch />
       <AgentInvestigation />
     </main>
   )

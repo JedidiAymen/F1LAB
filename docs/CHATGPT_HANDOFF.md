@@ -946,3 +946,8 @@ Radio: **blocked** (protected audio, nothing downloaded), `docs/research/RADIO_I
 ## Engines layer (2026-10-29)
 DuckDB/Spark/pandas run the same SQL transformations with equivalence tests, engine-declaring registry, one-command CLI, Delta
 round trip, MAPE/bias. pandas is fastest at 83k rows. Databricks not tested. See `docs/research/ENGINES.md`.
+
+
+### FSOCO cone detector probe — 2026-11-01
+
+Frozen model source `3c9a948f110879b7914daad61cc0a79eb4ed39a0`; local dataset manifest `646c9a4961bfeeaed19b35fdfdaad95db988b94a501fc6347284d25cddeefe42`. Trained a real SSDLite cone model on 100 sampled Formula Student frames, validated on 20 and tested on 20 prefix-held-out frames. Test mAP@50 was 0.021453 (fine-tuned) versus 0.021294 (class-collapsed COCO reference); both recalled 0/255 cones at confidence/IoU 0.5. This is a negative exploratory result, not a demonstrated improvement, Formula 1 car detector, video or tracking system. Prefix groups do not establish independent circuits. The local read-only gallery displays saved predictions; source images and weights remain local pending redistribution-rights verification. Full protocol, source/license caveats, artifacts, failure analysis and reproduction: [FSOCO probe report](research/RACEVISION_CONE_PROBE.md).

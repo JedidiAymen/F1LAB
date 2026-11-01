@@ -1,0 +1,9 @@
+{
+  "recorded_at_utc": "2026-11-01T12:29:46.247493+00:00",
+  "retrieved_at_utc": null,
+  "reason": "Original fetch did not record per-request retrieval times; do not infer timestamps from file modification times.",
+  "archive_url": "http://fsoco.cs.uni-freiburg.de/datasets/fsoco_bounding_boxes_train.zip",
+  "archive_etag": "\"5c88a45d5-5f5717cd27c44\"",
+  "dataset_manifest_sha256": "646c9a4961bfeeaed19b35fdfdaad95db988b94a501fc6347284d25cddeefe42",
+  "observed_transfer_bytes": 227489891
+}

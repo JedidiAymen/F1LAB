@@ -141,3 +141,5 @@ npm run test:e2e
 
 See [the three-session evidence](docs/REPLAY_GOLDEN_SESSIONS.md) for exact
 source/clock semantics, checks, screenshots and remaining limitations.
+
+RaceVision includes an optional local [Formula Student cone detection research probe](docs/research/RACEVISION_CONE_PROBE.md). Its trained detector performed poorly on the small held-out sample; it is not a Formula 1 video or car detector. The image gallery requires separately obtained local source artifacts.
