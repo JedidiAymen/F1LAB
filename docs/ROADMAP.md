@@ -179,3 +179,34 @@ optional study. Logistic Task A 38.43% → 19.79%; LightGBM 30.21% → 12.33%;
 Task B remains ~89%/~84%. This **does not** complete Driver DNA: still three
 races, no inductive neural model or future-segment evaluation. Next step is
 expanded held-out sessions and causal calibration, not relabeling old neural scores.
+
+## EXP-DNA-FUTURE-01 — six-session inductive future performance
+
+Source baseline `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`, isolated branch
+`feat/issue-2-dna-future-segment`, target foundation; PRs #1/#3 unmerged.
+Actual CPU training on 5,676 observed prefixes (3,199 train / 880 val / 1,597
+test; 777 Australia +820 Japan). Five shared channels after auditing absent
+2026 DRS. Preserved old 45-row Australia cache; separate fresh 1,008-row overlay
+fixes target coverage. No prior model/artifact overwritten.
+
+Persistence MAE 5.2198 s; three TCN seeds 8.1130–11.0882 s; masked seed 42
+8.0249 s; no-context 6.7989 s; LightGBM 22.1297 s; all weaker than persistence.
+Eight trained model/card/checksum/preprocessing bundles and actual MLflow runs;
+independent metric/reload check passes. GET-only API and lazy real-prefix UI;
+clean demo bundles aggregate output, not raw telemetry/weights.
+Exact source paths, units, algorithm, provider/license, hashes, failures, commands,
+metrics/intervals and remaining scope: [study](research/DRIVER_DNA_FUTURE_SEGMENT.md).
+Full DL/Corner/CV mandate remains incomplete; no trained replacement promoted.
+
+Publication: implementation `7477f70fb540b4b8e37c66bbe98fd631a599549f` pushed
+normally and remote-SHA verified. Draft [PR #4](https://github.com/JedidiAymen/F1LAB/pull/4)
+targets foundation, unmerged. [CI 41250905883](https://github.com/JedidiAymen/F1LAB/actions/runs/41250905883)
+passed Python, web and the **actual clean Dockerfile build/start/smoke** without
+research data/optional services. Exact Python CI: **247 passed, 31 skipped in
+14.47 s**, default dependencies; mypy 103 files. Local all-extras count is 309;
+16 frontend units pass. Browser evidence is local, not a CI job. Seven executed
+model/data source hashes match the committed implementation; training occurred
+on base 5cdac66 with a modified worktree, as honestly recorded in run provenance.
+Publication source/CI proof is distinct from the base training SHA.
+PR #3 remains `810b90e8fefd877015eb90cb9d5f947fe0b9584b` with CI 41230058581 green;
+PR #1 remains `5a95ba2`; foundation remains `5cdac66`. No merges/force pushes.

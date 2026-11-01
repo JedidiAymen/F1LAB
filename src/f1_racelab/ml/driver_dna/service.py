@@ -46,8 +46,8 @@ def summary(root=OUT) -> dict:
             "task_b_controls": base["task_b_controls"], "seeds": nets["seeds"], "device": nets["device"],
             "normalization_protocol": "Original scores use per-circuit statistics including unlabeled held-out laps (transductive).",
             "normalization_study": study,
-            "limits": ["Only three races have local full-race telemetry (Monaco 2023, Brazil 2024, Monza 2025).",
+            "limits": ["The original identification dataset uses three races (Monaco 2023, Brazil 2024, Monza 2025).",
                        "Task A is confounded for drivers who kept the same car; Task B by set-up and tyre state.",
                        "Neural models are not clearly better than handcrafted features plus logistic regression.",
-                       "Neural scores use transductive normalization; no inductive neural result has been trained.",
+                       "Original identification neural scores use transductive normalization; the new inductive future-performance study is a separate task.",
                        "This measures separability in sampled laps, not a driver's innate style."]}

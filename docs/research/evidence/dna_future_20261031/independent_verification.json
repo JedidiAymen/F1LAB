@@ -1,0 +1,40 @@
+{
+  "evidence": "real saved model reload; independent pandas metric recomputation",
+  "verified_artifact_files": 17,
+  "metric_models": 10,
+  "test_rows": 1597,
+  "models": {
+    "context_ridge": {
+      "points": 8,
+      "max_reloaded_difference_s": 0.0
+    },
+    "prefix_ridge": {
+      "points": 8,
+      "max_reloaded_difference_s": 0.0
+    },
+    "prefix_lightgbm": {
+      "points": 8,
+      "max_reloaded_difference_s": 0.0
+    },
+    "tcn_seed7": {
+      "points": 8,
+      "max_reloaded_difference_s": 6.268297198630535e-06
+    },
+    "tcn_seed42": {
+      "points": 8,
+      "max_reloaded_difference_s": 4.24542166399533e-06
+    },
+    "tcn_seed123": {
+      "points": 8,
+      "max_reloaded_difference_s": 1.0517146357358342e-05
+    },
+    "tcn_no_context_seed42": {
+      "points": 8,
+      "max_reloaded_difference_s": 4.1405574933151e-06
+    },
+    "tcn_masked_seed42": {
+      "points": 8,
+      "max_reloaded_difference_s": 1.1984245986695896e-05
+    }
+  }
+}

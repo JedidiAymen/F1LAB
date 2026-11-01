@@ -493,3 +493,21 @@ LightGBM 83.59% / 83.92% [76.52,90.76]. Three circuits are insufficient for a
 significant-gain claim; raw descriptors retain circuit shift. Original artifacts
 unchanged; no inductive neural retrain or expanded data. Report/hash, dependencies,
 per-circuit/pair scores and exact command: `research/DRIVER_DNA.md`.
+
+## EXP-DNA-FUTURE-01 — six-session inductive future performance
+
+Source baseline `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`, isolated branch
+`feat/issue-2-dna-future-segment`, target foundation; PRs #1/#3 unmerged.
+Actual CPU training on 5,676 observed prefixes (3,199 train / 880 val / 1,597
+test; 777 Australia +820 Japan). Five shared channels after auditing absent
+2026 DRS. Preserved old 45-row Australia cache; separate fresh 1,008-row overlay
+fixes target coverage. No prior model/artifact overwritten.
+
+Persistence MAE 5.2198 s; three TCN seeds 8.1130–11.0882 s; masked seed 42
+8.0249 s; no-context 6.7989 s; LightGBM 22.1297 s; all weaker than persistence.
+Eight trained model/card/checksum/preprocessing bundles and actual MLflow runs;
+independent metric/reload check passes. GET-only API and lazy real-prefix UI;
+clean demo bundles aggregate output, not raw telemetry/weights.
+Exact source paths, units, algorithm, provider/license, hashes, failures, commands,
+metrics/intervals and remaining scope: [study](research/DRIVER_DNA_FUTURE_SEGMENT.md).
+Full DL/Corner/CV mandate remains incomplete; no trained replacement promoted.

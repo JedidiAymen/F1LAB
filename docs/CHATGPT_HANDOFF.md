@@ -1,4 +1,37 @@
 # F1LAB handoff — current checkpoint, 2026-10-31
+## EXP-DNA-FUTURE-01 — six-session inductive future performance
+
+Source baseline `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`, isolated branch
+`feat/issue-2-dna-future-segment`, target foundation; PRs #1/#3 unmerged.
+Actual CPU training on 5,676 observed prefixes (3,199 train / 880 val / 1,597
+test; 777 Australia +820 Japan). Five shared channels after auditing absent
+2026 DRS. Preserved old 45-row Australia cache; separate fresh 1,008-row overlay
+fixes target coverage. No prior model/artifact overwritten.
+
+Persistence MAE 5.2198 s; three TCN seeds 8.1130–11.0882 s; masked seed 42
+8.0249 s; no-context 6.7989 s; LightGBM 22.1297 s; all weaker than persistence.
+Eight trained model/card/checksum/preprocessing bundles and actual MLflow runs;
+independent metric/reload check passes. GET-only API and lazy real-prefix UI;
+clean demo bundles aggregate output, not raw telemetry/weights.
+Exact source paths, units, algorithm, provider/license, hashes, failures, commands,
+metrics/intervals and remaining scope: [study](research/DRIVER_DNA_FUTURE_SEGMENT.md).
+Full DL/Corner/CV mandate remains incomplete; no trained replacement promoted.
+
+Verification: **309 Python**, Ruff/mypy 103 files, 16 web units, 24 full dev and
+24 production-runtime browsers pass. Screenshots are rendered/reviewed. Local
+Docker validation used read-only source/bundle/dist mounts into existing locked
+dependency images; remote CI is responsible for the new clean build. See
+TEST_EVIDENCE for exact commands, counts and caveats. No GPU/CV/Corner completion
+claim. Read `research/DRIVER_DNA_FUTURE_SEGMENT.md` for stand-alone reproduction,
+artifact/run IDs and both schema/cache failures. Local demo remains :8080 →
+Driver DNA → future-performance study. Models/prefixes are in
+`data/processed/driver_dna_future/verified`; raw old Australia cache preserved.
+Next: publish this independent review PR, then source-gated RaceVision/corner
+research and remaining Issue #2 gates; all review PRs remain unmerged.
+
+Current branch is independent of paired-agent PR #3 (`810b90e8fefd877015eb90cb9d5f947fe0b9584b`, CI 41230058581 green).
+The earlier foundation digest below predates this future-performance study.
+
 
 **Read this current digest first.** The long sections below the historical divider
 are retained implementation history; their old completion/status lists are not
@@ -946,3 +979,38 @@ Radio: **blocked** (protected audio, nothing downloaded), `docs/research/RADIO_I
 ## Engines layer (2026-10-29)
 DuckDB/Spark/pandas run the same SQL transformations with equivalence tests, engine-declaring registry, one-command CLI, Delta
 round trip, MAPE/bias. pandas is fastest at 83k rows. Databricks not tested. See `docs/research/ENGINES.md`.
+
+Publication: implementation `7477f70fb540b4b8e37c66bbe98fd631a599549f` pushed
+normally and remote-SHA verified. Draft [PR #4](https://github.com/JedidiAymen/F1LAB/pull/4)
+targets foundation, unmerged. [CI 41250905883](https://github.com/JedidiAymen/F1LAB/actions/runs/41250905883)
+passed Python, web and the **actual clean Dockerfile build/start/smoke** without
+research data/optional services. Exact Python CI: **247 passed, 31 skipped in
+14.47 s**, default dependencies; mypy 103 files. Local all-extras count is 309;
+16 frontend units pass. Browser evidence is local, not a CI job. Seven executed
+model/data source hashes match the committed implementation; training occurred
+on base 5cdac66 with a modified worktree, as honestly recorded in run provenance.
+Publication source/CI proof is distinct from the base training SHA.
+PR #3 remains `810b90e8fefd877015eb90cb9d5f947fe0b9584b` with CI 41230058581 green;
+PR #1 remains `5a95ba2`; foundation remains `5cdac66`. No merges/force pushes.
+
+Next CV gate inspected: KITTI official object page lists 12 GB left RGB and
+5 MB labels, and current downloads link to login. With about 2 GiB free, the
+full archive does not fit. Current [terms](https://www.cvlibs.net/datasets/kitti/terms_of_service.php)
+require account access and contain content-use restrictions; an applicable
+research/download agreement has not been established here. No download or
+legacy-link workaround performed and no CC dataset grant assumed. It is road
+imagery, not Formula 1 or racing footage. Existing RACECAR/A2RL/CARLA audit
+still applies; no CV training is claimed. Resolve a small annotated RGB source,
+explicit rights/splits and storage gate before detector work. Other Issue #2
+modules remain partial, not globally blocked or marked complete.
+
+Independent checker follow-up: verifies the study sidecar and all 17 model/card/
+preprocessing hashes before any model deserialization. Real artifact reload and
+ten-model metrics pass again; a deliberately corrupted temporary model copy is
+rejected before deserialization. Actual saved models stay unchanged. Publication
+metadata commit `9070231d01bc77c6ae6eaea95cde1ca3fbc8cc12` also passed all CI
+jobs in run 41251143634. No new model fit or test-set tuning occurred.
+
+### Ablation wording correction — 2026-11-01
+
+On PR #4, the `tcn_no_context_seed42` neural head excludes added context, but its residual is still added to the last-completed-lap forecast. The interface and research table now state this explicitly; model identifiers and saved experiment bytes remain unchanged. The mobile control grid was constrained after the initial browser check exposed horizontal overflow. Local Playwright reviewed desktop and 390px mobile renderings. No new training or changed metric is claimed.

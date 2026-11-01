@@ -76,7 +76,7 @@ def _sync(client: httpx.Client, manifest: dict, root: Path, name: str, card: Mod
             "f1lab.source_sha": manifest["source"]["sha"],
             "f1lab.source_dirty": str(manifest["source"]["dirty"]),
             "f1lab.dataset_fingerprint": card.dataset_fingerprint,
-            "f1lab.model_sha256": manifest["files"][f"{name}.joblib"],
+            "f1lab.model_sha256": manifest["files"][manifest.get("model_file", f"{name}.joblib")],
             "f1lab.data_license": card.data_license}
     run = post("runs/create", {"experiment_id": experiment_id, "start_time": int(time.time() * 1000),
                                "tags": [{"key": key, "value": value} for key, value in tags.items()]})["run"]
@@ -114,16 +114,23 @@ def _sync(client: httpx.Client, manifest: dict, root: Path, name: str, card: Mod
 
 def record_artifact(root: Path, name: str, card: ModelCard, *,
                     run_kind: Literal["training", "artifact_import"] = "training",
+                    artifact_suffix: Literal[".joblib", ".pt"] = ".joblib",
+                    extra_artifacts: tuple[str, ...] = (),
                     tracking_uri: str | None = None, client: httpx.Client | None = None) -> dict:
     """Verify bytes, save a manifest, and optionally track; remote failures are explicit."""
     files = {f"{name}{suffix}": hashlib.sha256((root / f"{name}{suffix}").read_bytes()).hexdigest()
-             for suffix in (".joblib", ".card.json", ".sha256")}
-    if files[f"{name}.joblib"] != (root / f"{name}.sha256").read_text().strip():
+             for suffix in (artifact_suffix, ".card.json", ".sha256")}
+    for filename in extra_artifacts:
+        if Path(filename).name != filename:
+            raise ValueError("Extra artifacts must be filenames inside the model directory")
+        files[filename] = hashlib.sha256((root / filename).read_bytes()).hexdigest()
+    if files[f"{name}{artifact_suffix}"] != (root / f"{name}.sha256").read_text().strip():
         raise ValueError("Artifact SHA-256 mismatch; refusing to track")
     manifest: dict = {"schema_version": 1, "run_kind": run_kind, "recorded_at_utc": now_utc(),
                 "model_id": card.model_id, "model_version": card.version, "evidence": card.evidence,
                 "dataset_fingerprint": card.dataset_fingerprint, "source": source_revision(),
-                "files": files, "dependencies": card.dependencies, "metrics": card.metrics,
+                "files": files, "model_file": f"{name}{artifact_suffix}",
+                "dependencies": card.dependencies, "metrics": card.metrics,
                 "tracking": {"status": "disabled"}}
     uri = tracking_uri or os.environ.get("MLFLOW_TRACKING_URI")
     if uri:

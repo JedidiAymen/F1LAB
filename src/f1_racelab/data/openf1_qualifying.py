@@ -34,10 +34,14 @@ class OpenF1Client:
     """Cache exact JSON responses and pace uncached public requests."""
 
     def __init__(self, cache_root: Path = RAW_ROOT, *,
-                 interval: float = MIN_REQUEST_INTERVAL_SECONDS, offline: bool = False):
+                 interval: float = MIN_REQUEST_INTERVAL_SECONDS, offline: bool = False,
+                 max_response_bytes: int | None = None):
+        if max_response_bytes is not None and max_response_bytes <= 0:
+            raise ValueError("max_response_bytes must be positive")
         self.cache_root = Path(cache_root)
         self.interval = interval
         self.offline = offline
+        self.max_response_bytes = max_response_bytes
         self._last_request = 0.0
         self._sleep = time.sleep  # injectable so retry tests do not wait
         self._rng = random.Random(0)
@@ -58,6 +62,8 @@ class OpenF1Client:
         """
         if not destination.exists():
             return None
+        if self.max_response_bytes is not None and destination.stat().st_size > self.max_response_bytes:
+            raise ValueError("Cached OpenF1 response exceeds decoded byte budget")
         payload = destination.read_bytes()
         try:
             if isinstance(json.loads(payload), list):
@@ -67,6 +73,20 @@ class OpenF1Client:
         destination.replace(destination.with_suffix(".corrupt"))
         return None
 
+    def _request(self, endpoint: str, params: dict) -> httpx.Response:
+        if self.max_response_bytes is None:
+            return self._http.get(f"{BASE_URL}/{endpoint}", params=params)
+        with self._http.stream("GET", f"{BASE_URL}/{endpoint}", params=params) as response:
+            if response.status_code in RETRIABLE_STATUS:
+                return httpx.Response(response.status_code, headers=response.headers, request=response.request)
+            response.raise_for_status()
+            payload = bytearray()
+            for chunk in response.iter_bytes(chunk_size=65536):
+                if len(payload) + len(chunk) > self.max_response_bytes:
+                    raise ValueError("OpenF1 response exceeds decoded byte budget; no cache written")
+                payload.extend(chunk)
+            return httpx.Response(response.status_code, content=bytes(payload), request=response.request)
+
     def _fetch(self, endpoint: str, params: dict) -> bytes:
         last_error: Exception | None = None
         for attempt in range(MAX_ATTEMPTS):
@@ -75,7 +95,7 @@ class OpenF1Client:
                 self._sleep(delay)
             self._last_request = time.monotonic()
             try:
-                response = self._http.get(f"{BASE_URL}/{endpoint}", params=params)
+                response = self._request(endpoint, params)
             except httpx.TransportError as exc:  # timeouts, resets, DNS blips
                 last_error = exc
             else:
