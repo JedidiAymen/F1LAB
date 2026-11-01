@@ -330,3 +330,8 @@ remains the original frozen revision. Full contracts, units, reproduction,
 independent PR review and limitations: [correction](research/EVIDENCE_PREFLIGHT_CORRECTION.md).
 Next: immutable source/coverage gates and historical-impact audit, then the
 independent telemetry/Corner milestones. Published SHA/CI recorded after push.
+
+
+### Agent observational evidence gate — 2026-11-01
+
+Evidence gate: a bounded check that can withhold a claim or surface observed signals. A signal, even a correct mismatch, does not automatically prove a material incident or its cause.

@@ -506,3 +506,8 @@ remains the original frozen revision. Full contracts, units, reproduction,
 independent PR review and limitations: [correction](research/EVIDENCE_PREFLIGHT_CORRECTION.md).
 Next: immutable source/coverage gates and historical-impact audit, then the
 independent telemetry/Corner milestones. Published SHA/CI recorded after push.
+
+
+### Agent observational evidence gate — 2026-11-01
+
+EXP-AGENT-GATE-01: known synthetic traces from PR #10, 16 corrected-candidate cases, original 6/16. Withhold all 12 clean proposals (10 false and 2 true); 8 have selected signals, 4 insufficient. Post-hoc hardening; not causal accuracy or fresh holdout. See research/AGENT_EVIDENCE_GATE_PROTOCOL.md.

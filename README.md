@@ -145,3 +145,8 @@ source/clock semantics, checks, screenshots and remaining limitations.
 Evidence preflight handles missing/conflicting metadata explicitly; this is a
 [correctness correction](docs/research/EVIDENCE_PREFLIGHT_CORRECTION.md), not
 a demonstrated LLM accuracy improvement or a production diagnostic system.
+
+
+### Agent observational evidence gate — 2026-11-01
+
+An exploratory [agent evidence gate](docs/research/AGENT_EVIDENCE_GATE_PROTOCOL.md) flags selected cited observations and withholds every clean proposal; it does not validate causal diagnoses. On 16 previously inspected synthetic cases it withheld both true-clean cases as well as all 10 false-clean proposals.

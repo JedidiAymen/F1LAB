@@ -981,3 +981,10 @@ Python/web/clean Compose. Known placeholder identity strings are also unknown.
 The corrected tool output is not covered by the historical6/16 evaluation.
 
 PR #1 integration note: feature branch incorporates foundation `5cdac66677e6abb513f84e3ede5f74dd74d00bb6` to resolve documentation-only conflicts. Both the Driver DNA normalization study and agent preflight corrections are preserved. No changes were merged into foundation or main, and the corrected agent head still lacks a paired LLM evaluation.
+
+
+### Agent observational evidence gate — 2026-11-01
+
+Agent observational gate branch stacks on PR #1 head 486bba7; its saved trace input is from PR #10 head 3ca999e and the branches are not merged. From 16 previously inspected Qwen3 synthetic cases, original agent scored 6/16. Gate withheld all 12 clean proposals, including 10 false-clean and 2 true-clean, by design. Eight had selected signals and four insufficient; the gate never approves a causal diagnosis. Initial and post-hoc hardened/wording reports remain separate with hashes. Protocol, API, reproduction and limitations: research/AGENT_EVIDENCE_GATE_PROTOCOL.md. No promotion.
+
+Related independent reviews at this checkpoint: [PR #9](https://github.com/JedidiAymen/F1LAB/pull/9) at `cfa7cfce0f02321bb1bf82979457a3040a89f83e` covers overtake cutoff and source-availability warnings; [PR #11](https://github.com/JedidiAymen/F1LAB/pull/11) at `46477256d03a1c6e876d4cfdacdf4259f9dbb341` covers the amended multi-horizon Race Pace study. Both are unmerged and edit shared research/Observatory files. Deliberate integration review is required; this branch does not silently include them.

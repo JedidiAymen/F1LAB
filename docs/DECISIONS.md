@@ -384,3 +384,8 @@ remains the original frozen revision. Full contracts, units, reproduction,
 independent PR review and limitations: [correction](research/EVIDENCE_PREFLIGHT_CORRECTION.md).
 Next: immutable source/coverage gates and historical-impact audit, then the
 independent telemetry/Corner milestones. Published SHA/CI recorded after push.
+
+
+### Agent observational evidence gate — 2026-11-01
+
+Keep evidence gate opt-in and retain the original diagnosis. All clean proposals abstain because a compact summary cannot exclude all failures; signal_present does not establish materiality or cause.
