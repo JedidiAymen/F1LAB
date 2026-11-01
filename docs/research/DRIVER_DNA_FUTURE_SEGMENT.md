@@ -137,6 +137,8 @@ completeness risk for prior ingestion; older studies were not recomputed.
 | tcn_no_context_seed42 | 6.7989 | +1.5792 | [+1.2678, +1.9090] |
 | tcn_masked_seed42 | 8.0249 | +2.8052 | [+1.7168, +3.5927] |
 
+The `tcn_no_context_seed42` ablation removes additional context inputs from the neural head, but the overall forecast retains last-lap persistence as its additive prediction anchor. It is not a context-free forecast. This clarification changes no saved model, prediction, metric, or experimental protocol.
+
 **No trained replacement beats persistence.** Standard TCN seed variation is
 8.1130–11.0882 s MAE; context removal gives 6.7989 s, masked seed 42 gives
 8.0249 s, both still worse than persistence. Single-seed ablation differences

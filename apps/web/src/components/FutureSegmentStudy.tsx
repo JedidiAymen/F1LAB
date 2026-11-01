@@ -7,7 +7,9 @@ type Candidate = { model: string; test: Metrics; by_session: Record<string, Metr
 type Case = { case_id: number; circuit: string; driver: string; lap_number: number; session_key: number; remaining_seconds: number; [key: string]: string | number }
 type Study = { artifact_mode: string; session_catalog: { session_key: number; circuit: string }[]; dataset: { rows: number; split_rows: Record<string, number>; quality: Record<string, { kept: number; source_laps: number }> }; results: Candidate[]; cases: Case[]; limitations: string[]; source_sha: string; prediction_sha256: string; training_curves: Record<string, { stage: string; epoch: number; validation_scaled_mae?: number }[]> }
 type Prefix = { case_id: number; seconds: number[]; channels: Record<string, number[]>; evidence: string }
-const label = (value: string) => value.replaceAll('_', ' ')
+const label = (value: string) => value === 'tcn_no_context_seed42'
+  ? 'TCN seed 42 · no head context · last-lap anchor retained'
+  : value.replaceAll('_', ' ')
 
 export default function FutureSegmentStudy() {
   const [data, setData] = useState<Study | null>(null)
@@ -59,6 +61,7 @@ export default function FutureSegmentStudy() {
         return <tr key={row.model} data-selected={row.model === model}><th scope="row">{label(row.model)}</th><td>{score.mae_s.toFixed(3)}</td><td>{score.median_ae_s.toFixed(3)}</td><td>{score.rmse_s.toFixed(3)}</td></tr>
       })}</tbody></table></div>
       <p>Full-test conditional driver-bootstrap intervals compare error with persistence; they do not estimate performance on a population of new circuits.</p>
+      <p>The no-head-context TCN still adds its learned residual to the last completed lap; only additional context inputs to the neural head are removed.</p>
       {data.results.filter((row) => row.model === model).map((row) => <p key={row.model} aria-label="Future paired comparison">{label(row.model)} minus last-lap MAE: {row.paired_vs_persistence_s.toFixed(3)} s, 95% conditional interval [{row.conditional_driver_bootstrap_95_s.map((v) => v.toFixed(3)).join(', ')}] s. Lower is better. No automatic promotion.</p>)}
       <label>Held-out lap<select aria-label="Future study lap" value={caseId ?? ''} onChange={(event) => setSelected(Number(event.target.value))}>{cases.map((row) => <option key={row.case_id} value={row.case_id}>{row.circuit} · {row.driver} · lap {row.lap_number}</option>)}</select></label>
       <div className="future-failures" aria-label="Future study failure cases">{failures.map((row) => <button key={row.case_id} onClick={() => setSelected(row.case_id)} aria-pressed={caseId === row.case_id}>{row.circuit} · {row.driver} · L{row.lap_number}<strong>{Math.abs(Number(row[model]) - row.remaining_seconds).toFixed(2)} s error</strong></button>)}</div>

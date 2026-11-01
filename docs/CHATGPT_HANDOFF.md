@@ -1010,3 +1010,7 @@ ten-model metrics pass again; a deliberately corrupted temporary model copy is
 rejected before deserialization. Actual saved models stay unchanged. Publication
 metadata commit `9070231d01bc77c6ae6eaea95cde1ca3fbc8cc12` also passed all CI
 jobs in run 41251143634. No new model fit or test-set tuning occurred.
+
+### Ablation wording correction — 2026-11-01
+
+On PR #4, the `tcn_no_context_seed42` neural head excludes added context, but its residual is still added to the last-completed-lap forecast. The interface and research table now state this explicitly; model identifiers and saved experiment bytes remain unchanged. The mobile control grid was constrained after the initial browser check exposed horizontal overflow. Local Playwright reviewed desktop and 390px mobile renderings. No new training or changed metric is claimed.

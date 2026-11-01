@@ -600,3 +600,5 @@ ten-model metrics pass again; a deliberately corrupted temporary model copy is
 rejected before deserialization. Actual saved models stay unchanged. Publication
 metadata commit `9070231d01bc77c6ae6eaea95cde1ca3fbc8cc12` also passed all CI
 jobs in run 41251143634. No new model fit or test-set tuning occurred.
+
+PR #4 ablation-label clarification: `npm run lint`, `npm run test:unit` (16 passed) and `npm run build` passed. `PYTHONPATH=/tmp/f1lab-dna-future/src npm --prefix apps/web run test:e2e -- --config playwright.audit.config.ts e2e/future-study.spec.ts` passed after fixing mobile overflow (1 Chromium interaction test; desktop and 390px screenshots inspected locally). The test's first run exposed that overflow and did not pass. The saved bundled and local verified study JSON both retained SHA-256 `09949690cae00168d33a6db969fd612b93783fe3523251abb35ccaaf52ee8265`. No model artifacts changed.
