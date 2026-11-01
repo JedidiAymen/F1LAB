@@ -493,3 +493,22 @@ LightGBM 83.59% / 83.92% [76.52,90.76]. Three circuits are insufficient for a
 significant-gain claim; raw descriptors retain circuit shift. Original artifacts
 unchanged; no inductive neural retrain or expanded data. Report/hash, dependencies,
 per-circuit/pair scores and exact command: `research/DRIVER_DNA.md`.
+
+## EXP-AGENT-PAIRED-01 — frozen local LLM comparison, 2026-10-31
+
+Actual Qwen3 8B inference on synthetic warehouses, not training or real F1
+incidents. Baseline `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`; candidate PR #1
+`5a95ba26395cf8f7395a8396297409db17ebe02e`; scenario seeds 1/4, model seed 42,
+16 pairs, identical table fingerprints, model digest/options and step budget.
+Both 6/16 correct (37.5%); paired delta 0 pp, 95% eight-family bootstrap
+[−37.5,+37.5] pp. False clean diagnoses 8/7; undetermined 0/3; tool calls 47/41,
+errors 0/2; nonexistent citation IDs 0/0. Engineering semantic adjudication:
+5/16 supported explanations in each arm (not independent human annotation).
+Mean loop latency 16.2647/16.6963 s, shared desktop/memory-pressure caveat.
+No improvement established. Old 2/8 and reference 200/200 remain separate.
+
+Full protocol, model/dataset card, license/source references, all 32 outcomes,
+hashes and exact commands: [paired study](research/AGENT_PAIRED_EVALUATION.md).
+Small actual-output bundle: `docs/research/evidence/forecast_debug_paired_20261031/`.
+No weights or external dataset/broadcast assets redistributed. PR #1 remains
+unmerged; missing metadata findings are documented without changing its inputs.

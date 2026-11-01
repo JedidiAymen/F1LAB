@@ -1,0 +1,72 @@
+{
+  "created_at_utc": "2026-10-31T18:09:55.083328+00:00",
+  "dependencies": {
+    "duckdb": "2.0.0",
+    "httpx": "0.28.1",
+    "numpy": "2.5.3",
+    "pandas": "2.3.3",
+    "python": "3.12.13"
+  },
+  "fixed_chat": {
+    "format": "json",
+    "keep_alive": "1m",
+    "stream": false,
+    "temperature": 0,
+    "think": false
+  },
+  "harness_sha256": "0410b07fc3450dff41b0f9c3b1f519c9dca56ca73b390924bef9d6959bfb25bd",
+  "labels": [
+    "regime_shift",
+    "stale_model_version",
+    "feature_skew",
+    "missing_live_data",
+    "unit_mismatch",
+    "config_drift",
+    "lap_misalignment",
+    "no_material_discrepancy"
+  ],
+  "logical_cpus": 20,
+  "model_digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+  "ollama_version": {
+    "version": "0.31.1"
+  },
+  "platform": "Linux-7.2.9-arch1-1-x86_64-with-glibc2.44",
+  "protocol_sha256": "f7cd231e07c20471f0330acc713a4cfa14b966ef203304c1617aaff519c1908d",
+  "scenario_seeds": [
+    1,
+    4
+  ],
+  "schema_version": 1,
+  "settings": {
+    "host": "http://127.0.0.1:11434",
+    "max_steps": 6,
+    "model": "qwen3:8b",
+    "model_seed": 42,
+    "num_ctx": 4096,
+    "num_predict": 512,
+    "num_thread": 2,
+    "timeout": 180,
+    "worker_timeout": 240
+  },
+  "sources": {
+    "baseline": {
+      "commit": "5cdac66677e6abb513f84e3ede5f74dd74d00bb6",
+      "files": {
+        "src/f1_racelab/agents/forecast_debug/agent.py": "de60b506ca781e20a41488a977ceac2ba01bf3df6b7e6cc279bab22ea75cdd38",
+        "src/f1_racelab/agents/forecast_debug/llm.py": "6713c5c443a53adaf23caa2124a710a5b808b01e1c4ba375a98a3c12991ea451",
+        "src/f1_racelab/agents/forecast_debug/scenarios.py": "aa17e40530b4adc9433a80cfadaca70320c68d1bcdb54a8c9c74a17ac663b53c",
+        "src/f1_racelab/agents/forecast_debug/tools.py": "81efb74b076187dc8278e9a290dcde047c173432ff71b3aeb8f6469cebcb543b"
+      }
+    },
+    "candidate": {
+      "commit": "5a95ba26395cf8f7395a8396297409db17ebe02e",
+      "files": {
+        "src/f1_racelab/agents/forecast_debug/agent.py": "d8b854faf3ec703822786023f9011968a2e349dbc29ce233afab90f4a3d61aa6",
+        "src/f1_racelab/agents/forecast_debug/llm.py": "6713c5c443a53adaf23caa2124a710a5b808b01e1c4ba375a98a3c12991ea451",
+        "src/f1_racelab/agents/forecast_debug/scenarios.py": "aa17e40530b4adc9433a80cfadaca70320c68d1bcdb54a8c9c74a17ac663b53c",
+        "src/f1_racelab/agents/forecast_debug/tools.py": "1901f7cb55bbd5beea06b0212b48ab6890fa5d88cea926ef3f968c862a09d360",
+        "src/f1_racelab/agents/forecast_debug/triage.py": "fe6bf8a0680b70bf8a08e8f82ca9a25dafeb4ab6efd88f753d4b54ac146f594a"
+      }
+    }
+  }
+}

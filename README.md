@@ -13,7 +13,7 @@ Real data is OpenF1 (2023-2026) and FastF1 (2022); raw data stays local and
 git-ignored (OpenF1 terms are non-commercial, see
 [the data contract](docs/DATA_CONTRACTS.md)).
 
-| Area | State | Measured result (real data) |
+| Area | State | Measured evidence |
 | --- | --- | --- |
 | Qualifying forecast | Walk-forward ensemble with rank probabilities (`/api/v1/predictions/qualifying/walkforward`) | 2024-25 pooled: 0.27 positions better than latest practice (interval excludes zero). **2026: no transfer** (+0.05, interval includes zero). |
 | Race-pace forecast | Next-lap LightGBM, out-of-fold UI (`/api/v1/pace/*`), versioned prediction endpoint (`POST /api/v1/pace/predict`) | 65 scored races, 57,679 green laps. 0.575 s MAE vs 0.593 s for last-lap persistence: **difference -0.018 s, race-clustered 95% CI [-0.057, +0.029], not significant**; persistence is better in 2025. Raw 80% interval covers 75%; a chronological conformal correction reaches 80%. Safety-car laps are out of distribution. |
@@ -22,7 +22,7 @@ git-ignored (OpenF1 terms are non-commercial, see
 | Driver DNA | Three-race telemetry study; handcrafted, TCN and contrastive encoders; API/UI | 1,749 laps. Cross-circuit logistic accuracy falls **38.4% → 19.8%** under train-only normalization; teammate accuracy remains 88.8%. Original neural scores are transductive; no inductive neural result. |
 | Overtake Intelligence | Historical walk-forward comparison, calibration and API/UI | LightGBM Brier 0.0329 vs gap-only logistic 0.0407; isotonic calibration did not improve proper scores. |
 | Neural qualifying | Evaluated exploratory variants | No reliable gain over existing ensemble; not served. |
-| Forecast Debug Agent | Local Ollama evaluation and read-only incident replay | **2/8 diagnoses correct**, 17.43 s mean latency on synthetic planted faults; not production-ready. Scripted reference accuracy is not LLM accuracy. |
+| Forecast Debug Agent | Local Ollama evaluations and paired read-only incident replay | [Frozen paired study](docs/research/AGENT_PAIRED_EVALUATION.md): **6/16 correct in both arms**, accuracy change 0 points, family-bootstrap interval [−37.5, +37.5]. Five supported explanations per arm under engineering review. Earlier **2/8** retained separately; scripted reference is not LLM accuracy. |
 | Research & reliability | Saved forecast comparisons, season bias, input drift, provenance and agent traces | Reuses inspected experiments; no fresh holdout or live drift claim. |
 | RaceVision / Radio / Corner Intelligence | Not implemented | Camera-source audit exists; no detector, tracking or corner-model scores. |
 
@@ -55,6 +55,8 @@ Rendered production screenshots: [desktop](docs/images/research-desktop.png),
 and explicitly labeled synthetic-fault LLM investigations.
 The [Driver DNA normalization comparison](docs/images/driver-dna-normalization.png)
 shows why the preprocessing protocol changes the cross-circuit result.
+The [paired agent replay](docs/images/agent-paired-desktop.png) exposes regressions,
+cited tool observations and explanation-support findings.
 
 Model cards, hashes and the research notes are in
 [docs/research](docs/research/RACE_PACE_INTELLIGENCE.md); CI runs ruff, pytest

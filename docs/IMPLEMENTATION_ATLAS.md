@@ -423,3 +423,20 @@ labels original scores transductive; UI shows protocols side by side. `tests/
 test_driver_dna_normalization.py` covers poisoning/contracts/optional data/tamper;
 research browser scenario checks real 19.8% logistic and no-inductive-neural warning.
 All metrics/units/caveats/reproduction are in `research/DRIVER_DNA.md`.
+
+## Issue #2 paired agent study
+
+- `agents/forecast_debug/paired.py`: isolated per-arm subprocess runner, fixed
+  Ollama settings, source/model/table hashes, atomic resumable cases, one-writer
+  lock, matched pair validation and known-family clustered accuracy bootstrap.
+- `agents/forecast_debug/service.py:load_paired`: verifies publication checksums
+  and protocol identity, recomputes scores, binds semantic annotations to result
+  hashes; returns tool observations without internal model thoughts.
+- `api.py`: GET-only `/api/v1/research/agent-paired`; invalid evidence gives 503.
+- `apps/web/src/components/PairedAgentStudy.tsx`: same-incident two-arm selection,
+  failure filter, scores, cited observations, support reasons and data provenance.
+  Loaded inside the existing lazy Research & reliability workspace.
+- Tests: `test_agent_paired.py`, `test_agent_paired_service.py`, research Playwright
+  interactions. Compose includes the small synthetic-warehouse output bundle.
+- Inputs/outputs, algorithm, seconds/proportions, review findings and exact
+  reproduction: `research/AGENT_PAIRED_EVALUATION.md`. No external data download.

@@ -317,3 +317,14 @@ than proving neural models better. The unchanged teammate logistic result
 reflects cancellation of affine within-circuit scaling by its training scaler.
 A fully online protocol additionally needs causal quality filters and feature
 availability; this small normalization audit does not establish those.
+
+## Paired agent evaluation
+
+A **pair** is the same generated warehouse examined by each frozen agent.
+Table fingerprints verify equality. The **arm** is the implementation under test,
+not a different model. A **family-cluster bootstrap** samples whole fault families
+so related random draws stay together. It estimates variation within this small
+known taxonomy, not robustness to unseen faults. **Citation validity** asks whether
+a referenced tool ID exists. **Evidence support** asks whether that observation
+actually warrants the explanation; a correct label can still contain unsupported
+claims. Engineering adjudication is inspectable but is not blinded human labeling.

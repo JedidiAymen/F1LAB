@@ -179,3 +179,30 @@ optional study. Logistic Task A 38.43% → 19.79%; LightGBM 30.21% → 12.33%;
 Task B remains ~89%/~84%. This **does not** complete Driver DNA: still three
 races, no inductive neural model or future-segment evaluation. Next step is
 expanded held-out sessions and causal calibration, not relabeling old neural scores.
+
+## Issue #2 — isolated agent comparison (2026-10-31)
+
+Driver DNA normalization audit is published as `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`;
+[CI 41226338083](https://github.com/JedidiAymen/F1LAB/actions/runs/41226338083) passed all three jobs.
+New branch `feat/issue-2-agent-paired-evaluation` targets `feat/foundation`.
+Draft PR #1 was reviewed at `5a95ba26395cf8f7395a8396297409db17ebe02e`,
+including its passing CI and 43 local focused checks; it remains unmerged.
+A frozen same-model paired local LLM comparison and read-only side-by-side
+incident interface are documented in [the paired study](research/AGENT_PAIRED_EVALUATION.md).
+Incomplete metadata findings on PR #1 remain explicit review findings.
+This does not finish multi-fault/real-incident validation or the DL/CV scope.
+
+Publication verified: implementation `a84259489aae8364a25bcabddb4e5a4e4a712e35`
+pushed normally to `feat/issue-2-agent-paired-evaluation`; `git ls-remote`
+matched exactly. Draft [PR #3](https://github.com/JedidiAymen/F1LAB/pull/3)
+targets `feat/foundation`, unmerged. [PR CI 41229788889](https://github.com/JedidiAymen/F1LAB/actions/runs/41229788889)
+passed Python, web and clean-data Compose. Exact Python CI result: **247 passed,
+30 skipped in 9.28 s**, default dependency set; mypy 100 files. This differs from
+local all-extras verification (307 full-run passes before the final added binding
+regression, then 5 focused service passes; 308-test local inventory). Web CI has
+16 unit passes, build/lint pass. Compose CI actually builds and checks the bundled
+32-case API without raw F1 data. Browser evidence remains local, not a CI job.
+PR #1 stays at `5a95ba26395cf8f7395a8396297409db17ebe02e`; foundation stays at
+`5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. No PR/main merge or attribution change.
+After testing, removed disposable build cache (Docker reported 2.956 GB; shared
+runtime layers remain), restoring about 3.2 GiB free; no images/volumes/data deleted.

@@ -28,6 +28,10 @@ def smoke(base_url: str, *, require_data: bool = False, require_model: bool = Fa
         ready = response.json()
         assert ready["artifact_check"] == "presence_only"
         assert client.get("/api/v1/not-a-route").status_code == 404
+        paired = client.get("/api/v1/research/agent-paired")
+        paired.raise_for_status()
+        assert len(paired.json()["cases"]) == 32
+        assert "synthetic" in paired.json()["evidence"]
         sessions = client.get("/api/v1/replays").json()
         assert len(sessions) == 3
         checked = []

@@ -16,6 +16,10 @@
 .research-observatory h3 { font-size: 14px; margin: 24px 0 12px; }
 .research-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .research-panel { min-width: 0; padding: 24px 0; border-top: 1px solid var(--border); }
+.paired-case-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 6px; margin: 20px 0; }
+.paired-case-grid button { justify-content: space-between; height: auto; min-height: 44px; white-space: normal; text-align: left; }
+.paired-outcome { display: inline-block; margin-left: 8px; color: var(--destructive); }
+.paired-outcome[data-correct="true"] { color: var(--chart-2); }
 .research-table-scroll { overflow-x: auto; }
 .research-observatory table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: right; white-space: nowrap; }
 .research-observatory th, .research-observatory td { padding: 11px 10px; border-bottom: 1px solid var(--border); }
