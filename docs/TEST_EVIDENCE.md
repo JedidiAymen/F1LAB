@@ -527,3 +527,10 @@ Real replay/model/WS smoke passes unchanged. Screenshot
 `docs/images/driver-dna-normalization.png` is rendered from the working UI and
 visually reviewed. Basic API/web and optional model-serving replica remain
 healthy; session-created disposable build caches were reclaimed afterward.
+
+
+### Source integrity checkpoint — 2026-11-01
+
+Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Implemented opt-in OpenF1 lap screening, immutable local snapshots/quarantine, audit records, and content-addressed dataset contracts in `src/f1_racelab/data/source_integrity.py`; added `OpenF1Client.get_verified_laps`, `scripts/audit_source_integrity.py`, and synthetic regression tests. The Australia old cache has 45 rows (20 late-start drivers); the refreshed copy has 1,008 rows and remains completeness-unknown. Saved Race Pace excludes that session; qualifying has no direct race-laps dependency; corrected PR #4 uses the refreshed source. No old artifacts overwritten, new model trained, or broad completeness asserted. Existing pipelines have not yet been migrated to the opt-in gate. Real source hashes, impact, exact commands, licensing and limitations: [source-integrity report](research/SOURCE_INTEGRITY.md).
+
+Local source-integrity verification (isolated worktree, real cached-source audit plus synthetic tests): `/home/aymmzn/Documents/projects/F1LAB/.venv/bin/ruff check src tests scripts` passed; `.venv/bin/mypy src/f1_racelab` passed for 100 modules; `PYTHONPATH=/tmp/f1lab-source-integrity/src /home/aymmzn/Documents/projects/F1LAB/.venv/bin/pytest -q -W ignore` yielded 289 passed, 19 skipped in 23.52 s. Skips are not passes. The CLI reproduction and source hashes are in the linked report. This checkpoint changes no frontend; browser validation belongs to existing frontend CI.

@@ -141,3 +141,5 @@ npm run test:e2e
 
 See [the three-session evidence](docs/REPLAY_GOLDEN_SESSIONS.md) for exact
 source/clock semantics, checks, screenshots and remaining limitations.
+
+Source provenance is being strengthened with an opt-in integrity gate and immutable local snapshots. The Australia source discrepancy and its effect on saved experiments are documented in the [source-integrity report](docs/research/SOURCE_INTEGRITY.md); existing data producers are not yet universally gated.

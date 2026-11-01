@@ -179,3 +179,8 @@ optional study. Logistic Task A 38.43% → 19.79%; LightGBM 30.21% → 12.33%;
 Task B remains ~89%/~84%. This **does not** complete Driver DNA: still three
 races, no inductive neural model or future-segment evaluation. Next step is
 expanded held-out sessions and causal calibration, not relabeling old neural scores.
+
+
+### Source integrity checkpoint — 2026-11-01
+
+Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Implemented opt-in OpenF1 lap screening, immutable local snapshots/quarantine, audit records, and content-addressed dataset contracts in `src/f1_racelab/data/source_integrity.py`; added `OpenF1Client.get_verified_laps`, `scripts/audit_source_integrity.py`, and synthetic regression tests. The Australia old cache has 45 rows (20 late-start drivers); the refreshed copy has 1,008 rows and remains completeness-unknown. Saved Race Pace excludes that session; qualifying has no direct race-laps dependency; corrected PR #4 uses the refreshed source. No old artifacts overwritten, new model trained, or broad completeness asserted. Existing pipelines have not yet been migrated to the opt-in gate. Real source hashes, impact, exact commands, licensing and limitations: [source-integrity report](research/SOURCE_INTEGRITY.md).

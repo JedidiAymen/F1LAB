@@ -1394,3 +1394,8 @@ hashes, algorithms/units, exact commands, split caveats and next work in
 checks pass. Docker dependency layer no longer includes README to prevent
 unnecessary scientific dependency reinstall on documentation changes. Final
 container/publication evidence follows in the handoff. User helpers untouched.
+
+
+### Source integrity checkpoint — 2026-11-01
+
+Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Implemented opt-in OpenF1 lap screening, immutable local snapshots/quarantine, audit records, and content-addressed dataset contracts in `src/f1_racelab/data/source_integrity.py`; added `OpenF1Client.get_verified_laps`, `scripts/audit_source_integrity.py`, and synthetic regression tests. The Australia old cache has 45 rows (20 late-start drivers); the refreshed copy has 1,008 rows and remains completeness-unknown. Saved Race Pace excludes that session; qualifying has no direct race-laps dependency; corrected PR #4 uses the refreshed source. No old artifacts overwritten, new model trained, or broad completeness asserted. Existing pipelines have not yet been migrated to the opt-in gate. Real source hashes, impact, exact commands, licensing and limitations: [source-integrity report](research/SOURCE_INTEGRITY.md).
