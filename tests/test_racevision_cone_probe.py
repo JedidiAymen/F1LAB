@@ -30,6 +30,12 @@ def test_empty_predictions_and_truth_are_counted_correctly():
     assert probe.score_at_threshold(torch.tensor([[0., 0., 1., 1.]]), torch.tensor([0.8]), boxes) == (0, 1, 0)
 
 
+def test_conditional_frame_bootstrap_recall_handles_empty_and_perfect_cases():
+    assert probe.frame_bootstrap_recall([]) is None
+    assert probe.frame_bootstrap_recall([(0, 0, 0)]) is None
+    assert probe.frame_bootstrap_recall([(2, 1, 0), (1, 0, 0)]) == [1.0, 1.0]
+
+
 def test_dataset_checks_source_hashes_and_annotation_geometry(tmp_path):
     image = tmp_path / 'image.png'
     annotation = tmp_path / 'image.json'

@@ -88,10 +88,23 @@ def score_at_threshold(boxes: torch.Tensor, scores: torch.Tensor, truth: torch.T
     return tp, len(keep) - tp, len(truth) - tp
 
 
+def frame_bootstrap_recall(counts: list[tuple[int, int, int]]) -> list[float] | None:
+    """Conditional frame bootstrap; frames need not be independent recordings."""
+    values = np.asarray(counts, dtype=int)
+    if len(values) == 0:
+        return None
+    indices = np.random.default_rng(42).integers(0, len(values), size=(1000, len(values)))
+    totals = values[indices].sum(axis=1)
+    denominator = totals[:, 0] + totals[:, 2]
+    recall = totals[denominator > 0, 0] / denominator[denominator > 0]
+    return np.quantile(recall, [0.025, 0.975]).tolist() if len(recall) else None
+
+
 def evaluate(model, dataset: ConeDataset, device: torch.device) -> tuple[dict, list]:
     model.eval()
     images, annotations, detections = [], [], []
     latency, totals = [], np.zeros(3, dtype=int)
+    per_frame: list[tuple[int, int, int]] = []
     ann_id = 1
     with torch.inference_mode():
         for index in range(len(dataset)):
@@ -114,7 +127,9 @@ def evaluate(model, dataset: ConeDataset, device: torch.device) -> tuple[dict, l
             if index:  # first invocation includes initialization
                 latency.append(elapsed)
             boxes, scores = output['boxes'].cpu(), output['scores'].cpu()
-            totals += score_at_threshold(boxes, scores, target['boxes'])
+            counts = score_at_threshold(boxes, scores, target['boxes'])
+            per_frame.append(counts)
+            totals += counts
             for box, score in zip(boxes.tolist(), scores.tolist()):
                 x1, y1, x2, y2 = box
                 detections.append({'image_id': image_id, 'category_id': 1, 'bbox': [x1, y1, x2 - x1, y2 - y1], 'score': score})
@@ -134,6 +149,7 @@ def evaluate(model, dataset: ConeDataset, device: torch.device) -> tuple[dict, l
             'mean_recall_100': float(evaluator.stats[8]), 'threshold': 0.5,
             'precision_at_50_iou': tp / (tp + fp) if tp + fp else None,
             'recall_at_50_iou': tp / (tp + fn) if tp + fn else None,
+            'conditional_frame_bootstrap_recall_95': frame_bootstrap_recall(per_frame),
             'true_positive': tp, 'false_positive': fp, 'false_negative': fn,
             'mean_model_seconds_excluding_decode_first': float(np.mean(latency)) if latency else None}, detections
 
