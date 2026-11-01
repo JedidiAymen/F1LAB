@@ -22,7 +22,7 @@ def test_multiple_observations_flag_clean_claim_without_assigning_cause():
 
 
 def test_unknown_and_nonfinite_values_never_become_positive_mismatch():
-    checks = {'schema_version': 2, 'forecast_coverage': {'batch_only_keys': None, 'live_only_keys': float('nan')},
+    checks = {'schema_version': 2, 'forecast_coverage': {'batch_only_keys': 0.5, 'live_only_keys': float('nan')},
               'model_version_disagreements_on_matched': 3, 'model_version_coverage': {'known_pairs': 0},
               'feature_comparison': {'mismatched_values_on_matched': {'tyre_age': 4},
                                      'value_coverage_on_matched': {'tyre_age': {'known_pairs': 0}}},

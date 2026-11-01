@@ -21,8 +21,13 @@ def _number(value: Any) -> float | None:
     return number if math.isfinite(number) and number >= 0 else None
 
 
+def _count(value: Any) -> int | None:
+    number = _number(value)
+    return int(number) if number is not None and number.is_integer() else None
+
+
 def _positive(value: Any) -> bool:
-    n = _number(value)
+    n = _count(value)
     return n is not None and n > 0
 
 
@@ -31,8 +36,8 @@ def _known_text(value: Any) -> bool:
 
 
 def _known_mismatch(count: Any, info: Any) -> bool:
-    n = _number(count)
-    known = _number(info.get('known_pairs')) if isinstance(info, dict) else None
+    n = _count(count)
+    known = _count(info.get('known_pairs')) if isinstance(info, dict) else None
     return n is not None and known is not None and n > 0 and known >= n
 
 

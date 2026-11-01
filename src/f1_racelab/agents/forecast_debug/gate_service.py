@@ -6,11 +6,11 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4] / 'docs/research/evidence/agent_gate_20261101'
-REPORT_SHA256 = 'b4b41fde6c1fc1f98d07bf445d9c32eaceae3a8de982423afa49f0a30520a235'
+REPORT_SHA256 = '70e073da86f04d96b73eba12f6fa6610269b787981b749023705d79143e403de'
 
 
 def load(root: Path = ROOT) -> dict:
-    payload = (root / 'report_hardened.json').read_bytes()
+    payload = (root / 'report_final.json').read_bytes()
     if hashlib.sha256(payload).hexdigest() != REPORT_SHA256:
         raise ValueError('Evidence-gate report checksum mismatch')
     report = json.loads(payload)
