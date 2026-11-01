@@ -28,6 +28,9 @@ def smoke(base_url: str, *, require_data: bool = False, require_model: bool = Fa
         ready = response.json()
         assert ready["artifact_check"] == "presence_only"
         assert client.get("/api/v1/not-a-route").status_code == 404
+        horizons = client.get("/api/v1/research/pace-multihorizon")
+        horizons.raise_for_status()
+        assert set(horizons.json()["summary"]["horizons"]) == {"1", "3", "5"}
         sessions = client.get("/api/v1/replays").json()
         assert len(sessions) == 3
         checked = []
