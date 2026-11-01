@@ -55,3 +55,10 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=4 PYTHONPATH=src .venv/bin/python scripts
 The local explorer validates dataset, source, prediction and summary hashes, joins cutoffs and displays saved model probabilities and later observed timing outcomes. It is not online inference. Source provider latency, unpublished positions and the selected population remain unresolved. Its default artifact locations are intentionally local; a clean checkout shows an unavailable message until the reproducible research inputs exist.
 
 Rendered saved-forecast explorer: [desktop](../images/overtake-history-desktop.png) and [mobile](../images/overtake-history-mobile.png). Captured from the local research artifacts, not a live feed.
+
+
+## Further source-feature audit — 2026-11-01
+
+The cutoff repair does **not** make all model inputs decision-time safe. In `pace.dataset.build_race_frame`, `laps_remaining` uses the maximum lap number found after the race, which can reveal an eventual shortened distance rather than a pre-race scheduled distance. Overtake uses that field directly, and also uses `tyre_age_next` and `compound_next`, derived from the following lap's stint. The outcome-selected no-pit cohort does not establish that these values were available to an unconditional forecast at the cutoff. The saved original and corrected experiments must remain retrospective and provisional; the 22 fitted models and reported scores are not evidence for as-of deployment. The size of any score change after removing these features is not yet measured. No old artifacts or scores were overwritten.
+
+The broader pace frame's `laps_in_stint` and `stint_best_delta` also derive from the next-lap stint; its clean-lap and regime calculations use subsequent pit-out status and a full-race median lap time. The existing Race Pace “strict” result therefore has unresolved decision-time provenance as well. A new prospective cohort and causally reconstructed features are required before making strict as-of or live-inference claims. Provider publication timing remains another unresolved limitation.

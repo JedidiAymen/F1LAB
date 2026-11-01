@@ -71,7 +71,7 @@ export function OvertakeLab({ onBack }: { onBack: () => void }) {
       <button className="prediction-back" type="button" onClick={onBack}><ArrowLeft size={15} /> Race Control</button>
       <span className="eyebrow">OVERTAKE INTELLIGENCE · RETROSPECTIVE · PROVISIONAL</span>
       <h2>How often did timing order change?</h2>
-      <p className="ot-note">These labels infer order swaps from timing snapshots; they are not verified on-track passes. The cohort excludes later pit and neutralization outcomes and is not an unconditional live forecast population.</p>
+      <p className="ot-note">These labels infer order swaps from timing snapshots; they are not verified on-track passes. The cohort excludes later pit and neutralization outcomes and is not an unconditional live forecast population. Features also include next-lap tyre data and a race-length proxy derived from the completed race; they are not fully available at cutoff.</p>
       {auditError && <p role="status" className="ot-note">Cutoff audit is unavailable or failed its integrity check.</p>}
       {audit && <section aria-label="Overtake cutoff audit" className="ot-audit">
         <h3>Decision-time audit</h3>

@@ -38,7 +38,7 @@ export function OvertakeHistory() {
   const score = catalog?.corrected_summary.table.find((item) => item.model === model)
   return <section className="ot-history" aria-label="Historical timing forecast explorer">
     <h3>Explore a saved historical forecast</h3>
-    <p>Out-of-fold predictions from the corrected retrospective study. Later pit and neutralization outcomes selected these pairs, so the displayed probability is not an unconditional live forecast. Timing swaps are not verified passes.</p>
+    <p>Out-of-fold predictions from the corrected retrospective study. Later pit and neutralization outcomes selected these pairs, so the displayed probability is not an unconditional live forecast. Timing swaps are not verified passes. Next-lap tyre inputs and a completed-race length proxy may use information unavailable at cutoff.</p>
     {missing && <p role="status">Corrected local study artifacts are unavailable; see the reproduction instructions to build them.</p>}
     {!catalog && !missing && <p role="status">Loading saved historical forecasts…</p>}
     {catalog && <>

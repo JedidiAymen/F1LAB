@@ -142,4 +142,4 @@ npm run test:e2e
 See [the three-session evidence](docs/REPLAY_GOLDEN_SESSIONS.md) for exact
 source/clock semantics, checks, screenshots and remaining limitations.
 
-The existing [Overtake study is provisional](docs/research/OVERTAKE_CUTOFF_AUDIT.md): labels infer timing-order changes, later outcomes select its cohort, and a cutoff audit identified affected input rows. A corrected retrospective backtest and local saved-forecast explorer are documented in the audit; the outcome-selected cohort and previously inspected races still limit interpretation.
+The existing [Overtake study is provisional](docs/research/OVERTAKE_CUTOFF_AUDIT.md): labels infer timing-order changes, later outcomes select its cohort, and a cutoff audit identified affected input rows. A corrected retrospective backtest and local saved-forecast explorer are documented in the audit; the outcome-selected cohort, next-lap tyre fields, completed-race-length proxy and previously inspected races still limit interpretation.

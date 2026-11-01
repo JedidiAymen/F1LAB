@@ -956,3 +956,8 @@ Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Five of 29,608 saved timing-inf
 ### Overtake retrospective audit — 2026-11-01
 
 Overtake review branch: audit found 5 late leader cutoffs and 2,364 changed prior-rate rows. Corrected strict dataset has 29,603 pairs; 22 saved folds scored 22,634 pairs in 65 previously inspected races, raw LightGBM Brier 0.032841 and gap logistic 0.040755. 113,170 reloaded predictions matched. Historical UI reads locally stored forecasts, not live inference. Outcome selection and provider timing limit validity. Source, hashes, commands, metrics and limitations: research/OVERTAKE_CUTOFF_AUDIT.md. No model promotion or merge.
+
+
+### Pace-source availability finding — 2026-11-01
+
+Further review found `laps_remaining` derives from the completed race's maximum lap, and Overtake's tyre fields refer to lap L+1. Pace's `laps_in_stint` and `stint_best_delta` also use next-lap stint information; clean/regime construction uses subsequent pit-out status and a full-race median. Existing overtake and pace scores remain provisional and do not prove strict as-of availability. Affected score changes have not been quantified; raw reconstruction and new evaluation are needed. See research/OVERTAKE_CUTOFF_AUDIT.md.

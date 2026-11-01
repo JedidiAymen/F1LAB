@@ -503,3 +503,8 @@ Base `5cdac66677e6abb513f84e3ede5f74dd74d00bb6`. Five of 29,608 saved timing-inf
 ### Overtake retrospective audit — 2026-11-01
 
 2026-11-01 corrected Overtake retrospective: b9b2db0, 29,603 strict pairs, 22 folds, 65 scored races; raw LightGBM Brier 0.032841 vs gap logistic 0.040755. Outcome-selected previously inspected sample; not a new generalization claim. See research/OVERTAKE_CUTOFF_AUDIT.md.
+
+
+### Pace-source availability finding — 2026-11-01
+
+Further review found `laps_remaining` derives from the completed race's maximum lap, and Overtake's tyre fields refer to lap L+1. Pace's `laps_in_stint` and `stint_best_delta` also use next-lap stint information; clean/regime construction uses subsequent pit-out status and a full-race median. Existing overtake and pace scores remain provisional and do not prove strict as-of availability. Affected score changes have not been quantified; raw reconstruction and new evaluation are needed. See research/OVERTAKE_CUTOFF_AUDIT.md.
